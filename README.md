@@ -20,15 +20,19 @@ Create a .env file and put in your OpenAI API key in this format:
 ```bash
 NEXT_PUBLIC_OPENAI_API_KEY="YOUR_API_KEY"
 ```
-
+Now within the Image-AI folder:<br/><br/>
+Create a .env file and put in your OpenAI API key in this format:
+  ```bash
+  NEXT_PUBLIC_OPENAI_API_KEY="YOUR_API_KEY"
+  ```
 Now run the development server:
-
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+<<<<<<< HEAD
 **Note:** <br/>
 The login page and sign up page has not been fully implemented because that is not the focus of this application.
 In order to access the chat box:
@@ -36,6 +40,14 @@ In order to access the chat box:
 1. On the landing page, click the login button on the top right
 2. Fill in the text boxes, input doesn't matter but make sure that the text boxes are filled in
 3. Click the 'Sign In' button and it will redirect you to the chat page
+=======
+**Note:** <br/> 
+  The login page and sign up page has not been fully implemented because that is not the focus of this application.
+  In order to access the chat box:
+  1. On the landing page, click the login button on the top right
+  2. Fill in the text boxes, input doesn't matter but make sure that the text boxes are filled in
+  3. Click the 'Sign In' button and it will redirect you to the chat page
+>>>>>>> 6ef5e2d70489dd4fbaf9597ee53bd1fde0bde8de
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
