@@ -23,7 +23,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-**Note**:
+**Note** <br/> 
 The login page and sign up page has not been fully implemneted because that is not the focus of the application.
 In order to access the chat box:
 1. After loading the application, click the login button on the top right
