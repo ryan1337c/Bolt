@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -18,12 +19,6 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
@@ -31,3 +26,234 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes flyIn {
+  0% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 1;
+  }
+}
+
+.title {
+  animation: fadeIn 3s;
+}
+
+.subTitle {
+  animation: flyIn 1s ease-in 0s 1 normal forwards;
+}
+
+.buttonEffects {
+  --offset: 1px;
+  position: relative;
+  background: #1e293b;
+  overflow: hidden;
+  border-radius: 50px;
+  max-width: 100%;
+  margin-top: 10px;
+  z-index: 0;
+}
+
+.buttonEffects::before {
+  content: '';
+  background: conic-gradient(transparent 270deg, white, transparent);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1;
+  width: 100%;
+  z-index: -1; 
+  animation: rotate 2s linear infinite;
+}
+
+.buttonEffects::after {
+  content: '';
+  background: inherit;
+  border-radius: inherit;
+  position: absolute;
+  inset: var(--offset);
+  height: calc(100% - 2 * var(--offset));
+  width: calc(100% - 2 * var(--offset));
+  z-index: -1; /* Ensure this pseudo-element is behind the button */
+}
+
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -50%) scale(1.4) rotate(0turn);
+  }
+  to {
+    transform: translate(-50%,-50%) scale(1.4) rotate(1turn);
+  }
+}
+
+input {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Landing Page Icon Robot Animation */
+@keyframes draw {
+  0% {
+    stroke-dashoffset: 40;
+  }
+  25% {
+    stroke-dashoffset: 20;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+  75% {
+    stroke-dashoffset: 20;
+  }
+  100% {
+    stroke-dashoffset: 40;
+  }
+} 
+
+
+.oscillate {
+  stroke-dasharray: 30; 
+  stroke-dashoffset: 40; 
+  animation: draw 4s 1s linear forwards; 
+  animation-iteration-count: infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.robotAnimation {
+  animation: fadeIn 3s ease-in forwards;
+}
+
+/* Scroll Wheel styling */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 14px; /* Width of the scrollbar */
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background color of the track */
+  border-radius: 10px; /* Round corners of the track */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scroll thumb */
+  border-radius: 10px; /* Round corners of the thumb */
+  border: 3px solid #f1f1f1; /* Border around the thumb to create padding */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker color when hovered */
+}
+
+/* Login Page css ghost */
+.ghost {
+  animation: float 3s ease-out infinite;
+}
+
+@keyframes float {
+  50% {
+     transform: translate(0, 20px);
+  }
+}
+.shadowFrame {
+  width: 150px;
+  margin-top: 15px;
+}
+.shadow {
+  animation: shrink 3s ease-out infinite;
+  transform-origin: center center;
+  ellipse {
+    transform-origin: center center;
+  }
+}
+
+@keyframes shrink {
+  0% {
+    width: 90%;
+    margin: 0 5%;
+  }
+  50% {
+    width: 60%;
+    margin: 0 18%;
+  }
+  100% {
+    width: 90%;
+    margin: 0 5%;
+  }
+}
+
+/* Icon go to previous page animation*/
+@keyframes iconShrinkAnimation {
+  0% {
+    transform: scale(1) translateX(0); /* Start at normal size */
+  }
+  50% {
+    transform: scale(0.99) translateX(-15px); /* Scale down to 90% size */
+  }
+  100% {
+    transform: scale(0.98) translateX(-20px); /* Scale down to 80% size */
+  }
+}
+
+.robotIconShrinkAnimation {
+  animation: iconShrinkAnimation 0.3s linear both;
+  
+}
+
+.backIconAnimation {
+  animation: appearAnimation 0.3s linear forwards;
+}
+
+@keyframes appearAnimation {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.appearArrowAnimatiuon {
+  animation: expandArrow 0.3s linear forwards;
+}
+
+@keyframes expandArrow {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 50%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+
+
+
+
+
+
+
+
