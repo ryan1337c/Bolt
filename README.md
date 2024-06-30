@@ -11,8 +11,8 @@ First, install the dependencies:
 ```bash
 npm install 
 ```
-Now within the Image-AI folder:
-create a .env file and put in your OpenAI API key in this format:
+Now within the Image-AI folder:<br/>
+Create a .env file and put in your OpenAI API key in this format:
   ```bash
   NEXT_PUBLIC_OPENAI_API_KEY="_YOUR-API-KEY_"
   ```
