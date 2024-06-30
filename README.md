@@ -4,8 +4,6 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 This application contains a beautiful user interface that utilizes the power of AI to automatically generate images based on user input.
 
-Powered by OpenAI
-
 ## Getting Started
 
 First, install the dependencies:
@@ -57,3 +55,5 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+**Powered By: OpenAI, NextJS, Tailwindcss**
