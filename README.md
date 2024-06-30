@@ -1,5 +1,10 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## About image-ai
+This application utilizes the power of AI to automatically generate images based on user input.
+
+Powered by OpenAI 
+
 ## Getting Started
 
 First, install the dependencies:
