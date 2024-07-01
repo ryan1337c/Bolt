@@ -19,7 +19,7 @@ Create a .env file and put in your OpenAI API key in this format:
 ```bash
 NEXT_PUBLIC_OPENAI_API_KEY="YOUR_API_KEY"
 ```
-  ```
+
 Now run the development server:
 ```bash
 npm run dev
