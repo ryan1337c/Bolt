@@ -38,6 +38,9 @@ In order to access the chat box:
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Demo
+https://github.com/ryan1337c/image-ai/assets/102636636/ff6b175d-f769-40c1-a439-b8180c639d8d
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
