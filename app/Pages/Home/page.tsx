@@ -151,7 +151,16 @@ export default function Home({username}: HomeProps) {
           setImageCount(imageCount + 1);
           return updatedHistory;
         })
+
+            // Scroll to the bottom after updating the chat history
+            scrollToBottom();
+
+            // Additional scroll to bottom after a short delay to ensure image is fully loaded
+            setTimeout(() => {
+                scrollToBottom();
+            }, 300);
     }
+
   },[image]);
 
   return (
