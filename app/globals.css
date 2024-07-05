@@ -180,6 +180,8 @@ input {
   margin-top: 15px;
 }
 .shadow {
+  border:none;
+  box-shadow: none;
   animation: shrink 3s ease-out infinite;
   transform-origin: center center;
   ellipse {
