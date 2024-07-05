@@ -183,24 +183,26 @@ input {
   border:none;
   box-shadow: none;
   animation: shrink 3s ease-out infinite;
-  transform-origin: center center;
-  ellipse {
-    transform-origin: center center;
-  }
+  margin: 9%;
 }
 
 @keyframes shrink {
   0% {
-    width: 90%;
-    margin: 0 5%;
+    /* width: 90%;
+    margin: 0 5%; */
+    transform: scale(0.9);
   }
+
   50% {
-    width: 60%;
-    margin: 0 18%;
+    /* width: 60%;
+    margin: 0 18%; */
+    transform: scale(0.6);
   }
+
   100% {
-    width: 90%;
-    margin: 0 5%;
+    /* width: 90%;
+    margin: 0 5%; */
+    transform: scale(0.9);
   }
 }
 
