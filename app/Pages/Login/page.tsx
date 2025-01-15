@@ -47,8 +47,10 @@ const Login = () => {
 
             <div className="w-[340px] md:w-[300px] md:ml-4">
               <button type='submit' className="mt-7 flex w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
-            </div>
+            </div> 
           </form>
+          <hr className="mt-6 mb-6 border-t-1 border-white w-full" />
+          <a href='./Register' className="text-indigo-400 hover:text-indigo-300">Don't have an account? Sign up here</a>
       </div>
     </div>
     <div className="flex-1 bg-white border hidden border-zinc-50 md:flex md:justify-center md:items-center h-screen">
