@@ -9,7 +9,9 @@ export default function Home() {
             <Link href={`./Pages/Login`}>  
             <button className="p-2 inline-block buttonEffects hover:bg-hoverLandingPage">Log In</button>
             </Link> 
+            <Link href={`./Pages/Register`}>
             <button className="p-2 ml-3 inline-block buttonEffects hover:bg-hoverLandingPage">Sign Up</button>
+            </Link>
       </div>
         <div className="mt-[100px] flex flex-col justify-center items-center ">
           <div className="text-center text-9xl font-bol m-5 title">ImageAI</div>

@@ -23,6 +23,7 @@ const config: Config = {
         'downloadBoxOnHover': '#c1c1c1',
         'landingPage': '#1e293b',
         'hoverLandingPage': '#020617',
+        'error': "#FF4D4D",
       },
       height: {
         'chatbox': "45rem",

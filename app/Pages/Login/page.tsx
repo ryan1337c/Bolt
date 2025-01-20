@@ -4,10 +4,53 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaRobot } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
+import axios from 'axios';
+import googleButton from './assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png'
+
 const Login = () => {
   const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [backing, setBacking] = useState(false);
   const router = useRouter();
+
+  const navigate = (url: string) => {
+    window.location.href = url;
+  }
+
+  const auth = async() => {
+    const response = await fetch('http://localhost:3000/api/request',
+      {
+        method:'post'
+      }
+    );
+    const data = await response.json();
+    navigate(data.url);
+  }
+
+ // Method for checking if user inputs is valid during the forum submission
+//  const handleSubmit = async(e: React.FormEvent) => {
+//   e.preventDefault(); // Prevent form from submitting and reloading the page
+//  // Checks for username and password in db
+//  try {
+//   await axios.get(`/api/user/login?userName=${username}&password=${password}`, {
+//     headers: {
+//       'Content-Type': 'application/json',
+//     }
+//   });
+//     console.log("User exists.");
+//     router.push(`./Home/?${username}`)
+// }
+// catch (error: any) {
+//   if (error.response.status === 400) {
+//     console.error("User was not found.");
+//   }
+//   else if (error.response.status === 500) {
+//     console.error("Internal server error for finding user.");
+//   }
+//   setLoginError('Username or password is incorrect.')
+// }
+//  }
 
   return (
     <> 
@@ -20,11 +63,15 @@ const Login = () => {
       </div>
     <div className="flex-1 flex items-center justify-center">
       <div className="flex flex-col justify-center items-center h-[500px] w-2/3 ">
-          <div className="mb-9 ml-[-7px] text-2xl font-bold leading-9 tracking-tight">
-              Sign in to your account
+          <div className="mb-9 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
+            <strong>Sign in to your account</strong>
+              {loginError !== '' && <label className="text-error text-sm">{loginError}</label>}
           </div>
-          
-          <form className="space-y-4 min-w-max" action={(e) => router.push(`./Home/?${username}`)}>
+          <div></div>
+        {/* This is for interacting with mongodb
+            <form className="space-y-4 min-w-max" onSubmit={handleSubmit}>
+        */}
+          <form className="space-y-4 min-w-max" action={() => router.push(`./Home?accessToken=${username}`)}>
             <div className="w-[340px] md:w-[300px] md:ml-4">
               <label htmlFor="username" className="block text-sm font-medium leading-6">
                   Username
@@ -41,16 +88,23 @@ const Login = () => {
                 <div className="text-sm md:mr-10 font-semibold text-indigo-300 hover:text-indigo-200 cursor-pointer">Forgot password?</div>
               </div>
               <div>
-                <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' name='password' required autoComplete='off'/>
+                <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' type='password' name='password' onChange={e => setPassword(e.target.value)} required autoComplete='off'/>
               </div>
             </div>
 
-            <div className="w-[340px] md:w-[300px] md:ml-4">
-              <button type='submit' className="mt-7 flex w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
+            <div className="w-[340px] md:w-[300px] md:ml-4 flex flex-col items-center space-y-4">
+              <button type='submit' className="mt-3 w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
+              <a href='./Register' className="text-white text-sm">Don't have an account? <span className="text-indigo-300 hover:text-indigo-200 pl-1">Sign Up</span></a>
+              <div className="w-full flex items-center gap-4 text-sm pt-3">
+                <hr className="border-t-1 border-white w-[50%]" />
+                OR
+                <hr className="border-t-1 border-white w-[50%]" />
+              </div>
+              <button type="button" onClick={() => auth()}>
+                  <img src={googleButton.src} alt="google sign in" />
+              </button>
             </div> 
           </form>
-          <hr className="mt-6 mb-6 border-t-1 border-white w-full" />
-          <a href='./Register' className="text-indigo-400 hover:text-indigo-300">Don't have an account? Sign up here</a>
       </div>
     </div>
     <div className="flex-1 bg-white border hidden border-zinc-50 md:flex md:justify-center md:items-center h-screen">

@@ -4,13 +4,71 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaRobot } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
+import axios from "axios"
 
 const Register  = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [username, setUserName] = useState('');
+    const [password, setPassword] = useState('');
     const [backing, setBacking] = useState(false);
+    const [registerError, setRegisterError] = useState('');
     const router = useRouter();
+
+    // Method for checking if user inputs is valid during the forum submission
+    // const handleSubmit = async(e: React.FormEvent) => {
+    //   e.preventDefault(); // Prevent form from submitting and reloading the page
+
+    //   // Checks for username in db
+    //   try {
+    //     await axios.get(`/api/user/registration?userName=${username}`, {
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       }
+    //     });
+
+    //       console.log("Username already exists, can't register.");
+    //       setRegisterError('Username already exists');
+    //       return;
+
+    //   }
+    //   catch (error: any) {
+    //     if (error.response.status === 400) {
+    //       console.error("Username was not found.");
+    //     }
+    //     else if (error.response.status === 500) {
+    //       console.error("Internal server error for finding username.");
+    //     }
+    //   }
+
+    //   // add user to db
+    //   try {
+    //     const reqBody = {
+    //       firstName: firstName,
+    //       lastName: lastName,
+    //       userName: username,
+    //       password: password,
+    //     };
+
+    //     await axios.post('/api/user/registration', reqBody, {
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       }
+    //     });
+
+    //       console.log("User successfully added to db.");
+
+    //   }
+    //   catch (error: any) {
+    //     if (error.response.status === 400) {
+    //       console.error("Username was not found.");
+    //     }
+    //     else if (error.response.status === 500) {
+    //       console.error("Internal server error for finding username.");
+    //     }
+    //   }
+      
+    // }
   
     return (
       <> 
@@ -23,11 +81,14 @@ const Register  = () => {
         </div>
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col justify-center items-center h-[500px] w-2/3 ">
-            <div className="mb-9 ml-[-7px] text-2xl font-bold leading-9 tracking-tight">
-                Register an account
-            </div>
-        
-            <form className="space-y-4 min-w-max" action={(e) => router.push(`./Home/?${username}`)}>
+        <div className="mb-9 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
+            <strong>Register an account</strong>
+              {registerError !== '' && <label className="text-error text-sm">{registerError}</label>}
+          </div>
+            {/* This is for interacting with the mongodb 
+              <form className="space-y-4 min-w-max" onSubmit={handleSubmit}> 
+            */}
+            <form className="space-y-4 min-w-max" action={() => router.push('./Login')}>
                 <div className="w-[340px] md:w-[300px] md:ml-4">
                 <label htmlFor="firstname" className="block text-sm font-medium leading-6">
                         First Name
@@ -61,16 +122,15 @@ const Register  = () => {
                   <label htmlFor='password' className="block text-sm font-medium leading-6 ">Password</label>
                 </div>
                 <div>
-                  <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' name='password' required autoComplete='off'/>
+                  <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' name='password' type='password' required onChange={e => setPassword(e.target.value)} autoComplete='off'/>
                 </div>
               </div>
   
-              <div className="w-[340px] md:w-[300px] md:ml-4">
-                <button type='submit' className="mt-7 flex w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
+              <div className="w-[340px] md:w-[300px] md:ml-4 flex flex-col items-center space-y-4">
+                <button type='submit' className="mt-3 flex w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
+                <a href='./Login' className="text-white text-sm">Already have an account?<span className="text-indigo-300 hover:text-indigo-200 pl-1">Login</span></a>
               </div> 
             </form>
-            <hr className="mt-6 mb-6 border-t-1 border-white w-full" />
-            <a href='./Login' className="text-indigo-400 hover:text-indigo-300">Already have an account? Login here</a>
         </div>
       </div>
       <div className="flex-1 bg-white border hidden border-zinc-50 md:flex md:justify-center md:items-center h-screen">
