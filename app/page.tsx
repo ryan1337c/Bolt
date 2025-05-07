@@ -13,7 +13,7 @@ export default function Home() {
             <button className="p-2 ml-3 inline-block buttonEffects hover:bg-hoverLandingPage">Sign Up</button>
             </Link>
       </div>
-      <div className="flex flex-col justify-center items-center  ">
+      <div className="flex flex-col justify-center items-center  mt-[70px]">
         <div className="text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold m-5 title">
           ImageAI
         </div>
