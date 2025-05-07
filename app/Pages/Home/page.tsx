@@ -215,7 +215,7 @@ export default function Home({username}: HomeProps) {
       </div>
       <div className="col-span-6 p-4 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col ">
         <div className="h-chatbox" >
-        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[70vh] lg:h-[80vh] lg:ml-40 lg:mr-40 overflow-y-auto scrollbar-custom rounded-lg w-[63vw] ">
+        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[70vh] lg:ml-40 lg:mr-40 overflow-y-auto scrollbar-custom rounded-lg w-[63vw] ">
           {chatHistory.map((chatMessage,index) => {
             const minWidth = 100;
             const maxWidth = 500;
