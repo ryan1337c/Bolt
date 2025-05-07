@@ -6,6 +6,7 @@ import { Messages } from "../../../pages/messages/assistantMessages";
 import TypeWriter from '../../components/TypeWriter';
 import chatStyles from '../../components/chatBubble.module.css'
 import { AiOutlineSend } from "react-icons/ai";
+import { Noto_Sans_Inscriptional_Pahlavi } from "next/font/google";
 
 export interface ChatMessage {
   sender: string;
@@ -27,10 +28,12 @@ export default function Home({username}: HomeProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [processingMessage, setProcessingMessage] = useState(false);
 
-
   // chat history stuff
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(0);
+
+  // chat box stuff
+  const chatBoxRef = useRef<HTMLDivElement>(null);
 
   const generateImage = async() => {
     setProcessingMessage(true);
@@ -109,8 +112,21 @@ export default function Home({username}: HomeProps) {
   }
 
   const scrollToBottom = () => {
-    if (messagesEndRef.current)
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    // if (messagesEndRef.current) {
+    //   messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // }
+
+    const targetMessage = messagesEndRef.current
+    if (chatBoxRef.current && targetMessage) {
+      const chatBox = chatBoxRef.current;
+      const messageOffsetTop = targetMessage.offsetTop;
+
+      chatBox.scrollTo({
+        top: messageOffsetTop,
+        behavior: 'smooth',
+      });
+  }
+
   }
 
   const scrollToMessage = (index: number) =>  {
@@ -119,22 +135,28 @@ export default function Home({username}: HomeProps) {
     setCurrentHistoryIndex(index);
 
     const targetMessage = messageRefs.current[index];
-    if (targetMessage) {
-      targetMessage.scrollIntoView({ behavior: 'smooth'});
+      if (chatBoxRef.current && targetMessage) {
+        const chatBox = chatBoxRef.current;
+        const messageOffsetTop = targetMessage.offsetTop;
+        chatBox.scrollTo({
+          top: messageOffsetTop,
+          behavior: 'smooth',
+        });
     }
+
+
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Enter' && userInput.trim()) {
         sendMessage();
       }
   }
 
-
   useEffect(() => {
+    // Scroll to the bottom every time chatHistory is updated
     scrollToBottom();
-
-  }, [chatHistory]);
+  }, [chatHistory]); // Depend on chatHistory to trigger when new messages are added
 
   useEffect(() => {
     if (image) {
@@ -152,20 +174,21 @@ export default function Home({username}: HomeProps) {
           return updatedHistory;
         })
 
-            // Scroll to the bottom after updating the chat history
-            scrollToBottom();
+        scrollToBottom()
 
             // Additional scroll to bottom after a short delay to ensure image is fully loaded
             setTimeout(() => {
                 scrollToBottom();
-            }, 300);
+            }, 800);
     }
 
   },[image]);
 
+
+
   return (
     <>
-    <main className="h-screen w-full flex flex-col">
+    <main className="h-screen w-full flex flex-col overflow-hidden">
     <Header />
     <div className="flex-1 grid grid-cols-7 ml-6 mr-6">
       <div className="text-white hidden sm:block sm:col-span-1 p-4 overflow-y-auto h-chatHistoryBox ">
@@ -191,7 +214,8 @@ export default function Home({username}: HomeProps) {
         })}
       </div>
       <div className="col-span-6 p-4 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col ">
-        <div id="chat-box" className="flex flex-col bg-white h-chatbox lg:ml-40 lg:mr-40 overflow-y-auto scrollbar-custom rounded-lg">
+        <div className="h-chatbox" >
+        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[calc(45rem-180px)] lg:ml-40 lg:mr-40 overflow-y-auto scrollbar-custom rounded-lg w-[63vw] ">
           {chatHistory.map((chatMessage,index) => {
             const minWidth = 100;
             const maxWidth = 500;
@@ -245,16 +269,25 @@ export default function Home({username}: HomeProps) {
           <div ref={messagesEndRef}></div>{/* This div will be scrolled to */}
       
         </div>
-        <div className="flex lg:ml-40 lg:mr-40">
+        <div className="flex fixed w-[63vw] bottom-8 lg:ml-40 lg:mr-40 ">
             <div className="p-6 flex items-center bg-textBox shadow-lg rounded-md w-full">
-              <input type="text" id="message-input" placeholder="Type your message..." disabled={processingMessage} className="w-full ml-5 mr-5 pl-5 pt-2 pb-2 text-lg rounded-lg" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserInput(e.target.value)} onKeyDown={handleKeyPress}/> 
-              <button id="send-btn" onClick={() => sendMessage()} disabled={processingMessage}><AiOutlineSend className={`w-10 h-10 p-[5px] flex items-center justify-center text-white rounded-full border-2 ${userInput ? "bg-black  hover:bg-gray-600" : "bg-gray-300"}`}/></button>
-              
+              <textarea
+              id="message-input"
+              placeholder="Type your message..."
+              wrap="hard"
+              disabled={processingMessage}
+              className="w-full h-[100%] md:h-11 ml-5 mr-5 pl-5 pt-2 text-lg rounded-lg overflow-auto break-words whitespace-normal resize-none"
+              value={userInput}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setUserInput(e.target.value)} 
+              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => handleKeyPress(e)} // Corrected event type here
+              />
+                <button id="send-btn" onClick={() => sendMessage()} disabled={processingMessage}><AiOutlineSend className={`w-10 h-10 p-[5px] flex items-center justify-center text-white rounded-full border-2 ${userInput ? "bg-black  hover:bg-gray-600" : "bg-gray-300"}`}/></button>
             </div>
-          </div>
+        </div>
       </div>
     </div>
-  </main>
+  </div>
+</main>
   </>
   );
 
