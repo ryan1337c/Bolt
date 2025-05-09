@@ -213,9 +213,9 @@ export default function Home({username}: HomeProps) {
       
         })}
       </div>
-      <div className="col-span-6 p-4 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col ">
+      <div className="col-span-8 md:col-span-6 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col ">
         <div className="h-chatbox" >
-        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[70vh] lg:ml-40 lg:mr-40 overflow-y-auto scrollbar-custom rounded-lg w-[63vw] ">
+        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[60vh] md:h-[70vh] lg:ml-40 lg:mr-40 overflow-y-auto scrollbar-custom rounded-lg md:w-[63vw] ">
           {chatHistory.map((chatMessage,index) => {
             const minWidth = 100;
             const maxWidth = 500;
@@ -269,7 +269,7 @@ export default function Home({username}: HomeProps) {
           <div ref={messagesEndRef}></div>{/* This div will be scrolled to */}
       
         </div>
-        <div className="flex fixed w-[63vw] bottom-8 lg:ml-40 lg:mr-40 ">
+        <div className="flex md:w-[63vw] lg:ml-40 lg:mr-40 ">
             <div className="p-6 flex items-center bg-textBox shadow-lg rounded-md w-full">
               <textarea
               id="message-input"
