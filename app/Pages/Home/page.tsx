@@ -2,11 +2,13 @@
 import Header from "../../components/Header";
 import { FaRobot } from "react-icons/fa";
 import { useState, useEffect, useRef} from "react";
-import { Messages } from "../../../pages/messages/assistantMessages";
+import Messages from "../../../util/assistantMessages";
 import TypeWriter from '../../components/TypeWriter';
 import chatStyles from '../../components/chatBubble.module.css'
 import { AiOutlineSend } from "react-icons/ai";
 import { Noto_Sans_Inscriptional_Pahlavi } from "next/font/google";
+import Image from "next/image";
+import axios from "axios";
 
 export interface ChatMessage {
   sender: string;
@@ -16,11 +18,8 @@ export interface ChatMessage {
   loading: boolean;
 }
 
-interface HomeProps {
-  username: string
-}
 
-export default function Home({username}: HomeProps) {
+export default function Home() {
   const [userInput, setUserInput] = useState('');
   const [image, setImage] = useState('');
   const [imageCount, setImageCount] = useState<number>(1);
@@ -34,11 +33,13 @@ export default function Home({username}: HomeProps) {
 
   // chat box stuff
   const chatBoxRef = useRef<HTMLDivElement>(null);
+  const [isValid, setIsValid] = useState(true)
 
   const generateImage = async() => {
     setProcessingMessage(true);
     
-    const response = await fetch('../api/generate', {
+    try {
+  const response = await fetch('../api/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -47,12 +48,27 @@ export default function Home({username}: HomeProps) {
         prompt: `${userInput}`
       }),
     })
+
+    if (!response.ok) {
+      setIsValid(false)
+      console.log("Error 400 or 500")
+    }
+    else {
     const data = await response.json();
+
     setImage(data.url);
     setUserInput('');
     console.log(data.url);
+    setIsValid(true)
+    }
+    }
+   catch (error: any) {
+      // Network issue
+      console.error('Fetch failed: ', error.message || error)
+    }
 
     setProcessingMessage(false);
+    
       
   }
 
@@ -253,15 +269,14 @@ export default function Home({username}: HomeProps) {
                   
                 </>
                 )
-                   : (<div className="flex flex-col">
-                    
+                   :(<div className="flex flex-col">
                     <TypeWriter text={Messages.imgGeneration} />
-                    <img src={chatMessage.imageUrl} alt="Generated Image" className="object-cover"/>
+                    <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover" width={1024} height={1024}/>
                     <button onClick={() => downloadImage(chatMessage.imageUrl)} className="bg-downloadBox mt-2 rounded-md font-semibold 0flex justify-center hover:bg-downloadBoxOnHover pt-2 pb-2" style={{width: "238px"}}>Download Image</button> 
-                   </div>)}
+                   </div>) 
+                   }
                        </div>
                   </div>
-
               )
             }
            

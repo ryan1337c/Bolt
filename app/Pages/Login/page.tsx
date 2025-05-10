@@ -28,30 +28,6 @@ const Login = () => {
     navigate(data.url);
   }
 
- // Method for checking if user inputs is valid during the forum submission
-//  const handleSubmit = async(e: React.FormEvent) => {
-//   e.preventDefault(); // Prevent form from submitting and reloading the page
-//  // Checks for username and password in db
-//  try {
-//   await axios.get(`/api/user/login?userName=${username}&password=${password}`, {
-//     headers: {
-//       'Content-Type': 'application/json',
-//     }
-//   });
-//     console.log("User exists.");
-//     router.push(`./Home/?${username}`)
-// }
-// catch (error: any) {
-//   if (error.response.status === 400) {
-//     console.error("User was not found.");
-//   }
-//   else if (error.response.status === 500) {
-//     console.error("Internal server error for finding user.");
-//   }
-//   setLoginError('Username or password is incorrect.')
-// }
-//  }
-
   return (
     <> 
     <div className="min-h-screen flex  text-white">
@@ -94,7 +70,7 @@ const Login = () => {
 
             <div className="w-[340px] md:w-[300px] md:ml-4 flex flex-col items-center space-y-4">
               <button type='submit' className="mt-3 w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
-              <a href='./Register' className="text-white text-sm">Don't have an account? <span className="text-indigo-300 hover:text-indigo-200 pl-1">Sign Up</span></a>
+              <a href='./Register' className="text-white text-sm">Don&apos;t have an account? <span className="text-indigo-300 hover:text-indigo-200 pl-1">Sign Up</span></a>
               <div className="w-full flex items-center gap-4 text-sm pt-3">
                 <hr className="border-t-1 border-white w-[50%]" />
                 OR

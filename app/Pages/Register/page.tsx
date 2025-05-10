@@ -14,61 +14,6 @@ const Register  = () => {
     const [backing, setBacking] = useState(false);
     const [registerError, setRegisterError] = useState('');
     const router = useRouter();
-
-    // Method for checking if user inputs is valid during the forum submission
-    // const handleSubmit = async(e: React.FormEvent) => {
-    //   e.preventDefault(); // Prevent form from submitting and reloading the page
-
-    //   // Checks for username in db
-    //   try {
-    //     await axios.get(`/api/user/registration?userName=${username}`, {
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       }
-    //     });
-
-    //       console.log("Username already exists, can't register.");
-    //       setRegisterError('Username already exists');
-    //       return;
-
-    //   }
-    //   catch (error: any) {
-    //     if (error.response.status === 400) {
-    //       console.error("Username was not found.");
-    //     }
-    //     else if (error.response.status === 500) {
-    //       console.error("Internal server error for finding username.");
-    //     }
-    //   }
-
-    //   // add user to db
-    //   try {
-    //     const reqBody = {
-    //       firstName: firstName,
-    //       lastName: lastName,
-    //       userName: username,
-    //       password: password,
-    //     };
-
-    //     await axios.post('/api/user/registration', reqBody, {
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       }
-    //     });
-
-    //       console.log("User successfully added to db.");
-
-    //   }
-    //   catch (error: any) {
-    //     if (error.response.status === 400) {
-    //       console.error("Username was not found.");
-    //     }
-    //     else if (error.response.status === 500) {
-    //       console.error("Internal server error for finding username.");
-    //     }
-    //   }
-      
-    // }
   
     return (
       <> 
