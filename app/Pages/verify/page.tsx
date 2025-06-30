@@ -42,7 +42,7 @@ export default function Verify () {
             {mounted && (
                 <div className="flex flex-col bg-white text-black p-20 shadow-lg rounded-xl items-center">
                     <div className="font font-semibold text-[40px] tracking-widest m-2">Verify Your Email</div>
-                    <div>We've sent a confirmation link to your email. Please check your inbox and click the link to activate your account</div>
+                    <div>We&apos;ve sent a confirmation link to your email. Please check your inbox and click the link to activate your account</div>
                 
                         <FontAwesomeIcon
                             bounce
