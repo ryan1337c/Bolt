@@ -6,9 +6,7 @@ import Messages from "../../../util/assistantMessages";
 import TypeWriter from '../../components/TypeWriter';
 import chatStyles from '../../components/chatBubble.module.css'
 import { AiOutlineSend } from "react-icons/ai";
-import { Noto_Sans_Inscriptional_Pahlavi } from "next/font/google";
 import Image from "next/image";
-import axios from "axios";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
 

@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react'
 import { FaRobot } from "react-icons/fa";
-import Link from 'next/link';
 import { AuthServices } from '@/lib/authServices';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

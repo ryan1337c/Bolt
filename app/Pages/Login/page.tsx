@@ -5,10 +5,7 @@ import Link from 'next/link';
 import { FaRobot } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
-import axios from 'axios';
 import googleButton from './assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png'
-import { setFlagsFromString } from 'v8';
-import e from 'express';
 
 const Login = () => {
   const [email, setEmail] = useState('');

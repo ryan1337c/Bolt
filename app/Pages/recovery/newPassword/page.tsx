@@ -2,8 +2,6 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AuthServices } from '@/lib/authServices';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 
 export default function NewPassword () {
     const router = useRouter();

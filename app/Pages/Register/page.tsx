@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { FaRobot } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
-import axios from "axios"
-import { error } from 'console';
 
 const Register  = () => {
     const [firstName, setFirstName] = useState('');
