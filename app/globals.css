@@ -25,7 +25,14 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  .fa-bounce-soft {
+    animation-iteration-count: 1;
+    --fa-bounce-height: -20%;
+  }
 }
+
+
 
 @keyframes fadeIn {
   0% {
@@ -253,6 +260,28 @@ input {
   }
 }
 
+#launch:hover #rocket{
+  animation: fa-beat 0.7s infinite;
+}
+
+#launch.buttonEffects::before {
+  /* make a repeating rainbow gradient */
+  background: linear-gradient(
+    90deg,
+    red, orange, yellow, green, blue, indigo, violet,
+    red /* loop back to start */
+  );
+  background-size: 400% 400%;  /* stretch so it loops smoothly */
+
+  /* slide it continuously */
+  animation: slideGradient 10s linear infinite,
+             rotate       2s   linear infinite;
+}
+
+@keyframes slideGradient {
+  0%   { background-position: 0%   50%; }
+  100% { background-position: 100% 50%; }
+}
 
 
 

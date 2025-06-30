@@ -9,6 +9,8 @@ import { AiOutlineSend } from "react-icons/ai";
 import { Noto_Sans_Inscriptional_Pahlavi } from "next/font/google";
 import Image from "next/image";
 import axios from "axios";
+import { AuthServices } from "@/lib/authServices";
+import { PublicServices } from "@/lib/publicServices";
 
 export interface ChatMessage {
   sender: string;
@@ -33,7 +35,11 @@ export default function Home() {
 
   // chat box stuff
   const chatBoxRef = useRef<HTMLDivElement>(null);
-  const [isValid, setIsValid] = useState(true)
+  const [isValid, setIsValid] = useState(true);
+
+  // auth
+  const authServices = new AuthServices();
+  const publicServices = new PublicServices();
 
   const generateImage = async() => {
     setProcessingMessage(true);
@@ -128,9 +134,6 @@ export default function Home() {
   }
 
   const scrollToBottom = () => {
-    // if (messagesEndRef.current) {
-    //   messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // }
 
     const targetMessage = messagesEndRef.current
     if (chatBoxRef.current && targetMessage) {
@@ -172,6 +175,21 @@ export default function Home() {
   useEffect(() => {
     // Scroll to the bottom every time chatHistory is updated
     scrollToBottom();
+
+    const updateChatHistory = async() => {
+      try {
+        // Fetch user session
+        const session = await authServices.getSession();
+
+        await publicServices.updateHistory(session.user.id, chatHistory);
+      }
+      catch (error: any) {
+        const message = error.message || 'An unexpected error occurred';
+        console.error(message);
+      }
+    }
+    if (chatHistory.length !== 0)
+      updateChatHistory()
   }, [chatHistory]); // Depend on chatHistory to trigger when new messages are added
 
   useEffect(() => {
@@ -188,7 +206,7 @@ export default function Home() {
 
           setImageCount(imageCount + 1);
           return updatedHistory;
-        })
+        });
 
         scrollToBottom()
 
@@ -199,6 +217,32 @@ export default function Home() {
     }
 
   },[image]);
+
+  useEffect(() => {
+    // Load user chat history
+    async function fetchHistory() {
+      try {
+        // Fetch user session
+        const session = await authServices.getSession();
+
+        // Fetch user chat history
+        const history = await publicServices.fetchHistory(session.user.id);
+
+        if (history === false) {
+          // Create a new user history in databse
+          await publicServices.addHistory(session.user.id);
+          return;
+        }
+
+        setChatHistory(history);
+      }
+      catch (error: any) {
+        const message = error.message || 'An unexpected error occurred';
+        console.error(message);
+      }
+    }
+    fetchHistory();
+  }, [])
 
 
 
@@ -271,7 +315,7 @@ export default function Home() {
                 )
                    :(<div className="flex flex-col">
                     <TypeWriter text={Messages.imgGeneration} />
-                    <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover" width={1024} height={1024}/>
+                    <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover" width={1024} height={1024} priority />
                     <button onClick={() => downloadImage(chatMessage.imageUrl)} className="bg-downloadBox mt-2 rounded-md font-semibold 0flex justify-center hover:bg-downloadBoxOnHover pt-2 pb-2" style={{width: "238px"}}>Download Image</button> 
                    </div>) 
                    }

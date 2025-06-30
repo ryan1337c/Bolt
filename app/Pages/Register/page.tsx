@@ -4,16 +4,39 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaRobot } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
+import { AuthServices } from '@/lib/authServices';
 import axios from "axios"
+import { error } from 'console';
 
 const Register  = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [username, setUserName] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [backing, setBacking] = useState(false);
     const [registerError, setRegisterError] = useState('');
     const router = useRouter();
+
+    const navigate = (url: string) => {
+      router.push(url);
+    }
+
+    const handleSubmit = async(e: React.FormEvent) => {
+      e.preventDefault();
+      const auth = new AuthServices()
+      try {
+        const result = await auth.signup(firstName, lastName, email, password);
+        console.log("Result: ", result);
+        // navigate to verification notify page
+        navigate(`./verify/?id=${result.user?.id}&email=${result.user?.email}`);
+      }
+      catch (error: any) {
+        const message = error.message || 'An unexpected error occurred';
+        console.error(`There is an error: ${message}`);
+
+        setRegisterError(message);
+      }
+    }
   
     return (
       <> 
@@ -26,14 +49,11 @@ const Register  = () => {
         </div>
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col justify-center items-center h-[500px] w-2/3 ">
-        <div className="mb-9 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
+        <div className="mb-4 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
             <strong>Register an account</strong>
-              {registerError !== '' && <label className="text-error text-sm">{registerError}</label>}
+              <label className={`text-error text-sm ${registerError ? 'visible': 'invisible'}`}>{registerError || '\u00A0'}</label>
           </div>
-            {/* This is for interacting with the mongodb 
-              <form className="space-y-4 min-w-max" onSubmit={handleSubmit}> 
-            */}
-            <form className="space-y-4 min-w-max" action={() => router.push('./Login')}>
+            <form className="space-y-4 min-w-max" onSubmit={handleSubmit}>
                 <div className="w-[340px] md:w-[300px] md:ml-4">
                 <label htmlFor="firstname" className="block text-sm font-medium leading-6">
                         First Name
@@ -54,10 +74,10 @@ const Register  = () => {
                 </div>
               <div className="w-[340px] md:w-[300px] md:ml-4">
                 <label htmlFor="username" className="block text-sm font-medium leading-6">
-                    Username
+                    Email
                 </label>
                 <div>
-                  <input id="username" name="username" type="text" autoComplete='off' required onChange={(e) => setUserName(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
+                  <input id="username" name="username" type="text" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
                   />
                 </div>
               </div>
@@ -73,7 +93,7 @@ const Register  = () => {
   
               <div className="w-[340px] md:w-[300px] md:ml-4 flex flex-col items-center space-y-4">
                 <button type='submit' className="mt-3 flex w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
-                <a href='./Login' className="text-white text-sm">Already have an account?<span className="text-indigo-300 hover:text-indigo-200 pl-1">Login</span></a>
+                <a href='./login' className="text-white text-sm">Already have an account?<span className="text-indigo-300 hover:text-indigo-200 pl-1">Login</span></a>
               </div> 
             </form>
         </div>

@@ -24,6 +24,7 @@ const config: Config = {
         'landingPage': '#1e293b',
         'hoverLandingPage': '#020617',
         'error': "#FF4D4D",
+        'launch': '#2F405D',
       },
       height: {
         'chatbox': "45rem",

@@ -4,28 +4,46 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaRobot } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
+import { AuthServices } from '@/lib/authServices';
 import axios from 'axios';
 import googleButton from './assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png'
+import { setFlagsFromString } from 'v8';
+import e from 'express';
 
 const Login = () => {
-  const [username, setUserName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [backing, setBacking] = useState(false);
   const router = useRouter();
 
   const navigate = (url: string) => {
-    window.location.href = url;
+    router.push(url);
   }
 
-  const auth = async() => {
-    const response = await fetch('http://localhost:3000/api/request',
-      {
-        method:'post'
-      }
-    );
-    const data = await response.json();
-    navigate(data.url);
+  const handleGoogleSignIn = async() => {
+    const auth = new AuthServices();
+    try {
+      await auth.oAuthSignup();
+    }
+    catch (error: any) {
+      console.log('Error in signing in with google oAuth.')
+    }
+  }
+
+  const handleSubmit = async(e: React.FormEvent) => {
+    e.preventDefault();
+    const auth = new AuthServices();
+    try {
+      await auth.login(email, password);
+      navigate(`./home`);
+    }
+    catch (error: any) {
+        const message = error.message || 'An unexpected error occurred';
+        console.error(`${message}`);
+
+        setLoginError(message);
+    }
   }
 
   return (
@@ -39,21 +57,18 @@ const Login = () => {
       </div>
     <div className="flex-1 flex items-center justify-center">
       <div className="flex flex-col justify-center items-center h-[500px] w-2/3 ">
-          <div className="mb-9 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
+          <div className="mb-4 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
             <strong>Sign in to your account</strong>
-              {loginError !== '' && <label className="text-error text-sm">{loginError}</label>}
+              <label className={`text-error text-sm ${loginError ? 'visible': 'invisible'}`}>{loginError || '\u00A0'}</label>
           </div>
           <div></div>
-        {/* This is for interacting with mongodb
-            <form className="space-y-4 min-w-max" onSubmit={handleSubmit}>
-        */}
-          <form className="space-y-4 min-w-max" action={() => router.push(`./Home?accessToken=${username}`)}>
+          <form className="space-y-4 min-w-max" onSubmit={handleSubmit}>
             <div className="w-[340px] md:w-[300px] md:ml-4">
               <label htmlFor="username" className="block text-sm font-medium leading-6">
-                  Username
+                  Email
               </label>
               <div>
-                <input id="username" name="username" type="text" autoComplete='off' required onChange={(e) => setUserName(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
+                <input id="username" name="username" type="text" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
                 />
               </div>
             </div>
@@ -61,7 +76,9 @@ const Login = () => {
             <div className="w-[340px] md:w-[300px] md:ml-4">
               <div className="flex items-center justify-between w-[340px]">
                 <label htmlFor='password' className="block text-sm font-medium leading-6 ">Password</label>
-                <div className="text-sm md:mr-10 font-semibold text-indigo-300 hover:text-indigo-200 cursor-pointer">Forgot password?</div>
+                <div className="text-sm md:mr-10 font-semibold text-indigo-300 hover:text-indigo-200 cursor-pointer" onClick={() => {
+                  router.push('./recovery/forgotPassword');
+                }}>Forgot password?</div>
               </div>
               <div>
                 <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' type='password' name='password' onChange={e => setPassword(e.target.value)} required autoComplete='off'/>
@@ -70,13 +87,13 @@ const Login = () => {
 
             <div className="w-[340px] md:w-[300px] md:ml-4 flex flex-col items-center space-y-4">
               <button type='submit' className="mt-3 w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
-              <a href='./Register' className="text-white text-sm">Don&apos;t have an account? <span className="text-indigo-300 hover:text-indigo-200 pl-1">Sign Up</span></a>
+              <a href='./register' className="text-white text-sm">Don&apos;t have an account? <span className="text-indigo-300 hover:text-indigo-200 pl-1">Sign Up</span></a>
               <div className="w-full flex items-center gap-4 text-sm pt-3">
                 <hr className="border-t-1 border-white w-[50%]" />
                 OR
                 <hr className="border-t-1 border-white w-[50%]" />
               </div>
-              <button type="button" onClick={() => auth()}>
+              <button type="button" onClick={handleGoogleSignIn}>
                   <img src={googleButton.src} alt="google sign in" />
               </button>
             </div> 
