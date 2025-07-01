@@ -199,7 +199,7 @@ export default function Home() {
           const lastMessageIndex = updatedHistory.length - 1;
           updatedHistory[lastMessageIndex] = {
             ...updatedHistory[lastMessageIndex],
-            ...(isValid ? {} : { text: 'Messsage is not appropriate' }),
+            ...(isValid ? {} : { text: 'Meessage is not appropriate' }),
             imageUrl: image !== 'fail' ? image : '',
             loading: false,
           };
@@ -315,7 +315,7 @@ export default function Home() {
                 )
                    :(<div className="flex flex-col">
                     <TypeWriter text={chatMessage.text} />
-                    {isValid && <>
+                    {chatMessage.text !== '' && <>
                     <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover" width={1024} height={1024} priority />
                     <button onClick={() => downloadImage(chatMessage.imageUrl)} className="bg-downloadBox mt-2 rounded-md font-semibold 0flex justify-center hover:bg-downloadBoxOnHover pt-2 pb-2" style={{width: "238px"}}>Download Image</button>
                     </>}
