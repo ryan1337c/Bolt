@@ -22,6 +22,7 @@ export interface ChatMessage {
 export default function Home() {
   const [userInput, setUserInput] = useState('');
   const [image, setImage] = useState('');
+  const [imageTrigger, setImageTrigger] = useState(false);
   const [imageCount, setImageCount] = useState<number>(1);
   const messageRefs = useRef<HTMLDivElement[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -56,23 +57,23 @@ export default function Home() {
     if (!response.ok) {
       setIsValid(false)
       console.log("Error 400 or 500");
-      setImage("");
-      setProcessingMessage(false);
-      return;
+      setImage("fail");
     }
-      const data = await response.json();
-      setImage(data.url);
-      console.log(data.url);
-      setIsValid(true)
+      else {
+        const data = await response.json();
+        setImage(data.url);
+        console.log(data.url);
+        setIsValid(true)
+      }
     }
    catch (error: any) {
       // Network issue
       console.error('Fetch failed: ', error.message || error)
     }
 
+    setImageTrigger(prev => !prev);
     setProcessingMessage(false);
     
-      
   }
 
   const addMessageToHistory = (
@@ -102,7 +103,7 @@ export default function Home() {
 
       // Adding ai reponse to chat history
       setChatHistory((prevHistory: ChatMessage[]): ChatMessage[] => {
-        return addMessageToHistory(prevHistory, 'ai', Messages.imgGeneration, image, false, true);
+        return addMessageToHistory(prevHistory, 'ai', Messages.imgGeneration, '', false, true);
       });
 
 
@@ -199,7 +200,7 @@ export default function Home() {
           updatedHistory[lastMessageIndex] = {
             ...updatedHistory[lastMessageIndex],
             ...(isValid ? {} : { text: 'Message is not appropriate' }),
-            imageUrl: image,
+            imageUrl: image !== 'fail' ? image : '',
             loading: false,
           };
 
@@ -215,7 +216,7 @@ export default function Home() {
             }, 800);
     }
 
-  },[image]);
+  },[imageTrigger]);
 
   useEffect(() => {
     // Load user chat history
