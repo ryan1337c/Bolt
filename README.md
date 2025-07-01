@@ -5,6 +5,9 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 This application contains a beautiful user interface that utilizes the power of AI to automatically generate images based on user input.
 
+# Website Link
+https://image-ai-7y2c.vercel.app/
+
 ## Getting Started
 
 First, install the dependencies:
