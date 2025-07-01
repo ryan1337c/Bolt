@@ -14,7 +14,6 @@ interface GenerateRequest extends NextApiRequest {
     }
 }
 
-
 const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
 });
@@ -24,17 +23,26 @@ export default async function handler(
     res: NextApiResponse<ResponseData>
 ) {
     console.log("Hit");
-    const promptString = req.body.prompt;
-    if (!promptString || undefined) {
-        return new Response('you need a prompt', {status: 400})
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
     }
+
+    const promptString = req.body.prompt;
+    if (!promptString) {
+      return res.status(400).json({ error: "You need a prompt" });
+    }
+
     try{
     const aiResponse = await openai.images.generate({
         prompt: promptString,
         n:1,
         size:"1024x1024",
+        model: "dall-e-3"
     });
 
+    if (!aiResponse.data || aiResponse.data.length === 0) {
+      return res.status(500).json({ error: "No images generated" });
+    }
     const imageUrl = aiResponse.data[0].url;
     res.status(200).json({url: imageUrl});
 }
@@ -46,3 +54,5 @@ catch (error: any) {
         return res.status(error.status).json({error: "OpenAI server issue"})
 }
 }
+
+
