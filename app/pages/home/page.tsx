@@ -116,23 +116,13 @@ export default function Home() {
     }
   }
 
-const downloadImage = async (url: string) => {
-  try {
-    const response = await fetch(url, { mode: 'cors' }); // Ensure CORS is allowed
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
-
-    const downloadLink = document.createElement('a');
-    downloadLink.href = objectUrl;
-    downloadLink.download = `image${imageCount}.png`;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-
-    URL.revokeObjectURL(objectUrl); // Clean up
-  } catch (err) {
-    console.error("Image download failed:", err);
-  }
+const downloadImage = (url: string) => {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'image.png'; // Suggested name only; some browsers may ignore this for cross-origin
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 
