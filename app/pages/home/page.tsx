@@ -102,7 +102,7 @@ export default function Home() {
 
       // Adding ai reponse to chat history
       setChatHistory((prevHistory: ChatMessage[]): ChatMessage[] => {
-        return addMessageToHistory(prevHistory, 'ai', Messages.imgGeneration, '', false, true);
+        return addMessageToHistory(prevHistory, 'ai', Messages.imgGeneration, image, false, true);
       });
 
 
