@@ -116,13 +116,18 @@ export default function Home() {
     }
   }
 
-const downloadImage = (url: string) => {
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'image.png'; // Suggested name only; some browsers may ignore this for cross-origin
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+const downloadImage = async () => {
+    const response = await fetch(image)
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'generated-image.png'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
 };
 
 
