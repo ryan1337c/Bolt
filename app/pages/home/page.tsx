@@ -57,6 +57,7 @@ export default function Home() {
       setIsValid(false)
       console.log("Error 400 or 500");
       setImage("");
+      setProcessingMessage(false);
       return;
     }
       const data = await response.json();
@@ -312,8 +313,8 @@ export default function Home() {
                 </>
                 )
                    :(<div className="flex flex-col">
-                    <TypeWriter text={Messages.imgGeneration} />
-                    <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover" width={1024} height={1024} priority />
+                    <TypeWriter text={chatMessage.text} />
+                    {isValid && <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover" width={1024} height={1024} priority />}
                     <button onClick={() => downloadImage(chatMessage.imageUrl)} className="bg-downloadBox mt-2 rounded-md font-semibold 0flex justify-center hover:bg-downloadBoxOnHover pt-2 pb-2" style={{width: "238px"}}>Download Image</button> 
                    </div>) 
                    }
