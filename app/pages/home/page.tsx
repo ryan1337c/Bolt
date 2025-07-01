@@ -116,8 +116,8 @@ export default function Home() {
     }
   }
 
-const downloadImage = async () => {
-    const response = await fetch(image)
+const downloadImage = async (imageUrl : string) => {
+    const response = await fetch(imageUrl)
     const blob = await response.blob()
     const url = URL.createObjectURL(blob)
 
