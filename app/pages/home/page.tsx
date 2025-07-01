@@ -43,7 +43,7 @@ export default function Home() {
     setProcessingMessage(true);
     
     try {
-  const response = await fetch('../api/generate', {
+      const response = await fetch('../api/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -51,20 +51,18 @@ export default function Home() {
       body: JSON.stringify({
         prompt: `${userInput}`
       }),
-    })
+    });
 
     if (!response.ok) {
       setIsValid(false)
-      console.log("Error 400 or 500")
+      console.log("Error 400 or 500");
+      setImage("");
+      return;
     }
-    else {
-    const data = await response.json();
-
-    setImage(data.url);
-    setUserInput('');
-    console.log(data.url);
-    setIsValid(true)
-    }
+      const data = await response.json();
+      setImage(data.url);
+      console.log(data.url);
+      setIsValid(true)
     }
    catch (error: any) {
       // Network issue
@@ -91,26 +89,27 @@ export default function Home() {
 
   const sendMessage = () => {
     if (userInput) {
-        let clicked = false;
-        if (chatHistory.length === 0)
-          clicked = true;
 
-        // Adding user message to chat history
-        setChatHistory((prevHistory: ChatMessage[]): ChatMessage[] => {
-          return addMessageToHistory(prevHistory, 'user', userInput, image, clicked, false);
-        });
+      let clicked = false;
+      if (chatHistory.length === 0)
+        clicked = true;
 
-        // Adding ai reponse to chat history
-        setChatHistory((prevHistory: ChatMessage[]): ChatMessage[] => {
-          return addMessageToHistory(prevHistory, 'ai', Messages.imgGeneration, '', false, true);
-        });
+      // Adding user message to chat history
+      setChatHistory((prevHistory: ChatMessage[]): ChatMessage[] => {
+        return addMessageToHistory(prevHistory, 'user', userInput, image, clicked, false);
+      });
+
+      // Adding ai reponse to chat history
+      setChatHistory((prevHistory: ChatMessage[]): ChatMessage[] => {
+        return addMessageToHistory(prevHistory, 'ai', Messages.imgGeneration, '', false, true);
+      });
 
 
-        const messageInput = (document.getElementById("message-input") as HTMLInputElement);
-        messageInput.value = '';
-        setUserInput('');
+      const messageInput = (document.getElementById("message-input") as HTMLInputElement);
+      messageInput.value = '';
+      setUserInput('');
 
-        generateImage();
+      generateImage();
 
     }
   }
@@ -198,6 +197,7 @@ export default function Home() {
           const lastMessageIndex = updatedHistory.length - 1;
           updatedHistory[lastMessageIndex] = {
             ...updatedHistory[lastMessageIndex],
+            ...(isValid ? {} : { text: 'Message is not appropriate' }),
             imageUrl: image,
             loading: false,
           };
