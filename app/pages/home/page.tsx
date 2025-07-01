@@ -116,21 +116,20 @@ export default function Home() {
     }
   }
 
-  const downloadImage = (url: string) => {
-     // Create an anchor element
-     const downloadLink = document.createElement('a');
-     downloadLink.href = url;
-     downloadLink.download = `image${imageCount}.png`; // Set the desired filename for download
- 
-     // Append the anchor element to the DOM
-     document.body.appendChild(downloadLink);
- 
-     // Programmatically trigger the download
-     downloadLink.click();
- 
-     // Clean up: Remove the anchor element from the DOM
-     document.body.removeChild(downloadLink);
-  }
+const downloadImage = async (url: string) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+
+  const downloadLink = document.createElement('a');
+  downloadLink.href = objectUrl;
+  downloadLink.download = `image${imageCount}.png`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+
+  URL.revokeObjectURL(objectUrl); // cleanup
+};
 
   const scrollToBottom = () => {
 
