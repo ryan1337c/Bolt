@@ -117,19 +117,24 @@ export default function Home() {
   }
 
 const downloadImage = async (url: string) => {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const response = await fetch(url, { mode: 'cors' }); // Ensure CORS is allowed
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
 
-  const downloadLink = document.createElement('a');
-  downloadLink.href = objectUrl;
-  downloadLink.download = `image${imageCount}.png`;
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = objectUrl;
+    downloadLink.download = `image${imageCount}.png`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
 
-  URL.revokeObjectURL(objectUrl); // cleanup
+    URL.revokeObjectURL(objectUrl); // Clean up
+  } catch (err) {
+    console.error("Image download failed:", err);
+  }
 };
+
 
   const scrollToBottom = () => {
 
@@ -198,7 +203,7 @@ const downloadImage = async (url: string) => {
           const lastMessageIndex = updatedHistory.length - 1;
           updatedHistory[lastMessageIndex] = {
             ...updatedHistory[lastMessageIndex],
-            ...(isValid ? {} : { text: 'Meessage is not appropriate' }),
+            ...(isValid ? {} : { text: 'Meessage is not appropriate.' }),
             imageUrl: image !== 'fail' ? image : '',
             loading: false,
           };
