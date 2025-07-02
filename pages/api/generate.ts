@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
+import { AuthServices } from "@/lib/authServices";
 
 type ResponseData = {
     url?: string;
@@ -13,6 +14,9 @@ interface GenerateRequest extends NextApiRequest {
         size: string;
     }
 }
+
+const auth = new AuthServices();
+const supabase = auth.client;
 
 const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -44,7 +48,34 @@ export default async function handler(
       return res.status(500).json({ error: "No images generated" });
     }
     const imageUrl = aiResponse.data[0].url;
-    res.status(200).json({url: imageUrl});
+
+    if (!imageUrl || typeof imageUrl !== "string") {
+        return res.status(500).json({ error: "Invalid or missing image URL from OpenAI" });
+    }
+
+    // Fetch the image and convert into blob 
+    const imageResponse = await fetch(imageUrl);
+    const blob = await imageResponse.blob();
+
+    // Upload to supabase storage
+    const fileName = `dalle/${Date.now()}.png`;
+    const { data, error: uploadError } = await supabase.storage
+    .from('images') 
+    .upload(fileName, blob, {
+        contentType: "image/png"
+    });
+
+    if (uploadError) {
+        console.error(uploadError);
+        return res.status(500).json({ error: "Failed to upload iamge to supabase"})
+    }
+
+    // Get public url and convert to filepath
+    const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
+    const publicUrl = publicData.publicUrl;
+    const filePath = publicUrl.split("/images/")[1];
+
+    return res.status(200).json({ url: filePath });
 }
 catch (error: any) {
 
