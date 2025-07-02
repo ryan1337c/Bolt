@@ -35,8 +35,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseServer = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_ANON_KEY! // No cookie handling needed
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export default supabaseServer;
-

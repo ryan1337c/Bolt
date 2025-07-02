@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
 import { AuthServices } from "@/lib/authServices";
+import supabaseServer from "@/lib/supaBaseServer";
 
 type ResponseData = {
     url?: string;
@@ -17,7 +18,6 @@ interface GenerateRequest extends NextApiRequest {
 
 const auth = new AuthServices();
 const supabase = auth.client;
-const supabaseServer = auth.server;
 
 const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
