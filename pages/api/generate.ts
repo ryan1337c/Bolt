@@ -55,6 +55,9 @@ export default async function handler(
 
     // Fetch the image and convert into blob 
     const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+    throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
+    }
     const blob = await imageResponse.blob();
 
     // Upload to supabase storage
