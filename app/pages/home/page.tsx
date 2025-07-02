@@ -248,6 +248,8 @@ const downloadImage = async (imageUrl : string) => {
       // Fetch user session
       const session = await authServices.getSession();
       await publicServices.deleteHistory(session.user.id, chatHistory);
+
+      setChatHistory([]);
     }
     catch (error: any) {
       const message = error.message || 'An unexpected error occurred';
