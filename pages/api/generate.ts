@@ -47,7 +47,7 @@ export default async function handler(
     if (!aiResponse.data || aiResponse.data.length === 0) {
       return res.status(500).json({ error: "No images generated" });
     }
-    const imageUrl = aiResponse.data[0].url;
+    let imageUrl = aiResponse.data[0].url;
 
     if (!imageUrl || typeof imageUrl !== "string") {
         return res.status(500).json({ error: "Invalid or missing image URL from OpenAI" });
@@ -56,7 +56,7 @@ export default async function handler(
     // Fetch the image and convert into buffer
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
-    throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
+        throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
     }
     
     const arrayBuffer = await imageResponse.arrayBuffer();
@@ -64,7 +64,7 @@ export default async function handler(
 
     // Upload to supabase storage
     const fileName = `dalle/${Date.now()}.png`;
-    const { data, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
     .from('images') 
     .upload(fileName, buffer, {
         contentType: "image/png"
@@ -75,10 +75,20 @@ export default async function handler(
         return res.status(500).json({ error: "Failed to upload iamge to supabase"})
     }
 
-    // Get public url and convert to filepath
-    const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
+    // Download image
+    const { data: blob, error: downloadErr } = await supabase.storage.from('images').download(fileName);
 
-    return res.status(200).json({ url: publicData.publicUrl });
+    if (downloadErr) {
+        console.error(downloadErr);
+        return res.status(500).json({ error: "Failed to download iamge to supabase"})
+    }
+
+    imageUrl = URL.createObjectURL(blob);
+
+    // Get public url and convert to filepath
+    // const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
+
+    return res.status(200).json({ url: imageUrl });
 }
 catch (error: any) {
 
