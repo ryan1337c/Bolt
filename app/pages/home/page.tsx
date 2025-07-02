@@ -263,9 +263,9 @@ const downloadImage = async (imageUrl : string) => {
     <Header />
     <div className="flex-1 grid grid-cols-7 ml-6 mr-6">
       <div className="text-white hidden sm:block sm:col-span-1 p-4 overflow-y-auto h-chatHistoryBox ">
-        <div className="flex">
+        <div className="flex items-center">
           <h1 className="font-medium mb-2">Today</h1>
-          <button className="bg-red-500 rounded-md" onClick={handleDelete}>Delete All</button>
+          <button className="bg-red-700 rounded-md right-0 p-1" onClick={handleDelete}>Delete All</button>
         </div>
         {chatHistory.map((chatMessage, index) => {
           if (chatMessage.sender === 'user'){
