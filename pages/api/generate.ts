@@ -64,7 +64,7 @@ export default async function handler(
 
     // Upload to supabase storage
     const fileName = `dalle/${Date.now()}.png`;
-    const { error: uploadError } = await supabase.storage
+    const { data, error: uploadError } = await supabase.storage
     .from('images') 
     .upload(fileName, buffer, {
         contentType: "image/png"
