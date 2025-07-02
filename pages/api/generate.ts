@@ -17,6 +17,7 @@ interface GenerateRequest extends NextApiRequest {
 
 const auth = new AuthServices();
 const supabase = auth.client;
+const supabaseServer = auth.server;
 
 const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -64,7 +65,7 @@ export default async function handler(
 
     // Upload to supabase storage
     const fileName = `dalle/${Date.now()}.png`;
-    const { data, error: uploadError } = await supabase.storage
+    const { data, error: uploadError } = await supabaseServer.storage
     .from('images') 
     .upload(fileName, buffer, {
         contentType: "image/png"
