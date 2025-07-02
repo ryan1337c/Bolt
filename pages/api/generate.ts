@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
 import { AuthServices } from "@/lib/authServices";
-import supabaseServer from "@/lib/supaBaseServer";
 
 type ResponseData = {
     url?: string;
@@ -65,7 +64,7 @@ export default async function handler(
 
     // Upload to supabase storage
     const fileName = `dalle/${Date.now()}.png`;
-    const { data, error: uploadError } = await supabaseServer.storage
+    const { data, error: uploadError } = await supabase.storage
     .from('images') 
     .upload(fileName, buffer, {
         contentType: "image/png"
@@ -78,10 +77,8 @@ export default async function handler(
 
     // Get public url and convert to filepath
     const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
-    const publicUrl = publicData.publicUrl;
-    const filePath = publicUrl.split("/images/")[1];
 
-    return res.status(200).json({ url: filePath });
+    return res.status(200).json({ url: publicData.publicUrl });
 }
 catch (error: any) {
 
