@@ -53,18 +53,20 @@ export default async function handler(
         return res.status(500).json({ error: "Invalid or missing image URL from OpenAI" });
     }
 
-    // Fetch the image and convert into blob 
+    // Fetch the image and convert into buffer
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
     throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
     }
-    const blob = await imageResponse.blob();
+    
+    const arrayBuffer = await imageResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     // Upload to supabase storage
     const fileName = `dalle/${Date.now()}.png`;
     const { data, error: uploadError } = await supabase.storage
     .from('images') 
-    .upload(fileName, blob, {
+    .upload(fileName, buffer, {
         contentType: "image/png"
     });
 
