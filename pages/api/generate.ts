@@ -68,7 +68,9 @@ export default async function handler(
     const { data, error: uploadError } = await supabase.storage
     .from('images') 
     .upload(fileName, buffer, {
-        contentType: "image/png"
+        contentType: "image/png",
+        cacheControl: '3600',
+        upsert: false
     });
 
     if (uploadError) {
