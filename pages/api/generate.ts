@@ -55,6 +55,7 @@ export default async function handler(
 
     // Fetch the image and convert into buffer
     const imageResponse = await fetch(imageUrl);
+    console.log("Image url", imageUrl);
     if (!imageResponse.ok) {
     throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
     }
@@ -71,7 +72,7 @@ export default async function handler(
     });
 
     if (uploadError) {
-        console.error(uploadError);
+        console.error("Upload error", uploadError);
         return res.status(500).json({ error: "Failed to upload iamge to supabase"})
     }
 
