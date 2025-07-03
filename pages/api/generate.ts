@@ -76,12 +76,21 @@ export default async function handler(
     }
 
     // Download image
-    // const { data, error } = await supabase.storage.from('images').download('folder/avatar1.png')
+
+    // const { data: blob, error: downloadErr } = await supabase.storage.from('images').download(fileName);
+
+    // if (downloadErr) {
+    //     console.error(downloadErr);
+    //     return res.status(500).json({ error: "Failed to download iamge to supabase"})
+    // }
+
+    // imageUrl = URL.createObjectURL(blob);
+
 
     // Get public url and convert to filepath
-    const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
+    // const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
 
-    return res.status(200).json({ url: publicData.publicUrl });
+    return res.status(200).json({ url: imageUrl });
 }
 catch (error: any) {
 
