@@ -56,7 +56,7 @@ export default function Home() {
 
     if (!response.ok) {
       setIsValid(false)
-      console.log("Error 400 or 500");
+      console.log(response.json());
       setImage("fail");
     }
       else {
