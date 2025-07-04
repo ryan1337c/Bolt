@@ -61,8 +61,10 @@ export default function Home() {
     }
       else {
         const data = await response.json();
-        setImage(data.url);
-        console.log(data.url);
+        const imageUrl = await publicServices.uploadImage(data.url);
+        setImage(imageUrl);
+        // setImage(data.url);
+        // console.log(data.url);
         setIsValid(true)
       }
     }

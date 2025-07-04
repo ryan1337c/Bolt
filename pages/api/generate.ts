@@ -50,37 +50,38 @@ export default async function handler(
         return res.status(500).json({ error: "Invalid or missing image URL from OpenAI" });
     }
 
-    // Fetch the image and convert into buffer
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-    throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
-    }
+    // // Fetch the image and convert into buffer
+    // const imageResponse = await fetch(imageUrl);
+    // if (!imageResponse.ok) {
+    // throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
+    // }
     
-    const arrayBuffer = await imageResponse.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // const arrayBuffer = await imageResponse.arrayBuffer();
+    // const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to supabase storage
-    const fileName = `dalle/${Date.now()}.png`;
-    const { data, error: uploadError } = await supabaseServerClient.storage
-    .from('images') 
-    .upload(fileName, buffer, {
-        contentType: "image/png",
-    });
+    // // Upload to supabase storage
+    // const fileName = `dalle/${Date.now()}.png`;
+    // const { data, error: uploadError } = await supabaseServerClient.storage
+    // .from('images') 
+    // .upload(fileName, buffer, {
+    //     contentType: "image/png",
+    // });
 
-    if (uploadError) {
-        console.error("Upload error", uploadError);
-        return res.status(500).json({ error: "Failed to upload iamge to supabase"})
-    }
+    // if (uploadError) {
+    //     console.error("Upload error", uploadError);
+    //     return res.status(500).json({ error: "Failed to upload iamge to supabase"})
+    // }
 
-    const { data: dataUrl } = supabaseServerClient
-    .storage
-    .from("images")
-    .getPublicUrl(fileName);
+    // const { data: dataUrl } = supabaseServerClient
+    // .storage
+    // .from("images")
+    // .getPublicUrl(fileName);
 
-    const publicUrl = dataUrl.publicUrl;
-    console.log("Public image url", publicUrl);
+    // const publicUrl = dataUrl.publicUrl;
+    // console.log("Public image url", publicUrl);
 
-    return res.status(200).json({ url:  publicUrl });
+    // return res.status(200).json({ url:  publicUrl });
+    return res.status(200).json({ url:  imageUrl})
 }
 catch (error: any) {
 
