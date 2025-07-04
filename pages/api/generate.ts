@@ -104,7 +104,7 @@ export default async function handler(
 catch (error: any) {
 
     if (error.status === 400)
-        return res.status(400).json({error: "Bad Request"})
+        return res.status(400).json({error: "Bad Request cooked"})
     else 
         return res.status(error.status).json({error: "OpenAI server issue"})
 }

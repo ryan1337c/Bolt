@@ -192,6 +192,7 @@ const downloadImage = async (imageUrl : string) => {
 
   useEffect(() => {
     if (image) {
+      console.log("Image url froneend: ", image);
         // update to new image url 
         setChatHistory(prevHistory => {
           const updatedHistory = [...prevHistory];
