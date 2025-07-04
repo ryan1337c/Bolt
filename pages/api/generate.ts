@@ -87,16 +87,19 @@ export default async function handler(
     //     return res.status(500).json({ error: "Failed to download iamge to supabase"})
     // }
 
-    const { data: url } = supabaseServerClient
+    const { data: dataUrl } = supabaseServerClient
     .storage
     .from("images")
     .getPublicUrl(fileName);
+
+    const publicUrl = dataUrl.publicUrl;
+    console.log("The public url is: ", publicUrl);
 
 
     // Create a permanent url 
     // imageUrl = url.publicUrl;
 
-    return res.status(200).json({ url: imageUrl });
+    return res.status(200).json({ url:  publicUrl });
 }
 catch (error: any) {
 
