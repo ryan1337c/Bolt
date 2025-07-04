@@ -56,7 +56,7 @@ export default function Home() {
 
     if (!response.ok) {
       setIsValid(false)
-      console.log(response.json());
+      console.log("Something went wrong when generating image on server side");
       setImage("fail");
     }
       else {
@@ -68,7 +68,8 @@ export default function Home() {
     }
    catch (error: any) {
       // Network issue
-      console.error('Fetch failed: ', error.message || error)
+      console.error('Fetch failed: ', error.message || error);
+      setImage("fail");
     }
 
     setImageTrigger(prev => !prev);
