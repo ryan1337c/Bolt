@@ -1,13 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
 
-// import { createClient } from '@supabase/supabase-js';
-
-// export const supabaseServerClient = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY!  // Only used server-side
-// );
-
 import { supabaseServerClient } from "./supaBaseServer";
 
 type ResponseData = {
@@ -31,7 +24,6 @@ export default async function handler(
     req: GenerateRequest,
     res: NextApiResponse<ResponseData>
 ) {
-    console.log("Hit");
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -80,26 +72,12 @@ export default async function handler(
         return res.status(500).json({ error: "Failed to upload iamge to supabase"})
     }
 
-    // Download image 
-
-    // const { data: blob, error: downloadErr } = await supabaseServerClient.storage.from('images').download(fileName);
-
-    // if (downloadErr) {
-    //     console.error(downloadErr);
-    //     return res.status(500).json({ error: "Failed to download iamge to supabase"})
-    // }
-
     const { data: dataUrl } = supabaseServerClient
     .storage
     .from("images")
     .getPublicUrl(fileName);
 
     const publicUrl = dataUrl.publicUrl;
-    console.log("The public url is: ", publicUrl);
-
-
-    // Create a permanent url 
-    // imageUrl = url.publicUrl;
 
     return res.status(200).json({ url:  publicUrl });
 }

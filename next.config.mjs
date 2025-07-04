@@ -9,11 +9,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-
-// remotePatterns: [
-//         {
-//           protocol: 'https',
-//           hostname: '**.supabase.co', // Or your specific Supabase project URL
-//           pathname: '/storage/v1/object/public/**',
-//         },
-//       ],
