@@ -2,6 +2,13 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
 import { AuthServices } from "@/lib/authServices";
 
+import { createClient } from '@supabase/supabase-js';
+
+export const supabaseServerClient = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!  // Only used server-side
+);
+
 type ResponseData = {
     url?: string;
     error?: string;
@@ -15,8 +22,8 @@ interface GenerateRequest extends NextApiRequest {
     }
 }
 
-const auth = new AuthServices();
-const supabase = auth.client;
+// const auth = new AuthServices();
+// const supabase = auth.client;
 
 const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -65,12 +72,10 @@ export default async function handler(
 
     // Upload to supabase storage
     const fileName = `dalle/${Date.now()}.png`;
-    const { data, error: uploadError } = await supabase.storage
+    const { data, error: uploadError } = await supabaseServerClient.storage
     .from('images') 
     .upload(fileName, buffer, {
         contentType: "image/png",
-        cacheControl: '3600',
-        upsert: false
     });
 
     if (uploadError) {
