@@ -22,9 +22,6 @@ interface GenerateRequest extends NextApiRequest {
     }
 }
 
-// const auth = new AuthServices();
-// const supabase = auth.client;
-
 const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
 });
@@ -54,7 +51,7 @@ export default async function handler(
     if (!aiResponse.data || aiResponse.data.length === 0) {
       return res.status(500).json({ error: "No images generated" });
     }
-    const imageUrl = aiResponse.data[0].url;
+    let imageUrl = aiResponse.data[0].url;
 
     if (!imageUrl || typeof imageUrl !== "string") {
         return res.status(500).json({ error: "Invalid or missing image URL from OpenAI" });
@@ -62,7 +59,6 @@ export default async function handler(
 
     // Fetch the image and convert into buffer
     const imageResponse = await fetch(imageUrl);
-    console.log("Image url", imageUrl);
     if (!imageResponse.ok) {
     throw new Error(`Failed to fetch image from OpenAI: ${imageResponse.statusText}`);
     }
@@ -83,20 +79,17 @@ export default async function handler(
         return res.status(500).json({ error: "Failed to upload iamge to supabase"})
     }
 
-    // Download image
+    // Download image 
 
-    // const { data: blob, error: downloadErr } = await supabase.storage.from('images').download(fileName);
+    const { data: blob, error: downloadErr } = await supabaseServerClient.storage.from('images').download(fileName);
 
-    // if (downloadErr) {
-    //     console.error(downloadErr);
-    //     return res.status(500).json({ error: "Failed to download iamge to supabase"})
-    // }
+    if (downloadErr) {
+        console.error(downloadErr);
+        return res.status(500).json({ error: "Failed to download iamge to supabase"})
+    }
 
-    // imageUrl = URL.createObjectURL(blob);
-
-
-    // Get public url and convert to filepath
-    // const { data: publicData } = supabase.storage.from('images').getPublicUrl(fileName);
+    // Create a permanent url 
+    imageUrl = URL.createObjectURL(blob);
 
     return res.status(200).json({ url: imageUrl });
 }
