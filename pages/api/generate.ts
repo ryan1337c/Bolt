@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
 
 import { createClient } from '@supabase/supabase-js';
-import {supabaseServerClient} from '@/lib/supaBaseServer';
+import {supabaseServerClient} from '@/pages/api/supaBaseServer';
 
 // export const supabaseServerClient = createClient(
 //   process.env.NEXT_PUBLIC_SUPABASE_URL!,
