@@ -78,6 +78,7 @@ export default async function handler(
     .getPublicUrl(fileName);
 
     const publicUrl = dataUrl.publicUrl;
+    console.log("Public image url", publicUrl);
 
     return res.status(200).json({ url:  publicUrl });
 }
