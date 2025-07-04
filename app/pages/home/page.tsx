@@ -266,7 +266,7 @@ const downloadImage = async (imageUrl : string) => {
     <Header />
     <div className="flex-1 grid grid-cols-7 ml-6 mr-6">
       <div className="text-white hidden sm:block sm:col-span-1 p-4 overflow-y-auto h-chatHistoryBox ">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <h1 className="font-medium mb-2">Today</h1>
           <button className="bg-red-700 rounded-md p-1" onClick={handleDelete}>Delete All</button>
         </div>
