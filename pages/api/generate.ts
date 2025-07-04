@@ -1,13 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
-import { AuthServices } from "@/lib/authServices";
 
 import { createClient } from '@supabase/supabase-js';
+import {supabaseServerClient} from '@/lib/supaBaseServer';
 
-export const supabaseServerClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!  // Only used server-side
-);
+// export const supabaseServerClient = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!  // Only used server-side
+// );
 
 type ResponseData = {
     url?: string;
