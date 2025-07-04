@@ -94,7 +94,7 @@ export default async function handler(
 
 
     // Create a permanent url 
-    imageUrl = url.publicUrl;
+    // imageUrl = url.publicUrl;
 
     return res.status(200).json({ url: imageUrl });
 }
