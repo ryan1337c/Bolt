@@ -18,7 +18,7 @@ const Header = () => {
         router.push('/');
       }}>
       <FaRobot />
-      ImageAI
+      Bolt
       </button>
       {mounted && <button className=" m-5 p-2 flex gap-2 items-center buttonEffects hover:bg-hoverLandingPage" onClick={async () => {
         const auth = new AuthServices();

@@ -1,24 +1,33 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 
-const TypeWriter: React.FC<{ text: string }> = ({text}) => {
-    const [displayText, setDisplayText] = useState<string>('');
-
-    useEffect(() => {
-        let currentIndex = 0;
-
-        const typingInterval = setInterval(() => {
-            setDisplayText((prevText) => prevText + text[currentIndex]);
-            currentIndex++;
-            if (currentIndex === text.length - 1) clearInterval(typingInterval);
-        }, 50);
-        // clean up on unmount or re-render
-        return () => clearInterval(typingInterval);
-       
-    }, [text]);
-
-  return (
-    <span>{displayText}</span>
-  )
+interface TypeWriter {
+  text: string;
+  speed?: number;
 }
+
+const TypeWriter: React.FC<TypeWriter> = ({ text, speed = 20 }) => {
+    const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!elementRef.current || !text) return;
+
+    const element = elementRef.current;
+    let i = 0;
+    element.textContent = "";
+
+    const interval: NodeJS.Timeout = setInterval(() => {
+      element.textContent += text[i];
+      i++;
+      if (i >= text.length) {
+        clearInterval(interval);
+      }
+    }, speed);
+
+    // Cleanup function
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return <div ref={elementRef} className="whitespace-pre-wrap text-sm"></div>;
+};
 
 export default TypeWriter

@@ -5,9 +5,12 @@ import { useAuth } from './context/AuthContext';
 import { AuthServices } from '@/lib/authServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightToBracket, faUserPlus, faRocket} from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-
+import { SparklesText } from "@/components/magicui/sparkles-text";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { FlipText } from "@/components/magicui/flip-text";
+import { TypingAnimation } from "@/components/magicui/typing-animation";
 
 export default function Home() {
   const router = useRouter();
@@ -20,9 +23,10 @@ export default function Home() {
 
   const { isLoggedIn } = useAuth();
 
+
   return (
-    <div className="flex flex-col min-h-screen text-white">
-      {mounted && <><div className="ml-auto ">
+    <div className="flex flex-col min-h-screen text-white overflow-hidden">
+      {mounted && <><div className="ml-auto pr-6 pt-3">
           {isLoggedIn ? <>
             <Link href={`./`}>  
               <button className="m-5 p-2 inline-block buttonEffects hover:bg-hoverLandingPage" onClick={async() => {
@@ -45,22 +49,40 @@ export default function Home() {
             </Link>
           </div>}      
       </div>
-      <div className="flex flex-col justify-center items-center  mt-[70px]">
-        <div className="text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold m-5 title">
-          ImageAI
+      <div className="flex flex-col items-center lg:flex-row px-4 ">
+        {/* Left Side */}
+        <div className="md:w-1/2 mt-20 min-h-[60vh]">
+          <div className="flex flex-col items-center md:flex-none md:items-start lg:ml-40">
+            <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem]" sparklesCount={5}>Bolt</SparklesText>
+            <div className="sm:text-3xl md:text-4xl font-bold flex gap-2">
+              <FlipText className="text-purple-500">Fast.</FlipText>
+              <FlipText className="text-purple-300">Smart.</FlipText>  
+              <FlipText className="text-purple-100">Limitless.</FlipText>
+            </div>
+            <TypingAnimation className="mt-8 mb-6">
+              Unlock the power of AI models — Bolt connects you with cutting-edge agents to supercharge your workflows, automate tasks, and amplify your creativity. Fast, smart, limitless. Your AI assistant, reimagined.
+            </TypingAnimation>
+            <div className="sm:flex sm:justify-center lg:flex-none lg:justify-start">
+              <button className="buttonEffects !bg-launch p-3 flex gap-2 items-center rounded-lg" id="launch" onClick={() => {
+              router.push("/pages/home")
+              }}>
+                <FontAwesomeIcon icon={faRocket} id="rocket"/>
+                Launch App
+              </button>
+            </div>
+          </div>
         </div>
-          <div className="text-center text-xl mt-10 subTitle">Recreate Your Imagination With the Power of AI</div>
-          <IconRobot 
-            className="m-10 mb-5 w-[50vw] h-[25vh] sm:w-[40vw] sm:h-[30vh] md:w-[30vw] md:h-[35vh] lg:w-[25vw] lg:h-[40vh]" 
+        
+        {/* Right Side */}
+        <div className="md:w-1/2 flex justify-center item-start ">
+          <DotLottieReact
+            src="https://lottie.host/bd5cdb29-22ca-4570-9be6-8bf14baced57/gf7DNNCIz5.lottie"
+            autoplay
+            loop
+            className="w-[400px] h-[250px] md:w-[500px] md:h-[350px] flex-shrink-0"
           />
-          
-          <button className=" buttonEffects !bg-launch p-3 flex gap-2 items-center rounded-lg" id="launch" onClick={() => {
-            router.push("/pages/home")
-          }}>
-            <FontAwesomeIcon icon={faRocket} id="rocket"/>
-            Launch App
-          </button>
-      </div></>}
+        </div>
+</div></>}
     </div>
 )
 

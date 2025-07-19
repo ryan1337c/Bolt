@@ -60,12 +60,6 @@ export default function NewPassword () {
                         <input className="bg-white text-black px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2" 
                         id="newPassword" name="newPassword" placeholder='New password' type={showPassword ? 'text' : 'password'} required 
                         onChange={(e) => setNewPassword(e.target.value)}></input>
-                        {/* <button
-                            type="button"
-                            className="absolute text-gray-500"
-                            onClick={() => setShowPassword(!showPassword)}
-                            tabIndex={-1}
-                        ><FontAwesomeIcon icon={showPassword ? faEyeSlash: faEye} /></button> */}
                     </div>
                     <div className="flex flex-col gap-2">
                         <label className="text-left font-semibold">Confirm password</label>

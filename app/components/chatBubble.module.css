@@ -1,20 +1,18 @@
 /* CSS talk bubble */
 .talkBubbleAi {
 	position: relative;
-	margin-left: 35px;
-	margin-top: 55px;
+	margin-left: 20px;
+	margin-top: 40px;
 	min-height: 50px;
+	margin-right: 10px;
   	display: inline-flex;	
 	align-items: center;
+	padding: 0.5em;
 }
 
 .talkBubbleUser {
   	display: inline-block;
   	position: relative;
-}
-
-.border{
-	border: 1px solid #666;
 }
 
 /*Right triangle, placed bottom left side slightly in*/
@@ -69,41 +67,6 @@
 	border-color: white  transparent transparent white;
 }
 
-/* ai chat animations */
-/* @keyframes dot-typing {
-	0% {
-		box-shadow: 0 0 0 0 black, 15px 0 0 0 black, 30px 0 0 0 black;
-		}
-	16.667% {
-	box-shadow: 0 -10px 0 0 black, 15px 0 0 0 black, 30px 0 0 0 black;
-		}
-	33.333% {
-	box-shadow: 0 0 0 0 black, 15px 0 0 0 black, 30px 0 0 0 black;
-		}
-	50% {
-	box-shadow: 0 0 0 0 black, 15px -10px 0 0 black, 30px 0 0 0 black;
-		}
-	66.667% {
-	box-shadow: 0 0 0 0 black, 15px 0 0 0 black, 30px 0 0 0 black;
-		}
-	83.333% {
-	box-shadow: 0 0 0 0 black, 15px 0 0 0 black, 30px -10px 0 0 black;
-		}
-	100% {
-	box-shadow: 0 0 0 0 black, 15px 0 0 0 black, 30px 0 0 0 black;
-		}
-}
-
-.loadingAnimation {
-	width: 10px;
-	height: 10px;
-	border-radius: 5px;
-	background-color: black;
-	color: black;
-	box-shadow: 0 0 0 0 black, 15px 0 0 0 black, 30px 0 0 0 black;
-	animation: dot-typing 1.5s infinite linear;
-} */
-
 @keyframes dot-animation {
 	0%{
 		transform: translateY(0);
@@ -132,15 +95,15 @@
 }
 
 .dot1_delay {
-    animation-delay: 0; /* Delay for first dot */
+    animation-delay: 0 !important; /* Delay for first dot */
 }
 
 .dot2_delay {
-    animation-delay: 0.2s; /* Delay for second dot */
+    animation-delay: 0.2s !important; /* Delay for second dot */
 }
 
 .dot3_delay {
-    animation-delay: 0.4s; /* Delay for third dot */
+    animation-delay: 0.4s !important; /* Delay for third dot */
 }
 
 

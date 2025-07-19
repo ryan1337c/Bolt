@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "oaidalleapiprodscus.blob.core.windows.net",
-      "wpaysatiyftwgaoeubjh.supabase.co",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "oaidalleapiprodscus.blob.core.windows.net",
+      },
+      {
+        protocol: "https",
+        hostname: "wpaysatiyftwgaoeubjh.supabase.co",
+      },
     ],
   },
 };
