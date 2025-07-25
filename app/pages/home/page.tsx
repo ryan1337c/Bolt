@@ -1,7 +1,7 @@
 "use client"
 import Header from "../../components/Header";
 import { FaRobot } from "react-icons/fa";
-import { useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef, useCallback} from "react";
 import Messages from "../../../util/assistantMessages";
 import TypeWriter from '../../components/TypeWriter';
 import chatStyles from '../../components/chatBubble.module.css'
@@ -11,6 +11,7 @@ import Image from "next/image";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
 import { ChevronDown, Check, Ban, Palette, Globe, Code, FileText, Calculator } from 'lucide-react';
+import { nanoid } from 'nanoid';
 
 export interface ChatMessage {
   role: string;
@@ -40,6 +41,9 @@ export default function Home() {
   // chat box stuff
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isValid, setIsValid] = useState(true);
+  const threshold = 50; // px from bottom considered "at bottom"
+  // const [isAutoScroll, setIsAutoScroll] = useState(true);
+   const isAutoScroll = useRef(true);
 
   // auth
   const authServices = new AuthServices();
@@ -78,7 +82,7 @@ export default function Home() {
 
   // Search and Tools
   const [isOpenTools, setIsOpenTools] = useState(false);
-  const [selectedTool, setSelectedTool] = useState("image")
+  const [selectedTool, setSelectedTool] = useState("reasoning")
   const [showTooltip, setShowTooltip] = useState(false);
   const tools = [
     { name: "Generate Image", icon: "", id: "image"},
@@ -195,8 +199,8 @@ export default function Home() {
       isNew: boolean,
     }
   ): ChatMessage[] => {
-    const { role, content, imageUrl, clickedInHistory, loading, isNew } = messageData;
-    const newMessage: ChatMessage = { role, content, imageUrl, clickedInHistory, loading, isNew };
+    const { role, content, imageUrl, clickedInHistory, loading, isNew} = messageData;
+    const newMessage: ChatMessage = { role, content, imageUrl, clickedInHistory, loading, isNew};
     return [...prevHistory, newMessage];
   }
 
@@ -205,7 +209,6 @@ export default function Home() {
     if (userInput) {
 
       let clicked = false;
-      let isNew = true;
       if (chatHistory.length === 0)
         clicked = true;
 
@@ -217,7 +220,7 @@ export default function Home() {
           imageUrl: '',
           clickedInHistory: clicked,
           loading: false,
-          isNew: true
+          isNew: true,
         });
       });
 
@@ -229,7 +232,7 @@ export default function Home() {
           imageUrl: '',
           clickedInHistory: false,
           loading: true,
-          isNew: true
+          isNew: true,
         });
       });
 
@@ -286,20 +289,31 @@ const downloadImage = async (imageUrl : string) => {
   }
 
   const scrollToMessage = (index: number) =>  {
-    chatHistory[currentHistoryIndex].clickedInHistory = false;
-    chatHistory[index].clickedInHistory = true;
+
+    setChatHistory((prevHistory) => {
+      const updated = prevHistory.map((msg, i) => ({
+        ...msg,
+        clickedInHistory: i === index,
+        isNew: false
+      }));
+
+      return updated;
+    });
+
     setCurrentHistoryIndex(index);
 
-    const targetMessage = messageRefs.current[index];
-      if (chatBoxRef.current && targetMessage) {
+    const scrollWhenReady = () => {
+      const targetMessage = messageRefs.current[index];
+      if (targetMessage && chatBoxRef.current) {
         const chatBox = chatBoxRef.current;
         const messageOffsetTop = targetMessage.offsetTop;
-        chatBox.scrollTo({
-          top: messageOffsetTop,
-          behavior: 'smooth',
-        });
-    }
+        chatBox.scrollTo({ top: messageOffsetTop, behavior: 'smooth' });
+      } else {
+        requestAnimationFrame(scrollWhenReady);
+      }
+    };
 
+    scrollWhenReady();
 
   }
 
@@ -414,36 +428,21 @@ const downloadImage = async (imageUrl : string) => {
     // Mount handleInput for user input box
     handleInput();
 
-
-    // Use the ref instead of getElementById
     const chatContainer = chatBoxRef.current;
     if (!chatContainer) {
       console.log('Chat container not ready yet');
       return;
     }
 
-    let scrollTimeout: NodeJS.Timeout;
+    const onScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainer;
 
-    const observer = new MutationObserver(() => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }, 16);
-    });
+      const isAtBottom = scrollHeight - scrollTop - clientHeight <= 1;
 
-    observer.observe(chatContainer, {
-      childList: true,
-      subtree: true,
-      characterData: true
-    });
-
-    console.log('Observer set up successfully');
-
-    // Cleanup
-    return () => {
-      observer.disconnect();
-      clearTimeout(scrollTimeout);
+      isAutoScroll.current = isAtBottom;
     };
+    chatContainer.addEventListener('scroll', onScroll);
+    return () => chatContainer.removeEventListener('scroll', onScroll);
   }, []);
 
   const handleDelete = async() => {
@@ -460,14 +459,72 @@ const downloadImage = async (imageUrl : string) => {
     }
   }
 
+  // Apply markdown formatting
+  const formatMarkdown = (text: string): string => {
+    // First, handle code blocks
+    let processedText = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, language, code) => {
+      const lang = language || 'text';
+      const blockId = `code-${nanoid()}`
+      return `<div class="code-block border border-gray-200 rounded-lg overflow-hidden"><div class="flex justify-between items-center bg-gray-50 px-3 py-0.5 border-b border-gray-200"><span class="text-xs text-gray-600 font-medium">${lang}</span><button class="copy-btn" data-block-id="${blockId}">Copy</button></div><div class="bg-gray-50"><pre class="p-4 whitespace-pre-wrap break-words"><code id="${blockId}" class="block whitespace-pre-wrap break-words text-sm font-mono text-gray-800">${escapeHtml(code.trim())}</code></pre></div></div>`;
+    });
+
+    // Then handle other markdown formatting
+
+    return processedText
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-red-600">$1</code>')
+      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 mt-6">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mb-3 mt-5">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-medium mb-2 mt-4">$1</h3>');
+  };
+
+  // HTML escape function
+  const escapeHtml = (text: string): string => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
+    // Copy to clipboard function
+    const copyToClipboard = useCallback((text: string, buttonElement: HTMLElement) => {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = buttonElement.textContent;
+        buttonElement.textContent = 'Copied!';
+        
+        setTimeout(() => {
+          buttonElement.textContent = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }, []);
+  
+    // Setup copy functionality after content updates
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('copy-btn')) {
+        const blockId = target.getAttribute('data-block-id');
+        const codeEl = document.getElementById(blockId!);
+        if (codeEl) {
+          copyToClipboard(codeEl.textContent || '', target);
+        }
+      }
+    };
+  
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [copyToClipboard]);
+
   return (
     <>
-    <main className="h-screen w-full flex flex-col">
+    <main className="w-full flex flex-col">
     <Header />
     <div className="flex-1 grid grid-cols-7 ml-6 mr-6 ">
       <div className="text-white hidden md:block md:col-span-1 overflow-y-auto h-chatHistoryBox bg-landingPage scrollbar-custom">
         <div className="flex flex-col lg:flex-row items-center justify-between mb-2 sticky top-0 bg-inherit z-10 p-2 mr-2">
-          <h1 className="font-medium mb-2">Today</h1>
+          <h1 className="font-medium mb-2">History</h1>
           <button className="bg-red-700 rounded-md pl-1 pr-1" onClick={handleDelete}>Delete All</button>
         </div>
         <div className="mr-2">
@@ -494,7 +551,7 @@ const downloadImage = async (imageUrl : string) => {
       </div>
       <div className="col-span-8 md:col-span-6 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col">
         <div className="h-chatbox md:w-[55vw]" >
-        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[60vh] md:h-[70vh] lg:ml-40 lg:mr-40 overflow-y-auto scrollbar-custom rounded-t-lg w-full">
+        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[60vh] md:h-[75vh] lg:ml-40 lg:mr-40 overflow-y-auto overflow-x-hidden scrollbar-custom rounded-t-lg w-full">
           {chatHistory.map((chatMessage,index) => {
             const minWidth = 100;
             const maxWidth = 500;
@@ -533,11 +590,13 @@ const downloadImage = async (imageUrl : string) => {
                 </>
                 )
                    :(<div className="flex flex-col">
-                    {chatMessage.isNew ? <TypeWriter text={chatMessage.content}/>: <div className="whitespace-pre-wrap text-sm">{chatMessage.content}</div>}
+                    {chatMessage.isNew ? <TypeWriter content={formatMarkdown(chatMessage.content)} baseSpeed={15} containerRef={chatBoxRef} isAutoScrollRef={isAutoScroll}/>: <div className="whitespace-pre-wrap text-sm"           dangerouslySetInnerHTML={{
+                      __html: formatMarkdown(chatMessage.content)
+                    }} />}
                     
                     {chatMessage.imageUrl !== '' && <>
-                    <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover" width={256} height={256} priority />
-                    <button onClick={() => downloadImage(chatMessage.imageUrl)} className="bg-downloadBox mt-2 rounded-md font-semibold 0flex justify-center hover:bg-downloadBoxOnHover pt-2 pb-2" style={{width: "256px"}}>Download Image</button>
+                    <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover p-2" width={256} height={256} priority />
+                    <button onClick={() => downloadImage(chatMessage.imageUrl)} className="bg-downloadBox m-2 rounded-md font-semibold flex justify-center hover:bg-downloadBoxOnHover pt-2 pb-2" >Download Image</button>
                     </>}
                    </div>) 
                    }
@@ -562,7 +621,7 @@ const downloadImage = async (imageUrl : string) => {
                   placeholder="Type your message..."
                   wrap="hard"
                   disabled={processingMessage}
-                  className="flex-1  min-h[24px] max-h-[200px] resize-none bg-transparent border-none ouline-none overflow-hidden pt-1 text-lg break-words whitespace-normal outline-none placeholder:text-gray-500" 
+                  className="flex-1  mt-2 min-h[24px] max-h-[200px] resize-none bg-transparent border-none ouline-none overflow-hidden pt-1 text-base break-words whitespace-normal outline-none placeholder:text-gray-500" 
                   value={userInput}
                   onInput={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                     setUserInput(e.target.value)

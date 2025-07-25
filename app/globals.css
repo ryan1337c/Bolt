@@ -278,6 +278,20 @@ input {
   100% { background-position: 100% 50%; }
 }
 
+.copy-btn {
+  font-size: 0.75rem;      /* text-xs */
+  padding: 0.125rem 0.375rem; /* py-0.5 (0.125rem), px-1.5 (0.375rem) */
+  background-color: #f3f4f6; /* bg-gray-100 */
+  color: #4b5563;           /* text-gray-700 */
+  border-radius: 0.375rem;  /* rounded (6px) */
+  transition: background-color 0.2s ease-in-out; /* transition-colors duration-200 */
+}
+
+.copy-btn:hover {
+  background-color: #e5e7eb; /* bg-gray-200 */
+}
+
+
 
 
 

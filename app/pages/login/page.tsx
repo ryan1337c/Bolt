@@ -44,7 +44,7 @@ const Login = () => {
   }
 
   return (
-    <> 
+    <div> 
     <div className="min-h-screen flex  text-white">
       <div className="ml-5 flex gap-2 text-xl font-bold absolute" onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
         <Link href={`/`} className="flex items-center">
@@ -142,7 +142,7 @@ const Login = () => {
   </div>
 </div>
   </div>
-  </>
+  </div>
   )
 }
 

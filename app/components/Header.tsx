@@ -13,7 +13,7 @@ const Header = () => {
     setMounted(true);
   }, []);
   return (
-    <div className=" flex  text-white justify-between">
+    <div className=" h-[16] flex  text-white justify-between">
       <button className="p-5 flex gap-2 text-xl font-bold items-center" onClick={() => {
         router.push('/');
       }}>
