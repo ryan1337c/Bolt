@@ -524,6 +524,26 @@ const downloadImage = async (imageUrl : string) => {
     return () => document.removeEventListener('click', handleClick);
   }, [copyToClipboard]);
 
+  const handleTypingComplete = useCallback(() => {
+    setChatHistory(prevHistory => {
+      if (prevHistory.length === 0) {
+        return prevHistory;
+      }
+      
+      const lastIndex = prevHistory.length - 1;
+      const lastMessage = prevHistory[lastIndex];
+
+      // Only update if the last message was 'new' to prevent unnecessary re-renders
+      if (lastMessage && lastMessage.isNew) {
+        const updatedHistory = [...prevHistory];
+        updatedHistory[lastIndex] = { ...lastMessage, isNew: false };
+        return updatedHistory;
+      }
+      
+      return prevHistory;
+    });
+  }, []); // No dependencies needed due to using the updater form of setState
+
   return (
     <>
     <main className="w-full flex flex-col h-screen overflow-hidden">
@@ -597,7 +617,7 @@ const downloadImage = async (imageUrl : string) => {
                 </>
                 )
                    :(<div className="flex flex-col">
-                    {chatMessage.isNew ? <TypeWriter content={formatMarkdown(chatMessage.content)} baseSpeed={15} containerRef={chatBoxRef} isAutoScrollRef={isAutoScroll}/>: <div className="whitespace-pre-wrap text-sm"           dangerouslySetInnerHTML={{
+                    {chatMessage.isNew ? <TypeWriter content={formatMarkdown(chatMessage.content)} baseSpeed={15} containerRef={chatBoxRef} isAutoScrollRef={isAutoScroll} onComplete={handleTypingComplete}/>: <div className="whitespace-pre-wrap text-sm"           dangerouslySetInnerHTML={{
                       __html: formatMarkdown(chatMessage.content)
                     }} />}
                     
