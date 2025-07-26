@@ -532,7 +532,7 @@ const downloadImage = async (imageUrl : string) => {
       <div className="text-white hidden md:block md:col-span-1 overflow-y-auto h-chatHistoryBox bg-landingPage scrollbar-custom">
         <div className="flex flex-col lg:flex-row items-center justify-between mb-2 sticky top-0 bg-inherit z-10 p-2 mr-2">
           <h1 className="font-medium mb-2">History</h1>
-          <button className="bg-red-700 rounded-md pl-1 pr-1" onClick={handleDelete}>Delete All</button>
+          <button className="bg-red-700 rounded-md pl-1 pr-1 text-nowrap" onClick={handleDelete}>Delete All</button>
         </div>
         <div className="mr-2">
         {chatHistory.map((chatMessage, index) => {

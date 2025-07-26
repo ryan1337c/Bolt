@@ -28,7 +28,7 @@ const config: Config = {
       },
       height: {
         'chatbox': "45rem",
-        'chatHistoryBox': '55rem',
+        'chatHistoryBox': '45rem',
       },
       maxWidth: {
         '256': '256px'
