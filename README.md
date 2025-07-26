@@ -1,5 +1,5 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). <br /><br />
-**Made with: OpenAI, NextJS, TailwindCSS, Figma**
+**Made with: OpenAI API, Claude API, DeepSeek API, NextJS, TailwindCSS, Figma, SupaBase**
 
 ## About
 
@@ -30,22 +30,9 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-**Note:** <br/>
-The login page and sign up page has not been fully implemented because that is not the focus of this application.
-In order to access the chat box:
-
-Method 1:
-  1. On the landing page, click the login button on the top right
-  2. Fill in the text boxes, input doesn't matter but make sure that the text boxes are filled in
-  3. Click the 'Sign In' button and it will redirect you to the chat page
-
-Method 2: Supports OAuth
-  1. Sign in with your gmail
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-## Demo
-https://github.com/user-attachments/assets/4413eab8-e5f5-404f-a5fb-75b7c0e57591
 
 ## Learn More
 
