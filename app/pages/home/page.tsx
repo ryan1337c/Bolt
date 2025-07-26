@@ -41,9 +41,7 @@ export default function Home() {
   // chat box stuff
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isValid, setIsValid] = useState(true);
-  const threshold = 50; // px from bottom considered "at bottom"
-  // const [isAutoScroll, setIsAutoScroll] = useState(true);
-   const isAutoScroll = useRef(true);
+  const isAutoScroll = useRef(true);
 
   // auth
   const authServices = new AuthServices();
@@ -351,7 +349,6 @@ const downloadImage = async (imageUrl : string) => {
 
   useEffect(() => {
     // Scroll to the bottom every time chatHistory is updated
-    // scrollToBottom();
     const shouldUpdate = chatHistory.length > 0 && chatHistory.at(-1)?.loading === false;
     const updateChatHistory = async() => {
       try {
@@ -560,7 +557,7 @@ const downloadImage = async (imageUrl : string) => {
         </div>
       </div>
       <div className="col-span-8 md:col-span-6 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col h-[87dvh] items-center">
-        <div className="md:w-[55vw] flex flex-col flex-1 overflow-hidden" >
+        <div className="md:w-[75vw] flex flex-col flex-1 overflow-hidden" >
         <div id="chat-box" ref={chatBoxRef} className="w-full flex flex-col bg-white flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom rounded-t-2xl">
           {chatHistory.map((chatMessage,index) => {
             const minWidth = 100;
@@ -736,8 +733,8 @@ const downloadImage = async (imageUrl : string) => {
 
                     {/* Model Dropdown Menu */}
                     {isOpenModel && (
-                      <div className="absolute left-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white border border-gray-200 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <div className="py-1 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 z-50">
+                      <div className="absolute right-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white border border-gray-200 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none ">
+                        <div className="py-1 max-h-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 ">
                           {models.map((model) => (
                             <button
                               key={model.id}
