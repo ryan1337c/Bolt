@@ -90,6 +90,7 @@ const TypeWriter: React.FC<TypeWriter> = ({ content,
       // Scroll only if allowed and containerRef is valid
       requestAnimationFrame(() => {
         if (isAutoScrollRef?.current && containerRef?.current) {
+          containerRef.current.offsetHeight; // trigger reflow
           containerRef.current.scrollTop = containerRef.current.scrollHeight;
           console.log("Auto Scrolling Enabled");
         } else {

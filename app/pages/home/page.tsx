@@ -237,6 +237,11 @@ export default function Home() {
       });
 
       
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+
+      
       const messageInput = (document.getElementById("message-input") as HTMLInputElement);
       messageInput.value = '';
       setUserInput('');
@@ -422,6 +427,11 @@ const downloadImage = async (imageUrl : string) => {
         const message = error.message || 'An unexpected error occurred';
         console.error(message);
       }
+
+      
+      setTimeout(() => {
+        scrollToBottom();
+      }, 300);
     }
     fetchHistory();
 
@@ -519,7 +529,7 @@ const downloadImage = async (imageUrl : string) => {
 
   return (
     <>
-    <main className="w-full flex flex-col">
+    <main className="w-full flex flex-col h-screen overflow-hidden">
     <Header />
     <div className="flex-1 grid grid-cols-7 ml-6 mr-6 ">
       <div className="text-white hidden md:block md:col-span-1 overflow-y-auto h-chatHistoryBox bg-landingPage scrollbar-custom">
@@ -549,9 +559,9 @@ const downloadImage = async (imageUrl : string) => {
         })}
         </div>
       </div>
-      <div className="col-span-8 md:col-span-6 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col">
-        <div className="h-chatbox md:w-[55vw]" >
-        <div id="chat-box" ref={chatBoxRef} className="flex flex-col bg-white h-[60vh] md:h-[75vh] lg:ml-40 lg:mr-40 overflow-y-auto overflow-x-hidden scrollbar-custom rounded-t-lg w-full">
+      <div className="col-span-8 md:col-span-6 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col h-[87dvh] items-center">
+        <div className="md:w-[55vw] flex flex-col flex-1 overflow-hidden" >
+        <div id="chat-box" ref={chatBoxRef} className="w-full flex flex-col bg-white flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom rounded-t-2xl">
           {chatHistory.map((chatMessage,index) => {
             const minWidth = 100;
             const maxWidth = 500;
@@ -609,8 +619,7 @@ const downloadImage = async (imageUrl : string) => {
           <div ref={messagesEndRef}></div>{/* This div will be scrolled to */}
       
         </div>
-        <div className="relative h-[121px]">
-        <div className="w-full lg:ml-40 lg:mr-40 absolute bottom-0">
+        <div className="w-full  sticky bottom-0 z-10 bg-white rounded-b-2xl">
             <div className="bg-white shadow-lg rounded-b-2xl w-full">
               <div className={`flex flex-col border rounded-bl-2xl rounded-br-2xl p-2 bg-white w-full
               transition-colors duration-300 ease-in-out ${isTextareaFocused ? 'border-gray-500': 'border-gray-300 hover:border-gray-500'}`}>
@@ -728,7 +737,7 @@ const downloadImage = async (imageUrl : string) => {
                     {/* Model Dropdown Menu */}
                     {isOpenModel && (
                       <div className="absolute left-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white border border-gray-200 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <div className="py-1">
+                        <div className="py-1 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 z-50">
                           {models.map((model) => (
                             <button
                               key={model.id}
@@ -774,7 +783,6 @@ const downloadImage = async (imageUrl : string) => {
                     />
                   )}
               </div>
-            </div>
             </div>
             </div>
             </div>
