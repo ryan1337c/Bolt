@@ -145,13 +145,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* --- Unified AI Core Section (Animates on scroll) --- */}
+          {/* --- Unified AI Core Section  --- */}
           <div ref={coreRef} className="w-full flex flex-col items-center pt-10 pb-16 px-4">
             <h2 className={`text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-white transition-opacity duration-1000 ease-in ${coreInView ? 'opacity-100' : 'opacity-0'}`}>
               One Interface. Many Minds.
             </h2>
             <div className={`
-              w-full max-w-6xl p-6 rounded-2xl bg-black/30 border border-purple-500/30
+              w-full max-w-6xl p-3 rounded-2xl bg-black/30 border border-purple-500/30
               shadow-[0_0_25px_3px_rgba(168,85,247,0.25)]
               transition-all duration-1000 ease-in-out
               ${coreInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}
@@ -160,7 +160,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* --- Testimonies Section (Animates on scroll) --- */}
+          {/* --- Testimonies Section  --- */}
           <div ref={testimoniesRef} className="w-full flex flex-col items-center mb-20 py-10 px-4">
             <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-white transition-opacity duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
               Testimonies
@@ -172,7 +172,7 @@ export default function Home() {
               <FaStar className="size-6 text-yellow-400" />
               <FaStar className="size-6 text-yellow-400" />
             </div>
-            <div className={`px-40 w-full transition-opacity delay-300 duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
+              <div className={`w-full px-4 sm:px-8 md:px-20 lg:px-40 transition-opacity delay-300 duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
               <MarqueeDemo />
             </div>
           </div>
