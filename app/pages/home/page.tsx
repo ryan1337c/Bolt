@@ -548,11 +548,12 @@ const downloadImage = async (imageUrl : string) => {
     <>
     <main className="w-full flex flex-col h-screen overflow-hidden">
     <Header />
-    <div className="flex-1 grid grid-cols-7 ml-6 mr-6 ">
-      <div className="text-white hidden md:block md:col-span-1 overflow-y-auto h-chatHistoryBox bg-landingPage scrollbar-custom">
+    <div className="flex flex-1 mx-6 overflow-hidden">
+      {/* Sidebar */}
+      <div className="text-white hidden md:flex flex-col md:w-1/6 lg:w-1/5 flex-shrink-0 bg-landingPage overflow-y-auto scrollbar-custom">
         <div className="flex flex-col lg:flex-row items-center justify-between mb-2 sticky top-0 bg-inherit z-10 p-2 mr-2">
-          <h1 className="font-medium mb-2">History</h1>
-          <button className="bg-red-700 rounded-md pl-1 pr-1 text-nowrap" onClick={handleDelete}>Delete All</button>
+          <h1 className="font-medium mb-2 lg:mb-0">History</h1>
+          <button className="bg-red-700 rounded-md px-2 py-1 text-sm text-nowrap" onClick={handleDelete}>Delete All</button>
         </div>
         <div className="mr-2">
         {chatHistory.map((chatMessage, index) => {
@@ -572,12 +573,13 @@ const downloadImage = async (imageUrl : string) => {
               )
             }
           }
-      
         })}
         </div>
       </div>
-      <div className="col-span-8 md:col-span-6 sm:pl-[5rem] sm:pr-[5rem] lg:pl-0 lg:pr-0 flex flex-col h-[87dvh] items-center">
-        <div className="md:w-[75vw] flex flex-col flex-1 overflow-hidden" >
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col items-center min-w-0 md:pl-4 lg:pl-6">
+        <div className="w-full flex flex-col flex-1 overflow-hidden h-full">
         <div id="chat-box" ref={chatBoxRef} className="w-full flex flex-col bg-white flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom rounded-t-2xl">
           {chatHistory.map((chatMessage,index) => {
             const minWidth = 100;
@@ -587,16 +589,16 @@ const downloadImage = async (imageUrl : string) => {
             const containerStyle = {
               maxWidth: `${finalWidth}px`,
             }
-            
+
             // display user messages
             if (chatMessage.role === 'user') {
               return (
-                <div key={index} 
+                <div key={index}
                     ref={(reference) => {
                       if (reference)
                         messageRefs.current[index] = reference as HTMLDivElement;
                     }}
-                    className={`mt-5 mb-2 mr-10 ml-auto text-sm text-center right-0 rounded-lg p-2 bg-gray-200 break-words ${chatStyles.talkBubbleUser}`} 
+                    className={`mt-5 mb-2 mr-10 ml-auto text-sm text-center right-0 rounded-lg p-2 bg-gray-200 break-all ${chatStyles.talkBubbleUser}`}
                     style={containerStyle}>
                   {chatMessage.content}
                 </div>
@@ -607,34 +609,34 @@ const downloadImage = async (imageUrl : string) => {
            else {
               return (<div key={index} className="flex flex-row">
                 <FaRobot size="30px" className="mt-10 ml-3 flex-shrink-0"/>
-                <div className={` mt-5 mb-2 w-auto rounded-lg  bg-white break-words ${chatStyles.talkBubbleAi}`}>
+                <div className={` mt-5 mb-2 w-auto rounded-lg  bg-white break-all ${chatStyles.talkBubbleAi}`}>
                 {chatMessage.loading ? (
                 <>
                   <div className={`${chatStyles.dot1_delay } ${chatStyles.loadingAnimation}`}/>
                   <div className={`${chatStyles.dot2_delay } ${chatStyles.loadingAnimation}`}/>
                   <div className={`${chatStyles.dot3_delay } ${chatStyles.loadingAnimation}`}/>
-                  
+
                 </>
                 )
                    :(<div className="flex flex-col">
                     {chatMessage.isNew ? <TypeWriter content={formatMarkdown(chatMessage.content)} baseSpeed={15} containerRef={chatBoxRef} isAutoScrollRef={isAutoScroll} onComplete={handleTypingComplete}/>: <div className="whitespace-pre-wrap text-sm"           dangerouslySetInnerHTML={{
                       __html: formatMarkdown(chatMessage.content)
                     }} />}
-                    
+
                     {chatMessage.imageUrl !== '' && <>
                     <Image src={chatMessage.imageUrl} alt="Generated Image" className="object-cover p-2" width={256} height={256} priority />
                     <button onClick={() => downloadImage(chatMessage.imageUrl)} className="bg-downloadBox m-2 rounded-md font-semibold flex justify-center hover:bg-downloadBoxOnHover pt-2 pb-2" >Download Image</button>
                     </>}
-                   </div>) 
+                   </div>)
                    }
                        </div>
                   </div>
               )
             }
-           
+
               })}
           <div ref={messagesEndRef}></div>{/* This div will be scrolled to */}
-      
+
         </div>
         <div className="w-full  sticky bottom-0 z-10 bg-white rounded-b-2xl">
             <div className="bg-white shadow-lg rounded-b-2xl w-full">
@@ -647,17 +649,17 @@ const downloadImage = async (imageUrl : string) => {
                   placeholder="Type your message..."
                   wrap="hard"
                   disabled={processingMessage}
-                  className="flex-1  mt-2 min-h[24px] max-h-[200px] resize-none bg-transparent border-none ouline-none overflow-hidden pt-1 text-base break-words whitespace-normal outline-none placeholder:text-gray-500" 
+                  className="flex-1  mt-2 min-h[24px] max-h-[200px] resize-none bg-transparent border-none ouline-none overflow-hidden pt-1 text-base break-all whitespace-normal outline-none placeholder:text-gray-500"
                   value={userInput}
                   onInput={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                     setUserInput(e.target.value)
                     handleInput()
-                  }} 
+                  }}
                   onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => handleKeyPress(e)} // Corrected event type here
                   onFocus={() => setIsTextareaFocused(true)}
                   onBlur={() => setIsTextareaFocused(false)}
                   />
-                    <button id="send-btn" type="button" onClick={() => sendMessage()} disabled={processingMessage}><AiOutlineSend className={`w-10 h-10 p-[5px] flex items-center justify-center text-white rounded-full border-2 
+                    <button id="send-btn" type="button" onClick={() => sendMessage()} disabled={processingMessage}><AiOutlineSend className={`w-10 h-10 p-[5px] flex items-center justify-center text-white rounded-full border-2
                       transition-colors duration-200 ease-in-out ${userInput ? "bg-black  hover:bg-gray-600" : "bg-gray-300"}`}/></button>
                 </div>
                 <div className="flex">
@@ -729,13 +731,13 @@ const downloadImage = async (imageUrl : string) => {
                         </span>
                       </div>
                 {selectedTool === "image" ? (
-                <div 
+                <div
                   className="relative group"
                   onMouseEnter={() => setShowTooltip(true)}
                   onMouseLeave={() => setShowTooltip(false)}
                 >
                   <Ban className="w-4 h-4 transition-transform duration-200 text-red-500" />
-                  
+
                   {/* Tooltip */}
                     <div className={`absolute bottom-full right-0 mb-2 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap z-10 ${showTooltip ? 'opacity-100': 'opacity-0 pointer-events-none '} transition-opacity duration-75`}>
                       Model selection disabled for image tool
@@ -743,18 +745,18 @@ const downloadImage = async (imageUrl : string) => {
                     </div>
 
                   </div>
-                  ):  <ChevronDown 
+                  ):  <ChevronDown
                         className={`w-4 h-4 transition-transform duration-200 ${
                           isOpenModel ? 'transform rotate-180' : ''
-                        }`} 
+                        }`}
                       />
                       }
                     </button>
 
                     {/* Model Dropdown Menu */}
                     {isOpenModel && (
-                      <div className="absolute right-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white border border-gray-200 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none ">
-                        <div className="py-1 max-h-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 ">
+                      <div className="absolute right-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white border border-gray-200 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col max-h-[60vh]">
+                        <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                           {models.map((model) => (
                             <button
                               key={model.id}
@@ -779,9 +781,9 @@ const downloadImage = async (imageUrl : string) => {
                             </button>
                           ))}
                         </div>
-                        
-                        {/* Footer */}
-                        <div className="border-t border-gray-100 px-4 py-3">
+
+                        {/* Footer - CHANGED: Added flex-shrink-0 */}
+                        <div className="border-t border-gray-100 px-4 py-3 flex-shrink-0">
                           <div className="text-xs text-gray-500">
                             Choose the model that best fits your needs
                           </div>
@@ -791,8 +793,8 @@ const downloadImage = async (imageUrl : string) => {
 
                   {/* Overlay to close dropdown when clicking outside */}
                   {(isOpenModel || isOpenTools) && (
-                    <div 
-                      className="fixed inset-0 z-0" 
+                    <div
+                      className="fixed inset-0 z-0"
                       onClick={() => {
                         const clickType = isOpenModel ? "model": "tools";
                         handleOverlayClick(clickType)
@@ -810,7 +812,6 @@ const downloadImage = async (imageUrl : string) => {
 </main>
   </>
   );
-
 
   
 }
