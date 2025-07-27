@@ -3,7 +3,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## About
 
-This application contains a beautiful user interface that utilizes the power of AI to automatically generate images based on user input.
+Meet Bolt — an all-in-one copilot that can help you with everyday tasks like conversations, decision-making, coding, and image generation.
 
 # Website Link
 https://image-ai-7y2c.vercel.app/
