@@ -140,7 +140,7 @@ export default function Home() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">50+</span>
               </h3>
               <p className="mt-2 text-xl md:text-2xl text-gray-300">
-                Innovators and teams already building the future with Bolt.
+                Early adopters are unlocking the power of Bolt—be next.
               </p>
             </div>
           </div>
