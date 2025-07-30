@@ -163,7 +163,7 @@ export default function Home() {
           {/* --- Testimonies Section  --- */}
           <div ref={testimoniesRef} className="w-full flex flex-col items-center mb-20 py-10 px-4">
             <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-white transition-opacity duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
-              Testimonies
+              Testimonials
             </h2>
             <div className={`flex items-center gap-1 mb-10 transition-all delay-200 duration-1000 ease-in-out ${testimoniesInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}`}>
               <FaStar className="size-6 text-yellow-400" />
