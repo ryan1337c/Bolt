@@ -5,6 +5,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 Meet Bolt — an all-in-one copilot that can help you with everyday tasks like conversations, decision-making, coding, and image generation.
 
+This app is currently in v1, more features to come in the near future!
+
 # Website Link
 https://image-ai-7y2c.vercel.app/
 
