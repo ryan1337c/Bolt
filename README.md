@@ -10,31 +10,6 @@ This app is currently in v1, more features to come in the near future!
 # Website Link
 https://image-ai-7y2c.vercel.app/
 
-## Getting Started
-
-First, install the dependencies:
-
-```bash
-npm install
-```
-
-Now within the Image-AI folder:<br/><br/>
-Create a .env file and put in your OpenAI API key in this format:
-
-```bash
-NEXT_PUBLIC_OPENAI_API_KEY="YOUR_API_KEY"
-```
-
-Now run the development server:
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
 
 ## Learn More
 
