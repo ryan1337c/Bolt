@@ -24,8 +24,8 @@ export default async function handler(
 ) {
     const {history, modelId} = req.body;
 
-    console.log("Here is the chat history: ", history);
-    console.log("Here is the model: ", modelId);
+    // console.log("Here is the chat history: ", history);
+    // console.log("Here is the model: ", modelId);
 
 
     // Add validation
@@ -38,7 +38,7 @@ export default async function handler(
     }
 
     // Handle Models
-    if (modelId === "gpt-4o" || "claude-sonnet-4") {
+    if (modelId === "gpt-4o" || modelId === "claude-sonnet-4") {
         openai.apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY!;
         openai.baseURL = "https://api.openai.com/v1/"
     }
@@ -47,7 +47,7 @@ export default async function handler(
         openai.baseURL = "https://api.deepseek.com/v1/"
     }
 
-    let model = modelId === "gpt-4o" || "claude-sonnet-4" ? "gpt-4o-mini" : modelId === "deep-seek" ? "deepseek-chat" : (() => {
+    let model = modelId === "gpt-4o" || modelId === "claude-sonnet-4" ? "gpt-4o-mini" : modelId === "deep-seek" ? "deepseek-chat" : (() => {
         throw new Error(`Unsupported modelId: ${modelId}`);
       })();
 
@@ -59,7 +59,7 @@ export default async function handler(
         });
         const responseMessage = aiResponse.choices[0].message.content;
         const cleanText = responseMessage?.replace(/[\u2B00-\u2BFF]/g, '');
-        console.log(`Response from ${modelId}`, responseMessage);
+        // console.log(`Response from ${modelId}`, responseMessage);
         return res.status(200).json({ response: cleanText });
     }
     catch(error: any) {

@@ -10,8 +10,9 @@ import { CiSquarePlus } from "react-icons/ci";
 import Image from "next/image";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
-import { ChevronDown, Check, Ban, Palette, Globe, Code, FileText, Calculator } from 'lucide-react';
+import { ChevronDown, Check, Ban, FileText, X } from 'lucide-react';
 import { nanoid } from 'nanoid';
+import { GoPaperclip } from "react-icons/go";
 
 export interface ChatMessage {
   role: string;
@@ -32,6 +33,7 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [processingMessage, setProcessingMessage] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
+  const [currentState, setCurrentState] = useState("text");
 
   // chat history stuff
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -78,6 +80,38 @@ export default function Home() {
 
   const selectedModelData = models.find(model => model.id === selectedModel);
 
+  // Uploading 
+  const [isOpenUpload, setIsOpenUpload] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const upload = {
+    name: "Add photos & files",
+    icon: "",
+    id: "upload"
+  }
+
+  const handleUploadSelect = () => {
+    setIsOpenUpload(false);
+    // Safely trigger the click event on the hidden file input
+    fileInputRef.current?.click();
+  }
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  if (e.target.files && e.target.files.length > 0) {
+    // Add the newly selected file to your component's state
+    setFiles((prevFiles) => [...prevFiles, e.target.files![0]]);
+  }
+};
+
+  const handleFileDelete = (fileIndex: number) => {
+    setFiles((prevFiles) => prevFiles.filter((_, index) => index != fileIndex));
+
+    if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+  }
+
   // Search and Tools
   const [isOpenTools, setIsOpenTools] = useState(false);
   const [selectedTool, setSelectedTool] = useState("reasoning")
@@ -96,8 +130,10 @@ export default function Home() {
   const handleOverlayClick = (clickType: string) => {
     if (clickType === "model") 
       setIsOpenModel(false);
-    else
+    else if (clickType === "tools")
       setIsOpenTools(false);
+    else
+      setIsOpenUpload(false);
   }
 
   const filterForOpenAI = (history: ChatMessage[]) => {
@@ -186,6 +222,89 @@ export default function Home() {
     setProcessingMessage(false);
   }
 
+  const generateResponseWithUpload = async() => {
+    setProcessingMessage(true);
+    if (selectedTool === "image") {
+      // Update chat ai chat history 
+      setChatHistory(prevHistory => {
+        const updatedHistory = [...prevHistory];
+        const lastMessageIndex = updatedHistory.length - 1;
+        updatedHistory[lastMessageIndex] = {
+          ...updatedHistory[lastMessageIndex],
+          content: 'As of now, we do not support image generation with uploads',
+          loading: false,
+        }
+        return updatedHistory;
+      })
+      setFiles([]); 
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setProcessingMessage(false);
+      return;
+    }
+
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    })
+    formData.append("modelId", selectedModel);
+    formData.append("userInput", chatHistory[chatHistory.length - 1 - 1].content)
+
+    setFiles([]); 
+    // reset value fo file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    try {
+      const response = await fetch('../api/generateWithUpload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+            if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong');
+      }
+
+      // Access the response message
+      const aiMessage = data.response;
+
+      console.log("AI message: ", aiMessage);
+
+      // Update chat ai chat history 
+      setChatHistory(prevHistory => {
+        const updatedHistory = [...prevHistory];
+        const lastMessageIndex = updatedHistory.length - 1;
+        updatedHistory[lastMessageIndex] = {
+          ...updatedHistory[lastMessageIndex],
+          content: aiMessage,
+          loading: false,
+        }
+        return updatedHistory;
+      })
+
+    }
+    catch(error: any) {
+      console.error('Fetch failed: ', error.message || error);
+      // set ai loading to false
+      setChatHistory(prevHistory => {
+        const updatedHistory = [...prevHistory];
+        const lastMessageIndex = updatedHistory.length - 1;
+        updatedHistory[lastMessageIndex] = {
+          ...updatedHistory[lastMessageIndex],
+          content: `${selectedModel} does not support one of the file(s) formats`,
+          loading: false,
+        }
+        return updatedHistory;
+      })
+    }
+
+    setProcessingMessage(false);
+  }
+
   const addMessageToHistory = (
     prevHistory: ChatMessage[],
     messageData: {
@@ -244,8 +363,9 @@ export default function Home() {
       messageInput.value = '';
       setUserInput('');
 
-      if (selectedTool === 'image')
+      if (selectedTool === 'image' && files.length == 0)
         await generateImage();
+
 
     //     Force placeholder to re-render
     if (textareaRef.current) {
@@ -354,8 +474,9 @@ const downloadImage = async (imageUrl : string) => {
       try {
         // Fetch user session
         const session = await authServices.getSession();
+        const {email} = session.user
 
-        await publicServices.updateHistory(session.user.id, chatHistory);
+        await publicServices.updateHistory(email, chatHistory);
       }
       catch (error: any) {
         const message = error.message || 'An unexpected error occurred';
@@ -368,9 +489,14 @@ const downloadImage = async (imageUrl : string) => {
 
     const shouldGenerateResponse = chatHistory.length > 0 && chatHistory.at(-1)?.loading === true;
 
-    if (shouldGenerateResponse && selectedTool === "reasoning") {
-      generateResponse();
-    }
+
+    if (shouldGenerateResponse && selectedTool === "reasoning" && files.length == 0) 
+        generateResponse();
+    
+    // Responses with uploads
+    if (files.length > 0 && shouldGenerateResponse) 
+      generateResponseWithUpload()
+    
   }, [chatHistory]); // Depend on chatHistory to trigger when new messages are added
 
   useEffect(() => {
@@ -406,12 +532,14 @@ const downloadImage = async (imageUrl : string) => {
         // Fetch user session
         const session = await authServices.getSession();
 
+        const {id, email} = session.user
+
         // Fetch user chat history
-        const history = await publicServices.fetchHistory(session.user.id);
+        const history = await publicServices.fetchHistory(id);
 
         if (history === false) {
           // Create a new user history in databse
-          await publicServices.addHistory(session.user.id);
+          await publicServices.addHistory(id, email);
           return;
         }
 
@@ -456,7 +584,8 @@ const downloadImage = async (imageUrl : string) => {
     try {
       // Fetch user session
       const session = await authServices.getSession();
-      await publicServices.deleteHistory(session.user.id, chatHistory);
+      const {email} = session.user
+      await publicServices.deleteHistory(email, chatHistory);
 
       setChatHistory([]);
     }
@@ -642,6 +771,28 @@ const downloadImage = async (imageUrl : string) => {
             <div className="bg-white shadow-lg rounded-b-2xl w-full">
               <div className={`flex flex-col border rounded-bl-2xl rounded-br-2xl p-2 bg-white w-full
               transition-colors duration-300 ease-in-out ${isTextareaFocused ? 'border-gray-500': 'border-gray-300 hover:border-gray-500'}`}>
+              {/* Uploaded files */}
+                {files.length > 0 && (
+                  <div className="mb-2 p-2 border-t border-b border-gray-200">
+                    <div className="flex flex-wrap gap-2">
+                      {files.map((file, index) => (
+                        <div key={`${file.name}-${index}`} className="flex items-center bg-gray-100 rounded-lg pl-2 pr-1 py-1 text-sm">
+                          <FileText className="w-4 h-4 mr-2 text-gray-600 flex-shrink-0" />
+                          <span className="truncate max-w-xs">{file.name}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => handleFileDelete(index)}
+                            className="ml-2 p-0.5 rounded-full hover:bg-gray-300"
+                            aria-label={`Remove ${file.name}`}
+                          >
+                            <X className="w-3 h-3 text-gray-700" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className={`flex items-center`}>
                   <textarea
                   id="message-input"
@@ -663,9 +814,48 @@ const downloadImage = async (imageUrl : string) => {
                       transition-colors duration-200 ease-in-out ${userInput ? "bg-black  hover:bg-gray-600" : "bg-gray-300"}`}/></button>
                 </div>
                 <div className="flex">
-                  <button className="rounded-md hover:bg-gray-100 transition-colors duration-300 ease-in-out ">
-                    <CiSquarePlus size="2.7em" className="text-gray-500" />
-                  </button>
+                  <div className="relative group">
+                    <button 
+                      className="rounded-md hover:bg-gray-100 transition-colors duration-300 ease-in-out"
+                      onClick={() => setIsOpenUpload(!isOpenUpload)}
+                    >
+                      <CiSquarePlus size="2.7em" className="text-gray-500" />
+                    </button>
+
+                    {/* Uploading tip */}
+                    {!isOpenUpload && (
+                      <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+                        Add files and more
+                        <div className="absolute top-full left-6 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    )}
+
+                    <input
+                      type="file"
+                      ref={fileInputRef}         
+                      onChange={handleFileChange} 
+                      className="hidden"         
+                    />
+
+
+                    {/* Show dropdown */}
+                      {isOpenUpload && (
+                        <div className="absolute bottom-full left-0 mb-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+                          <button
+                            onClick={handleUploadSelect}
+                            className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-150 text-left"
+                          >
+                            <GoPaperclip size={"25px"} className="flex-shrink-0 text-gray-600" />
+                            
+                            <div className="flex-1 text-sm font-medium text-gray-900">
+                              {upload.name}
+                            </div>
+                            <Check className="w-4 h-4 text-blue-600" />
+                          </button>
+                        </div>
+                      )}
+                  </div>
+
                   <div className="relative inline-block text-left group">
                     <button
                       onClick={() => setIsOpenTools(!isOpenTools)}
@@ -792,11 +982,11 @@ const downloadImage = async (imageUrl : string) => {
                     )}
 
                   {/* Overlay to close dropdown when clicking outside */}
-                  {(isOpenModel || isOpenTools) && (
+                  {(isOpenModel || isOpenTools || isOpenUpload) && (
                     <div
                       className="fixed inset-0 z-0"
                       onClick={() => {
-                        const clickType = isOpenModel ? "model": "tools";
+                        const clickType = isOpenModel ? "model": isOpenTools ? "tools": "upload";
                         handleOverlayClick(clickType)
                       }}
                     />
