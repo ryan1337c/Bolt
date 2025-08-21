@@ -7,12 +7,14 @@ import TypeWriter from '../../components/TypeWriter';
 import chatStyles from '../../components/chatBubble.module.css'
 import { AiOutlineSend } from "react-icons/ai";
 import { CiSquarePlus } from "react-icons/ci";
+import { VscMic } from "react-icons/vsc";
 import Image from "next/image";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
 import { ChevronDown, Check, Ban, FileText, X } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { GoPaperclip } from "react-icons/go";
+import SpeechRecognitionModal from "../../components/SpeechRecognitionModal";
 
 export interface ChatMessage {
   role: string;
@@ -135,6 +137,24 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     else
       setIsOpenUpload(false);
   }
+
+  // Voice modal
+  const [isDictateModalOpen, setIsDictateModalOpen] = useState(false);
+
+  // Handler for speech to text
+  const handleDictateTranscript = (text: string) => {
+    // Appends the dictated text to any existing text in the textarea
+    setUserInput(prev => prev ? `${prev} ${text}` : text);
+    setIsDictateModalOpen(false); // Close the modal
+    
+    // Optional: focus the textarea and trigger its auto-resize
+    if (textareaRef.current) {
+        setTimeout(() => {
+            textareaRef.current?.focus();
+            handleInput();
+        }, 0)
+    }
+  };
 
   const filterForOpenAI = (history: ChatMessage[]) => {
     return history.map(({ role, content }) => ({ role, content}));
@@ -824,7 +844,7 @@ const downloadImage = async (imageUrl : string) => {
 
                     {/* Uploading tip */}
                     {!isOpenUpload && (
-                      <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+                      <div className="absolute bottom-full left-0 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
                         Add files and more
                         <div className="absolute top-full left-6 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                       </div>
@@ -868,7 +888,7 @@ const downloadImage = async (imageUrl : string) => {
 
                     {/* Tooltip */}
                     {!isOpenTools && (
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
                         Search and Tools
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                       </div>
@@ -898,6 +918,19 @@ const downloadImage = async (imageUrl : string) => {
                         ))}
                       </div>
                     )}
+                  </div>
+                  <div className="relative group inline-block">
+                    <button className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-700 transition-color"
+                    onClick={() => setIsDictateModalOpen(true)}>
+                      <VscMic size="21px" />
+                    </button>
+
+                    {/* Voice tip */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+                      Dictate
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                    </div>
+     
                   </div>
                   <div className="relative inline-block text-left ml-auto">
                     {/* Trigger Button */}
@@ -1000,6 +1033,12 @@ const downloadImage = async (imageUrl : string) => {
     </div>
   </div>
 </main>
+   {/* Render voice speech-to-text popup */}
+    <SpeechRecognitionModal
+      isOpen={isDictateModalOpen}
+      onClose={() => setIsDictateModalOpen(false)}
+      onTranscript={handleDictateTranscript}
+    />
   </>
   );
 
