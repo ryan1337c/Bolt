@@ -920,7 +920,7 @@ const downloadImage = async (imageUrl : string) => {
                     )}
                   </div>
                   <div className="relative group inline-block">
-                    <button className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-700 transition-color"
+                    <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-color"
                     onClick={() => setIsDictateModalOpen(true)}>
                       <VscMic size="21px" />
                     </button>
