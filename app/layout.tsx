@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
 import { Suspense } from 'react';
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
         <AuthProvider>
           <Suspense fallback={<div>Loading...</div>}>
             {children}
+            <Analytics />
           </Suspense>
         </AuthProvider>
       </body>
