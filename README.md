@@ -8,7 +8,7 @@ Meet Bolt — an all-in-one copilot that can help you with everyday tasks like c
 This app is currently in v1, more features to come in the near future!
 
 # Website Link
-https://image-ai-7y2c.vercel.app/
+https://bolt-7y2c.vercel.app/
 
 
 ## Learn More
