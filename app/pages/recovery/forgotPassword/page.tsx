@@ -33,7 +33,7 @@ export default function ForgotPassword () {
     }
 
     return(
-        <div className="h-screen flex items-center justify-center">
+        <div className="h-screen flex items-center justify-center p-5">
         {mounted && (
             <div className="flex flex-col bg-white text-black p-10 md:w-[500px] shadow-lg rounded-xl items-center">
                 <div className="font font-bold text-[30px] m-2 ">Forgot password</div>

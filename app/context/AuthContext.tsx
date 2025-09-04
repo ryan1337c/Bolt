@@ -6,6 +6,8 @@ import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 // Shape of context
 interface AuthContextType {
     isLoggedIn: boolean;
+    chatMode: string;
+    setChatMode: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +21,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+    const [chatMode, setChatMode] = useState("new chat"); // new chat, recents, chat
 
     useEffect(() => {
 
@@ -51,7 +54,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }, []);
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn }}>
+        <AuthContext.Provider value={{ isLoggedIn, chatMode, setChatMode }}>
             {children}
         </AuthContext.Provider>
     );

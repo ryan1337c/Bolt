@@ -22,6 +22,7 @@
     "@vercel/analytics": "^1.5.0",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "formidable": "^3.5.4",
     "fs": "^0.0.1-security",
     "google-auth-library": "^9.15.0",

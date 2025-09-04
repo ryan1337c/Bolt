@@ -42,10 +42,20 @@ const config: Config = {
           from: { transform: "translateY(0)" },
           to: { transform: "translateY(calc(-100% - var(--gap)))" },
         },
+        'fade-in': {
+          '0%': {
+            opacity: '0',
+          },
+          '100%': {
+            opacity: '1',
+          },
+        },
       },
       animation: {
         marquee: "marquee var(--duration) linear infinite",
         "marquee-vertical": "marquee-vertical var(--duration) linear infinite",
+        'fade-in': 'fade-in 1s ease-in-out forwards',
+        'fade-in-sm': 'fade-in 0.15s ease-out forwards'
       },
   
     },

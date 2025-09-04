@@ -14,13 +14,13 @@ const Header = () => {
   }, []);
   return (
     <div className=" h-[16] flex  text-white justify-between">
-      <button className="p-5 flex gap-2 text-xl font-bold items-center" onClick={() => {
+      {/* <button className="p-5 flex gap-2 text-xl font-bold items-center" onClick={() => {
         router.push('/');
       }}>
       <FaRobot />
       Bolt
-      </button>
-      {mounted && <button className=" m-5 p-2 flex gap-2 items-center buttonEffects hover:bg-hoverLandingPage" onClick={async () => {
+      </button> */}
+      {mounted && <button className="m-3 ml-auto p-2 flex gap-2 items-center buttonEffects hover:bg-hoverLandingPage" onClick={async () => {
         const auth = new AuthServices();
         await auth.logout();
         // redirect back to landing page 
