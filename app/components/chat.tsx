@@ -494,8 +494,12 @@ const downloadImage = async (imageUrl : string) => {
 
         console.log("Chat history created successfully!");
 
-        // Add new chat history to recents
-        setRecents(prev => [data, ...prev])
+        if (data) {
+          // Add new chat history to recents
+          setRecents(prev => [data, ...prev])
+          
+          setChatMode("recents")
+        }
       }
       catch( error: any) {
         const message = error.message || 'An unexpected error occurred';
@@ -508,7 +512,7 @@ const downloadImage = async (imageUrl : string) => {
         updateChatHistory();
       else if (chatMode === "new chat")
         createChatHistory();
-      setChatMode("recents")
+
     }
 
     const shouldGenerateResponse = chatHistory.length > 0 && chatHistory.at(-1)?.loading === true;
