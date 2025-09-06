@@ -90,7 +90,7 @@ export default function Home() {
             {/* Left Side */}
             <div className="md:w-1/2 mt-16 min-h-[45vh]">
               <div className="flex flex-col items-center md:flex-none md:items-start lg:ml-40">
-                <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem]" sparklesCount={5}>Bolt</SparklesText>
+                <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem]" sparklesCount={5}>Omni</SparklesText>
                 <div className="sm:text-3xl md:text-4xl font-bold flex gap-2">
                   <FlipText className="text-purple-500">Fast.</FlipText>
                   <FlipText className="text-purple-300">Smart.</FlipText>

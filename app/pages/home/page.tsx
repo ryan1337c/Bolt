@@ -207,7 +207,7 @@ export default function Home() {
                   onClick={() => {
                     router.push("/")
                   }}>
-                  Bolt
+                  Omni
                 </button>
 
               </div>
