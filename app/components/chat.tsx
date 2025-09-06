@@ -202,7 +202,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     }
 
     setImageTrigger(prev => !prev);
-    setIsProcessing(false);
+    // setIsProcessing(false);
     
   }
 
@@ -248,7 +248,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       console.error('Fetch failed: ', error.message || error);
     }
 
-    setIsProcessing(false);
+    // setIsProcessing(false);
   }
 
   const generateResponseWithUpload = async() => {
@@ -269,7 +269,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      setIsProcessing(false);
+      // setIsProcessing(false);
       return;
     }
 
@@ -331,7 +331,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       })
     }
 
-    setIsProcessing(false);
+    // setIsProcessing(false);
   }
 
   const sendMessage = async () => {
@@ -449,14 +449,18 @@ const downloadImage = async (imageUrl : string) => {
   // This is the useEffect that syncs local state with the parent
   useEffect(() => {
     setChatHistory(chat);
+    if (chat.length > 0) {
+    setTimeout(() => {
+      scrollToBottom('auto');
+    }, 0);
+    }
   }, [currChatId, chatMode]);
-    useEffect(() => {
-
-  }, [])
 
   useEffect(() => {
     // Scroll to the bottom every time chatHistory is updated
     const shouldUpdate = chatHistory.length > 0 && chatHistory.at(-1)?.loading === false;
+    console.log("Chat Length: ", chatHistory.length)
+    console.log("Last message done loading?: ", chatHistory.at(-1)?.loading)
     const updateChatHistory = async() => {
       try {
         // Fetch user session
@@ -464,6 +468,8 @@ const downloadImage = async (imageUrl : string) => {
         const {email} = session.user
 
         await publicServices.updateHistory(email, chatHistory, currChatId);
+
+        console.log("Chat history updated")
 
         // Update recents by replacing the old chat with new one
         setRecents(prev => 
@@ -498,12 +504,10 @@ const downloadImage = async (imageUrl : string) => {
     }
 
     if (shouldUpdate) {
-
       if (chatMode === "recents")
         updateChatHistory();
       else if (chatMode === "new chat")
         createChatHistory();
-
       setChatMode("recents")
     }
 
@@ -627,19 +631,17 @@ const downloadImage = async (imageUrl : string) => {
     return () => document.removeEventListener('click', handleClick);
   }, [copyToClipboard]);
 
-  useEffect(() => {
-    setChatHistory(chat);
-  }, [chat])
-
-  useEffect(() => {
-    if (chat.length > 0) {
-      setTimeout(() => {
-        scrollToBottom('auto');
-      }, 0);
-    }
-  }, [chat]);
+  // useEffect(() => {
+  //   setChatHistory(chat);
+  //   if (chat.length > 0) {
+  //     setTimeout(() => {
+  //       scrollToBottom('auto');
+  //     }, 0);
+  //   }
+  // }, [chat])
 
   const handleTypingComplete = useCallback(() => {
+    setIsProcessing(false);
     setChatHistory(prevHistory => {
       if (prevHistory.length === 0) {
         return prevHistory;
@@ -813,7 +815,7 @@ const downloadImage = async (imageUrl : string) => {
                   placeholder="Type your message..."
                   wrap="hard"
                   disabled={isProcessing}
-                  className="flex-1 mt-1 min-h-[20px] max-h-[150px] resize-none bg-transparent border-none outline-none overflow-y-auto pt-1 text-base break-all whitespace-normal placeholder:text-gray-500"
+                  className="flex-1 mt-1 min-h-[20px] max-h-[150px] resize-none bg-transparent border-none outline-none overflow-y-auto pt-1 text-base break-words whitespace-normal placeholder:text-gray-500"
                   value={userInput}
                   onInput={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                       setUserInput(e.target.value)
