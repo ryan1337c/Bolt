@@ -178,14 +178,15 @@ export default function Home() {
           </div>
 
           {/* --- Footer Section --- */}
-          <footer className="w-full flex justify-end items-center py-5 pr-10 border-t border-white/10 mt-auto bg-black/20">
+          <footer className="w-full flex justify-between items-center py-5 px-10 border-t border-white/10 mt-auto bg-black/20">
+            <p className="text-sm font-medium text-gray-400">© 2025 Ryan Chen</p>
             <a
               href="https://github.com/ryan1337c" 
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300"
             >
-              <p className="text-sm font-medium">Created by Ryan Chen</p> 
+              <p className="text-sm font-medium ">Created by Ryan Chen</p> 
               <FaGithub className="size-5" />
             </a>
           </footer>
