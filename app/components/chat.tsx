@@ -449,12 +449,13 @@ const downloadImage = async (imageUrl : string) => {
   // This is the useEffect that syncs local state with the parent
   useEffect(() => {
     setChatHistory(chat);
-    if (chat.length > 0) {
-    setTimeout(() => {
-      scrollToBottom('auto');
-    }, 0);
-    }
   }, [currChatId, chatMode]);
+
+  useEffect(() => {
+    if (chatHistory.length > 0) {
+      scrollToBottom('auto');
+    }
+  }, [chatHistory]);
 
   useEffect(() => {
     // Scroll to the bottom every time chatHistory is updated
@@ -993,18 +994,25 @@ const downloadImage = async (imageUrl : string) => {
                               )}
 
                               {chatMessage.imageUrl && (
-                                <div className="mt-2">
+                                <div className="mt-2 relative w-64 h-64 rounded-md overflow-hidden group">
                                   <Image
                                     src={chatMessage.imageUrl}
                                     alt="Generated Image"
-                                    className="object-cover rounded-md"
                                     width={256}
                                     height={256}
                                     priority
+                                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                                   />
+                                  
+                                  {/* 3. The Download Button Overlay */}
                                   <button
                                     onClick={() => downloadImage(chatMessage.imageUrl)}
-                                    className="w-full mt-2 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                                    className={`
+                                      absolute inset-0 w-full h-full flex items-center justify-center
+                                      bg-black/60 text-white font-semibold text-sm
+                                      opacity-0 group-hover:opacity-100
+                                      transition-opacity duration-300
+                                    `}
                                   >
                                     Download Image
                                   </button>
