@@ -33,7 +33,7 @@ export default function ChatsView({
   const totalChats = recents.length;
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden h-full">
+    <div className="flex-1 flex flex-col bg-white overflow-hidden h-full animate-fade-in-sm">
       <div className="max-w-4xl mx-auto w-full flex flex-col h-full p-4 sm:p-6 md:p-8">
         
         {/* Header */}

@@ -178,8 +178,8 @@ export default function Home() {
           </div>
 
           {/* --- Footer Section --- */}
-          <footer className="w-full flex justify-between items-center py-5 px-10 border-t border-white/10 mt-auto bg-black/20">
-            <p className="text-sm font-medium text-gray-400">© 2025 Ryan Chen</p>
+          <footer className="w-full flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4 sm:gap-0 py-5 px-10 border-t border-white/10 mt-auto bg-black/20">
+            <p className="text-sm font-medium text-gray-400">© 2025 Omni | All Rights Reserved</p>
             <a
               href="https://github.com/ryan1337c" 
               target="_blank"

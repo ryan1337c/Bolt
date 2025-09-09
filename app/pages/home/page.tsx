@@ -378,8 +378,8 @@ export default function Home() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white transition-transform duration-300 ease-in-out">
-        <header className={`flex-shrink-0 flex items-center p-4`}>
+      <div className="flex-1 flex flex-col min-w-0 bg-white transition-transform duration-300 ease-in-out z-10">
+        <header className={`flex-shrink-0 flex items-center p-4 relative z-30`}>
           {/* Hamburger Menu */}
           <div className="md:hidden mr-2 sm:mr-4">
             <button 
@@ -392,16 +392,16 @@ export default function Home() {
           
           {/* Dynamic Content Area */}
           {chatMode === 'recents' && (
-            <div className="flex-1 flex items-center">
+            <div className="flex-1 flex items-center animate-fade-in-sm min-w-0 max-w-[33.33%]">
               <button 
                 disabled={isProcessing}
                 onClick={() => handleOpenRenameModal()}
-                className="flex items-center gap-2 text-lg font-semibold text-gray-800 truncate group disabled:cursor-not-allowed"
+                className="flex items-center gap-2 text-lg w-full font-semibold text-gray-800 truncate group disabled:cursor-not-allowed"
               >
-                <span className="truncate">{currentChatTitle}</span>
+                <span className="truncate min-w-0">{currentChatTitle}</span>
                 <Pencil 
                   size={16} 
-                  className="text-gray-400 opacity-100 transition-opacity" 
+                  className="text-gray-400 opacity-100 transition-opacity flex-shrink-0" 
                 />
               </button>
           </div>
