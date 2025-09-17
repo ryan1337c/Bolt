@@ -2,7 +2,7 @@
 import React, {useState} from 'react'
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaRobot } from "react-icons/fa";
+import { FaRobot, FaEye, FaEyeSlash } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
 import googleButton from './assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png'
@@ -12,6 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [backing, setBacking] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const navigate = (url: string) => {
@@ -77,8 +78,27 @@ const Login = () => {
                   router.push('./recovery/forgotPassword');
                 }}>Forgot password?</div>
               </div>
-              <div>
-                <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' type='password' name='password' onChange={e => setPassword(e.target.value)} required autoComplete='off'/>
+              <div className="relative">
+                <input 
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2 pr-10" 
+                  id='password' 
+                  type={showPassword ? 'text' : 'password'} 
+                  name='password' 
+                  onChange={e => setPassword(e.target.value)} 
+                  required 
+                  autoComplete='off'
+                />
+                
+                {/* Show/Hide Password Toggle Button */}
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer 
+                  focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 

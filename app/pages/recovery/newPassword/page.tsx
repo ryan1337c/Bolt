@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AuthServices } from '@/lib/authServices';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function NewPassword () {
     const router = useRouter();
@@ -57,15 +58,50 @@ export default function NewPassword () {
                 <form className="w-full flex flex-col gap-7 text-[15px]" onSubmit={handleSubmit}>
                     <div className="flex flex-col gap-2">
                         <label className="text-left font-semibold">New password</label>
-                        <input className="bg-white text-black px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2" 
-                        id="newPassword" name="newPassword" placeholder='New password' type={showPassword ? 'text' : 'password'} required 
-                        onChange={(e) => setNewPassword(e.target.value)}></input>
+                        {/* Add relative container */}
+                        <div className="relative">
+                            <input 
+                                className="bg-white text-black w-full px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 pr-10" 
+                                id="newPassword" 
+                                name="newPassword" 
+                                placeholder='New password' 
+                                type={showPassword ? 'text' : 'password'} 
+                                required 
+                                onChange={(e) => setNewPassword(e.target.value)}
+                            />
+                            {/* Show/Hide Password Toggle Button */}
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer focus:outline-none"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
                     </div>
                     <div className="flex flex-col gap-2">
                         <label className="text-left font-semibold">Confirm password</label>
-                        <input className="bg-white text-black px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2
-                        " id="confirmPassword" name="confirmPassword" placeholder='Confirm your password' type="password" required 
-                        onChange={(e) => setConfirmPassword(e.target.value)}></input>
+                         {/* Add relative container */}
+                        <div className="relative">
+                            <input 
+                                className="bg-white text-black w-full px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 pr-10" 
+                                id="confirmPassword" 
+                                name="confirmPassword" 
+                                placeholder='Confirm your password' 
+                                // Make the type dynamic based on state
+                                type={showConfirmPassword ? 'text' : 'password'} 
+                                required 
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                            />
+                             {/* Show/Hide Password Toggle Button */}
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer focus:outline-none"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" className="bg-launch p-3 tracking-wider text-white rounded-md 
                     shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:bg-[#2A3953]">CHANGE PASSWORD</button>

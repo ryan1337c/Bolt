@@ -2,7 +2,7 @@
 import React, {useState} from 'react'
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaRobot } from "react-icons/fa";
+import { FaRobot, FaEye, FaEyeSlash} from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
 
@@ -13,6 +13,7 @@ const Register  = () => {
     const [password, setPassword] = useState('');
     const [backing, setBacking] = useState(false);
     const [registerError, setRegisterError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     const navigate = (url: string) => {
@@ -84,8 +85,29 @@ const Register  = () => {
                 <div className="flex items-center justify-between w-[340px]">
                   <label htmlFor='password' className="block text-sm font-medium leading-6 ">Password</label>
                 </div>
-                <div>
+                {/* <div>
                   <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' name='password' type='password' required onChange={e => setPassword(e.target.value)} autoComplete='off'/>
+                </div> */}
+                <div className="relative">
+                  <input 
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2 pr-10" 
+                    id='password' 
+                    type={showPassword ? 'text' : 'password'} 
+                    name='password' 
+                    onChange={e => setPassword(e.target.value)} 
+                    required 
+                    autoComplete='off'
+                  />
+                  
+                  {/* Show/Hide Password Toggle Button */}
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer focus:outline-none"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                  </button>
                 </div>
               </div>
   
