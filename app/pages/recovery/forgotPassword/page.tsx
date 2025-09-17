@@ -43,7 +43,7 @@ export default function ForgotPassword () {
                 
                 <button 
                     onClick={() => router.push('../login')} 
-                    className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-black font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 rounded-lg p-2"
+                    className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-black font-semibold transition-colors focus:outline-none p-2"
                     aria-label="Back to Login"
                 >
                     <IoArrowBack size={20} />
