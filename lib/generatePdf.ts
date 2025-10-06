@@ -1,6 +1,6 @@
 // lib/generatePdf.ts
 import { PDFDocument, rgb, StandardFonts, PDFFont, PDFPage } from 'pdf-lib';
-import fs from 'fs/promises';
+// import fs from 'fs/promises';
 import fontkit from '@pdf-lib/fontkit';
 
 // Interface is unchanged
@@ -53,15 +53,29 @@ export async function createPdfFromData(data: ResumeData): Promise<Uint8Array> {
   const effectiveWidth = width - 2 * MARGIN;
   const contentWidth = width - CONTENT_MARGIN - CONTENT_MARGIN;
 
-  // Read the raw font file data from your /public/fonts directory.
-  const cmRegularBuffer = await fs.readFile('./public/fonts/ComputerModern-Regular.ttf');
-  const cmBoldBuffer = await fs.readFile('./public/fonts/ComputerModern-Bold.ttf');
-  const cmItalicBuffer = await fs.readFile('./public/fonts/ComputerModern-Italic.ttf');
+  // Determine the base URL. This works for both Vercel and local development.
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://omni-7y2c.vercel.app/`
+    : 'http://localhost:3000';
 
-  // 2. Embed these fonts into the PDF document.
-  const customFont = await pdfDoc.embedFont(new Uint8Array(cmRegularBuffer));
-  const customBoldFont = await pdfDoc.embedFont(new Uint8Array(cmBoldBuffer));
-  const customItalicFont = await pdfDoc.embedFont(new Uint8Array(cmItalicBuffer));
+  //Define the full URLs to the font files in your /public directory.
+  const fontUrls = {
+    regular: `${baseUrl}/fonts/ComputerModern-Regular.ttf`,
+    bold: `${baseUrl}/fonts/ComputerModern-Bold.ttf`,
+    italic: `${baseUrl}/fonts/ComputerModern-Italic.ttf`,
+  };
+
+  // Fetch all font files concurrently.
+  const [regularBytes, boldBytes, italicBytes] = await Promise.all([
+    fetch(fontUrls.regular).then(res => res.arrayBuffer()),
+    fetch(fontUrls.bold).then(res => res.arrayBuffer()),
+    fetch(fontUrls.italic).then(res => res.arrayBuffer()),
+  ]);
+
+  // Embed these fonts into the PDF document.
+  const customFont = await pdfDoc.embedFont(regularBytes, { subset: true });
+  const customBoldFont = await pdfDoc.embedFont(boldBytes, { subset: true });
+  const customItalicFont = await pdfDoc.embedFont(italicBytes, { subset: true });
 
   let y = height - MARGIN;
 
