@@ -148,7 +148,7 @@ export default function Home() {
               </p>
 
               <p className={`mt-3 text-lg md:text-xl text-gray-400 transition-all duration-700 ease-in-out delay-500 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
-                Our early adopters are already unlocking a smarter way to work with Omni's unified AI. They answer complex questions, generate stunning visuals, and tailor professional resumes—all faster than ever before.
+                Our early adopters are already unlocking a smarter way to work with Omni&apos;s unified AI. They answer complex questions, generate stunning visuals, and tailor professional resumes—all faster than ever before.
               </p>
             </div>
           </div>
