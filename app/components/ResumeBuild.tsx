@@ -1,0 +1,195 @@
+"use client";
+
+import { useState, ChangeEvent, DragEvent, useEffect } from 'react';
+// Added FiDownload for the new button
+import { FiUploadCloud, FiFileText, FiX, FiDownload } from 'react-icons/fi';
+
+type ResumeBuildProps = {
+  isProcessing: boolean;
+  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [jobTitle, setJobTitle] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  
+  // New state to hold the URL of the generated PDF for previewing
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      if (file.type === "application/pdf") {
+        setUploadedFile(file);
+      } else {
+        alert("Please upload a valid PDF file.");
+      }
+    }
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
+      const file = event.dataTransfer.files[0];
+      if (file.type === "application/pdf") {
+        setUploadedFile(file);
+      } else {
+        alert("Please upload a valid PDF file.");
+      }
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+  }
+
+  const handleProceed = async (event: React.FormEvent) => {
+      event.preventDefault();
+      if (!uploadedFile) {
+        alert("Please upload a resume file first.");
+        return;
+      }
+
+      setIsProcessing(true);
+
+      const formData = new FormData();
+      formData.append('resumeFile', uploadedFile);
+      formData.append('jobDescription', jobDescription);
+      formData.append('jobTitle', jobTitle);
+
+      try {
+        const response = await fetch("/api/generateResume", { 
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Something went wrong');
+        }
+
+        // Take the response PDF, create a URL, and set it to state for previewing.
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        setPdfUrl(url); // This will trigger the UI to show the result box
+
+      } catch (error: any) {
+        console.error('Fetch failed: ', error.message || error);
+        alert(`An error occurred: ${error.message}`); 
+      } finally {
+        setIsProcessing(false);
+      }
+  };
+
+  // Effect to clean up the created Object URL to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
+
+  // A function to reset everything and start over
+  const handleStartOver = () => {
+    setPdfUrl(null);
+    setUploadedFile(null);
+    setJobTitle('');
+    setJobDescription('');
+  };
+
+  // Create the special URL for the preview
+  const previewUrl = pdfUrl ? `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=85` : '';
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 bg-gray-50 text-gray-800 animate-fade-in-sm">
+      <div className="w-full max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-2">Resume Optimizer</h1>
+        <p className="text-gray-500 text-center mb-8">
+          Upload your resume to get started. We'll help you tailor it to the job you want.
+        </p>
+
+        {pdfUrl ? (
+          // RESULT PREVIEW BOX 
+          <div className="animate-fade-in-up-sm">
+            <div className="relative group w-full h-[550px] bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+              {/* PDF Preview */}
+              <iframe
+                src={previewUrl}
+                className="w-full h-full border-none"
+                title="Tailored Resume Preview"
+              />
+              
+              {/* Fade-out effect at the bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+
+              {/* Hover overlay and download button */}
+              <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <a
+                  href={pdfUrl}
+                  download="Tailored_Resume.pdf"
+                  className="flex items-center gap-2 bg-violet-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-violet-700 transition-transform transform hover:scale-105"
+                >
+                  <FiDownload className="w-5 h-5" />
+                  Download PDF
+                </a>
+              </div>
+            </div>
+            <button
+                onClick={handleStartOver}
+                className="w-full mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#7b66ba] hover:bg-[#6a56a5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7b66ba]"
+            >
+                Start Over
+            </button>
+          </div>
+        ) : !uploadedFile ? (
+          // INITIAL UPLOAD PROMPT 
+          <label
+            htmlFor="resume-upload"
+            className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300
+              ${isDragging ? 'border-violet-500 bg-violet-50' : 'border-gray-300 bg-white hover:bg-gray-50'}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {/* Content unchanged */}
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <FiUploadCloud className={`w-10 h-10 mb-3 transition-colors ${isDragging ? 'text-violet-600' : 'text-gray-400'}`} />
+              <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+              <p className="text-xs text-gray-500">PDF only (MAX. 5MB)</p>
+            </div>
+            <input id="resume-upload" type="file" className="hidden" accept=".pdf" onChange={handleFileChange} />
+          </label>
+        ) : (
+          // FILE UPLOADED, SHOW FORM 
+          <div className="w-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm animate-fade-in-up-sm">
+            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 mb-6">
+                <div className="flex items-center gap-3"><FiFileText className="text-violet-500 w-6 h-6 flex-shrink-0" /><span className="text-sm font-medium text-gray-700 truncate">{uploadedFile.name}</span></div>
+                <button onClick={handleRemoveFile} className="p-1.5 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors" aria-label="Remove file"><FiX className="w-5 h-5" /></button>
+            </div>
+            <form className="space-y-4" onSubmit={handleProceed}>
+              <div><label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-1">Job Title</label><input type="text" id="jobTitle" value={jobTitle} required onChange={(e) => setJobTitle(e.target.value)} disabled={isProcessing} className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm" placeholder="e.g., Senior Software Engineer"/></div>
+              <div><label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-1">Job Description</label><textarea id="jobDescription" rows={6} value={jobDescription} required onChange={(e) => setJobDescription(e.target.value)} disabled={isProcessing} className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm" placeholder="Paste the full job description here..."/></div>
+              <button type="submit" disabled={isProcessing} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#7b66ba] hover:bg-[#6a56a5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7b66ba] transition-colors">{isProcessing ? "Processing..." : "Generate"}</button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ResumeBuild;

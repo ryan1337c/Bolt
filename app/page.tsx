@@ -9,11 +9,11 @@ import { useRouter } from 'next/navigation';
 import { SparklesText } from "@/components/magicui/sparkles-text";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { FlipText } from "@/components/magicui/flip-text";
-import { TypingAnimation } from "@/components/magicui/typing-animation";
 import { Beam } from '@/components/magicui/beam';
 import { useInView } from 'react-intersection-observer';
 import { MarqueeDemo } from '@/components/magicui/review-cards';
 import { FaStar, FaGithub } from 'react-icons/fa';
+import CountUp from 'react-countup';
 
 export default function Home() {
   const router = useRouter();
@@ -53,7 +53,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen text-white overflow-hidden">
       {mounted && (
         <>
-          <div className="ml-auto pr-6 pt-3">
+          <div className="ml-auto pr-6 pt-3 animate-fade-in">
             {isLoggedIn ? (
               <>
                 <Link href={`./`}>
@@ -90,18 +90,18 @@ export default function Home() {
             {/* Left Side */}
             <div className="md:w-1/2 mt-16 min-h-[45vh]">
               <div className="flex flex-col items-center md:flex-none md:items-start lg:ml-40">
-                <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem]" sparklesCount={5}>Omni</SparklesText>
+                <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem] animate-fade-in" sparklesCount={5}>Omni</SparklesText>
                 <div className="sm:text-3xl md:text-4xl font-bold flex gap-2">
                   <FlipText className="text-purple-500">Fast.</FlipText>
                   <FlipText className="text-purple-300">Smart.</FlipText>
                   <FlipText className="text-purple-100">Limitless.</FlipText>
                 </div>
-                <TypingAnimation className="mt-8 mb-6">
-                  Unlock the power of AI models — Bolt connects you with cutting-edge agents to supercharge your workflows, automate tasks, and amplify your creativity. Fast, smart, limitless. Your AI assistant, reimagined.
-                </TypingAnimation>
+                <div className="mt-8 mb-6 animate-fade-in">
+                  Unlock the power of AI models — Omni connects you with cutting-edge agents to supercharge your workflows, automate tasks, and amplify your creativity. Fast, smart, limitless. Your AI assistant, reimagined.
+                </div>
                 <div className="sm:flex sm:justify-center lg:flex-none lg:justify-start">
                   <button
-                    className="buttonEffects !bg-launch p-3 flex gap-2 items-center rounded-lg"
+                    className="buttonEffects !bg-launch p-3 flex gap-2 items-center rounded-lg animate-fade-in"
                     id="launch"
                     onClick={() => {
                       router.push("/pages/home");
@@ -125,7 +125,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/*  Amount of Users Section */}
+          {/* Amount of Users Section */}
           <div ref={userCountRef} className="w-full flex flex-col lg:flex-row items-center justify-center gap-8 md:gap-16 px-4 py-16">
             <div className={`lg:w-5/12 transition-opacity duration-1000 ease-in ${userCountInView ? 'opacity-100' : 'opacity-0'}`}>
               <DotLottieReact
@@ -135,12 +135,20 @@ export default function Home() {
                 className="w-full max-w-[700px] mx-auto"
               />
             </div>
-            <div className={`lg:w-6/12 text-center lg:text-left transition-all duration-1000 ease-in-out delay-200 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}`}>
-              <h3 className="text-5xl md:text-7xl font-bold">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">50+</span>
+
+            <div className={`lg:w-6/12 text-center lg:text-left`}>
+              <h3 className={`text-6xl md:text-8xl font-bold transition-opacity duration-700 ease-in ${userCountInView ? 'opacity-100' : 'opacity-0'}`}>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
+                  {userCountInView && <CountUp end={100} duration={2.5} suffix="+" />}
+                </span>
               </h3>
-              <p className="mt-2 text-xl md:text-2xl text-gray-300">
-                Early adopters are unlocking the power of Bolt—be next.
+
+              <p className={`mt-4 text-2xl md:text-3xl font-semibold text-gray-200 transition-all duration-700 ease-in-out delay-200 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
+                Pioneers Building the Future.
+              </p>
+
+              <p className={`mt-3 text-lg md:text-xl text-gray-400 transition-all duration-700 ease-in-out delay-500 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
+                Our early adopters are already unlocking a smarter way to work with Omni's unified AI. They answer complex questions, generate stunning visuals, and tailor professional resumes—all faster than ever before.
               </p>
             </div>
           </div>

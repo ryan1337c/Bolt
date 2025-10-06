@@ -16,7 +16,7 @@ interface TypingAnimationProps extends MotionProps {
 export function TypingAnimation({
   children,
   className,
-  duration = 10,
+  duration = 5,
   delay = 0,
   as: Component = "div",
   startOnView = false,

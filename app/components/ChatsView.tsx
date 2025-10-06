@@ -79,7 +79,7 @@ export default function ChatsView({
                  />
             </div>
             <div className="flex-shrink-0 text-sm text-gray-500 mb-4 px-1">
-                <p>{totalChats} {totalChats === 1 ? 'chat' : 'chats'} with Bolt</p>
+                <p>{totalChats} {totalChats === 1 ? 'chat' : 'chats'} with Omni</p>
             </div>
         </div>
 

@@ -1,5 +1,6 @@
 "use client"
-import { FaRobot, FaCircle} from "react-icons/fa";
+import { FaCircle} from "react-icons/fa";
+import { IoDocumentTextOutline } from "react-icons/io5";
 import { FiPlus } from 'react-icons/fi';
 import { HiOutlineChatBubbleOvalLeft } from "react-icons/hi2"; 
 import { useState, useEffect} from "react";
@@ -17,6 +18,7 @@ import Chat from "@/app/components/chat"
 import RenameModal from "@/app/components/RenameModal";
 import ChatsView from "@/app/components/ChatsView";
 import SidebarTooltip from "@/app/components/SidebarTooltip";
+import ResumeBuild from "@/app/components/ResumeBuild";
 
 export interface ChatMessage {
   role: string;
@@ -254,8 +256,32 @@ export default function Home() {
                 </button>
               </SidebarTooltip>
             </div>
+
+            {/* Section 3: Resume Builder */}
+            <SidebarTooltip text="Resume" isSidebarExpanded={isSidebarExpanded}>
+                <button 
+                  disabled={isProcessing}
+                  className={`w-full group flex p-3 rounded-lg text-sm font-medium text-white ${chatMode === "resume" && 'bg-white/10'} hover:bg-white/10 transition-colors duration-300 justify-start`}
+                  onClick={() => {
+                    setChatMode("resume");
+                    setCurrChat(0);
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                      <IoDocumentTextOutline 
+                        size={22} 
+                        className="transition-transform duration-300 ease-in-out group-hover:scale-110" 
+                      />
+                    </div>
+                    <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
+                      Resume
+                    </span>
+                  </div>
+                </button>
+            </SidebarTooltip>
             
-            {/* Section 3 Chats */}
+            {/* Section 4 Chats */}
               <div className={`pt-6 flex flex-col flex-grow min-h-0`}>
                 <h3 className={`
                   flex-shrink-0 px-3 text-sm font-medium text-gray-400
@@ -416,7 +442,12 @@ export default function Home() {
             isProcessing={isProcessing}
             onDeleteChat={handleDelete}
           />
-          ) : (
+          ) : chatMode === "resume" ? (
+            <ResumeBuild 
+              isProcessing={isProcessing}
+              setIsProcessing={setIsProcessing}
+            />
+          ) : 
           <Chat 
             chat={chatMode === "recents" && recents[currChat] ? recents[currChat].history : []} 
             setRecents={setRecents} 
@@ -424,7 +455,7 @@ export default function Home() {
             isProcessing={isProcessing} 
             setIsProcessing={setIsProcessing}
           />
-        )}
+        }
       </div>
       {openMenuId && (
             <div 
