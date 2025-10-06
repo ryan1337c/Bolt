@@ -119,7 +119,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
       <div className="w-full max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-2">Resume Optimizer</h1>
         <p className="text-gray-500 text-center mb-8">
-          Upload your resume to get started. We'll help you tailor it to the job you want.
+          Upload your resume to get started. We&apos;ll help you tailor it to the job you want.
         </p>
 
         {pdfUrl ? (
