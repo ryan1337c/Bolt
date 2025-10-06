@@ -128,6 +128,7 @@ export default async function handler(
                 model: "gpt-4-1106-preview",
                 messages: [{ role: "user", content: structurePrompt}],
                 response_format: { type: "json_object"},
+                temperature: 0.2,
             });
 
             const structuredResume: ResumeData = JSON.parse(structureResponse.choices[0].message.content || '{}');
@@ -152,6 +153,7 @@ export default async function handler(
                 model: "gpt-4-1106-preview",
                 messages: [{ role: "user", content: tailorPrompt }],
                 response_format: { type: "json_object" },
+                temperature: 0.2,
             })
 
             const tailoredResumeData: ResumeData = JSON.parse(tailorResponse.choices[0].message.content || '{}');
