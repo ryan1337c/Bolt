@@ -32,6 +32,7 @@
     "motion": "^12.23.6",
     "nanoid": "^5.1.5",
     "next": "14.2.3",
+    "nodemailer": "^7.0.9",
     "openai": "^5.8.2",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@types/formidable": "^3.4.5",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.2",
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",

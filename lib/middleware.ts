@@ -36,7 +36,9 @@ const supabaseKey = process.env.NEXT_PUBLIC_ANON_KEY;
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/pages/login') &&
-    !request.nextUrl.pathname.startsWith('/pages/register')
+    !request.nextUrl.pathname.startsWith('/pages/register') &&
+    !request.nextUrl.pathname.startsWith('/pages/contact') &&
+    !request.nextUrl.pathname.startsWith('/pages/pricing')
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();

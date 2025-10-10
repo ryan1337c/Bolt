@@ -1,9 +1,7 @@
 "use client"
-import Link from 'next/link';
 import { useAuth } from './context/AuthContext';
-import { AuthServices } from '@/lib/authServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightToBracket, faUserPlus, faRocket} from '@fortawesome/free-solid-svg-icons';
+import { faRocket} from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SparklesText } from "@/components/magicui/sparkles-text";
@@ -14,6 +12,7 @@ import { useInView } from 'react-intersection-observer';
 import { MarqueeDemo } from '@/components/magicui/review-cards';
 import { FaStar, FaGithub } from 'react-icons/fa';
 import CountUp from 'react-countup';
+import Header from './components/Header';
 
 export default function Home() {
   const router = useRouter();
@@ -22,8 +21,6 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const { isLoggedIn } = useAuth();
 
   // Observer for the User Count section
   const { ref: userCountRef, inView: userCountInView } = useInView({
@@ -50,43 +47,11 @@ export default function Home() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen text-white overflow-hidden">
+    <div className="flex flex-col min-h-screen text-white overflow-hidden ">
       {mounted && (
         <>
-          <div className="ml-auto pr-6 pt-3 animate-fade-in">
-            {isLoggedIn ? (
-              <>
-                <Link href={`./`}>
-                  <button
-                    className="m-5 p-2 inline-block buttonEffects hover:bg-hoverLandingPage"
-                    onClick={async () => {
-                      const auth = new AuthServices();
-                      await auth.logout();
-                    }}
-                  >
-                    Sign Out
-                  </button>
-                </Link>
-              </>
-            ) : (
-              <div className="flex">
-                <Link href={`./pages/login`}>
-                  <button className="p-2 flex gap-2 items-center buttonEffects hover:bg-hoverLandingPage ">
-                    <FontAwesomeIcon icon={faArrowRightToBracket} />
-                    Log In
-                  </button>
-                </Link>
-                <Link href={`./pages/register`}>
-                  <button className="p-2 ml-3 flex gap-2 items-center buttonEffects hover:bg-hoverLandingPage">
-                    <FontAwesomeIcon icon={faUserPlus} />
-                    Sign Up
-                  </button>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col items-center lg:flex-row px-4">
+          <Header />
+          <div className="flex flex-col items-center lg:flex-row px-4 pt-10 " >
             {/* Left Side */}
             <div className="md:w-1/2 mt-16 min-h-[45vh]">
               <div className="flex flex-col items-center md:flex-none md:items-start lg:ml-40">
