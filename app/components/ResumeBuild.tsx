@@ -121,7 +121,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
         {/* --- Header Text (Theme-Aware) --- */}
         <h1 className="text-3xl font-bold text-center mb-2 text-slate-900 dark:text-white">Resume Optimizer</h1>
         <p className="text-slate-500 dark:text-gray-400 text-center mb-8">
-          Upload your resume to get started. We'll help you tailor it to the job you want.
+          Upload your resume to get started. We&apos;ll help you tailor it to the job you want.
         </p>
 
         {pdfUrl ? (
