@@ -115,7 +115,7 @@ const Login = () => {
                   Sign In
                 </button>
                 <p className="text-sm text-slate-600 dark:text-gray-300">
-                  Don't have an account? 
+                  Don&apos;t have an account? 
                   <a href='./register' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 ml-1">
                     Sign Up
                   </a>
