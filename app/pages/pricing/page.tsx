@@ -2,9 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import Header from '@/app/components/Header';
+import { useTheme } from "next-themes";
 
 export default function PricingPage() {
   const [mounted, setMounted] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -15,15 +17,14 @@ export default function PricingPage() {
       {mounted && (
         <>
           <Header />
-          {/* Set the main background color here */}
-          <div className="flex flex-col min-h-screen text-white animate-fade-in">
-            <div className="flex-grow flex flex-col items-center justify-center p-6 pt-28"> {/* Added top padding */}
-              {/* --- Page Header --- */}
+          <div className={`flex flex-col min-h-screen ${theme === 'dark' ? 'text-white bg-landingPage' : 'text-black bg-landingPageLight'} animate-fade-in`}>
+            <div className="flex-grow flex flex-col items-center justify-center p-6 pt-28">
+              {/* --- Page Header (Theme-Aware) --- */}
               <div className="text-center mb-16">
-                <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-white mb-4">
+                <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-white mb-4">
                   Find the Perfect Plan
                 </h1>
-                <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+                <p className="text-lg text-slate-600 dark:text-gray-400 max-w-2xl mx-auto">
                   Start for free and scale up as you grow. Omni offers flexible pricing to meet the needs of every user, from individuals to large enterprises.
                 </p>
               </div>
@@ -31,17 +32,17 @@ export default function PricingPage() {
               {/* --- Pricing Tiers Container --- */}
               <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
                 
-                {/* Tier 1: Free */}
-                <div className="bg-slate-900/50 rounded-xl shadow-lg border border-purple-500/30 p-8 flex flex-col transition-transform duration-300 hover:scale-105">
+                {/* Tier 1: Free (Theme-Aware) */}
+                <div className="bg-white/60 backdrop-blur-sm border border-violet-200 dark:bg-slate-900/50 dark:border-purple-500/30 rounded-xl shadow-lg p-8 flex flex-col transition-transform duration-300 hover:scale-105">
                   <div className="flex-grow">
-                    <h2 className="text-3xl font-bold text-purple-400 mb-2">Free</h2>
-                    <p className="text-gray-400 mb-6">For individuals getting started with AI.</p>
+                    <h2 className="text-3xl font-bold text-violet-600 dark:text-purple-400 mb-2">Free</h2>
+                    <p className="text-slate-500 dark:text-gray-400 mb-6">For individuals getting started with AI.</p>
                     
                     <div className="text-4xl font-extrabold mb-6">
-                      $0 <span className="text-xl font-medium text-gray-400">/ month</span>
+                      $0 <span className="text-xl font-medium text-slate-500 dark:text-gray-400">/ month</span>
                     </div>
 
-                    <ul className="space-y-4 text-gray-300">
+                    <ul className="space-y-4 text-slate-700 dark:text-gray-300">
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />
                         <span>Access to Basic AI Models</span>
@@ -56,27 +57,27 @@ export default function PricingPage() {
                       </li>
                     </ul>
                   </div>
-                  <button className="mt-8 w-full py-3 px-6 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors duration-300">
+                  <button className="mt-8 w-full py-3 px-6 bg-violet-600 hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors duration-300">
                     Get Started for Free
                   </button>
                 </div>
 
-                {/* Tier 2: Pro (Most Popular) */}
-                <div className="bg-slate-900/50 rounded-xl shadow-lg border border-purple-500 p-8 flex flex-col transform scale-105">
+                {/* Tier 2: Pro (Most Popular, Theme-Aware) */}
+                <div className="bg-white/60 backdrop-blur-sm border border-violet-400 dark:bg-slate-900/50 dark:border-purple-500 rounded-xl shadow-lg p-8 flex flex-col transform scale-105">
                   <div className="relative -top-12 -right-8 self-end">
-                    <div className="bg-purple-600 text-white text-sm font-bold px-4 py-1 rounded-full shadow-md">
+                    <div className="bg-violet-600 dark:bg-purple-600 text-white text-sm font-bold px-4 py-1 rounded-full shadow-md">
                       Most Popular
                     </div>
                   </div>
                   <div className="flex-grow -mt-4">
-                    <h2 className="text-3xl font-bold text-purple-300 mb-2">Pro</h2>
-                    <p className="text-gray-400 mb-6">For professionals who need more power.</p>
+                    <h2 className="text-3xl font-bold text-fuchsia-500 dark:text-purple-300 mb-2">Pro</h2>
+                    <p className="text-slate-500 dark:text-gray-400 mb-6">For professionals who need more power.</p>
                     
                     <div className="text-4xl font-extrabold mb-6">
                       TBD
                     </div>
 
-                    <ul className="space-y-4 text-gray-300">
+                    <ul className="space-y-4 text-slate-700 dark:text-gray-300">
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />
                         <span>All Free Tier Perks</span>
@@ -95,22 +96,22 @@ export default function PricingPage() {
                       </li>
                     </ul>
                   </div>
-                  <button className="mt-8 w-full py-3 px-6 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-300">
+                  <button className="mt-8 w-full py-3 px-6 bg-slate-900 hover:bg-slate-700 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-semibold rounded-lg transition-colors duration-300">
                     Coming Soon
                   </button>
                 </div>
 
-                {/* Tier 3: Enterprise */}
-                <div className="bg-slate-900/50 rounded-xl shadow-lg border border-purple-500/30 p-8 flex flex-col transition-transform duration-300 hover:scale-105">
+                {/* Tier 3: Enterprise (Theme-Aware) */}
+                <div className="bg-white/60 backdrop-blur-sm border border-violet-200 dark:bg-slate-900/50 dark:border-purple-500/30 rounded-xl shadow-lg p-8 flex flex-col transition-transform duration-300 hover:scale-105">
                   <div className="flex-grow">
-                    <h2 className="text-3xl font-bold text-purple-200 mb-2">Enterprise</h2>
-                    <p className="text-gray-400 mb-6">For businesses requiring enterprise-grade features.</p>
+                    <h2 className="text-3xl font-bold text-pink-500 dark:text-purple-200 mb-2">Enterprise</h2>
+                    <p className="text-slate-500 dark:text-gray-400 mb-6">For businesses requiring enterprise-grade features.</p>
 
                     <div className="text-4xl font-extrabold mb-6">
                       TBD
                     </div>
 
-                    <ul className="space-y-4 text-gray-300">
+                    <ul className="space-y-4 text-slate-700 dark:text-gray-300">
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />
                         <span>All Pro Tier Perks</span>
@@ -129,7 +130,7 @@ export default function PricingPage() {
                       </li>
                     </ul>
                   </div>
-                  <button className="mt-8 w-full py-3 px-6 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-300">
+                  <button className="mt-8 w-full py-3 px-6 bg-slate-900 hover:bg-slate-700 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black font-semibold rounded-lg transition-colors duration-300">
                     Coming Soon
                   </button>
                 </div>

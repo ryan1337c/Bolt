@@ -1,10 +1,11 @@
 'use client'
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaRobot, FaEye, FaEyeSlash} from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
+import { useTheme } from "next-themes"; 
 
 const Register  = () => {
     const [firstName, setFirstName] = useState('');
@@ -14,7 +15,9 @@ const Register  = () => {
     const [backing, setBacking] = useState(false);
     const [registerError, setRegisterError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const { theme } = useTheme(); 
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
 
     const navigate = (url: string) => {
       router.push(url);
@@ -36,88 +39,97 @@ const Register  = () => {
         setRegisterError(message);
       }
     }
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+      return null; 
+    }
   
     return (
-      <> 
-      <div className="min-h-screen flex  text-white">
-        <div className="ml-5 flex gap-2 text-xl font-bold absolute" onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
-          <Link href={`/`} className="flex items-center">
+      <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-landingPage text-white' : 'bg-landingPageLight text-black'}`}> 
+        {/* --- BACK BUTTON --- */}
+        <div className="absolute top-4 left-4">
+          <Link href={`/`} className="flex items-center gap-2 text-xl font-bold text-slate-800 dark:text-white" onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
             {backing && (<div className="appearArrowAnimatiuon p-0 m-0"><IoIosArrowRoundBack size={"40px"} className="backIconAnimation"/></div>)}
-            <FaRobot size={"50px"} className={`${backing ? 'robotIconShrinkAnimation' : ''}`} />
+            <FaRobot size={40} className={`${backing ? 'robotIconShrinkAnimation' : ''}`} />
           </Link>
         </div>
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex flex-col justify-center items-center h-[500px] w-2/3 ">
-        <div className="mb-4 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
-            <strong>Register an account</strong>
-              <label className={`text-error text-sm ${registerError ? 'visible': 'invisible'}`}>{registerError || '\u00A0'}</label>
+
+        {/* --- FORM CONTAINER  --- */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm">
+            <div className="mb-6 text-center">
+              <strong className="text-3xl font-bold">Create an account</strong>
+              <p className={`text-red-500 dark:text-error text-sm mt-2 ${registerError ? 'visible': 'invisible'}`}>{registerError || '\u00A0'}</p>
+            </div>
+              
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                  <div>
+                      <label htmlFor="firstname" className="block text-sm font-medium text-slate-700 dark:text-white">
+                          First Name
+                      </label>
+                      <div className="mt-2">
+                        <input id="firstname" name="firstname" type="text" autoComplete='off' required onChange={(e) => setFirstName(e.target.value)} 
+                          className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                        />
+                      </div>
+                  </div>
+                  <div>
+                      <label htmlFor="lastname" className="block text-sm font-medium text-slate-700 dark:text-white">
+                          Last Name
+                      </label>
+                      <div className="mt-2">
+                        <input id="lastname" name="lastname" type="text" autoComplete='off' required onChange={(e) => setLastName(e.target.value)} 
+                          className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                        />
+                      </div>
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-white">
+                        Email
+                    </label>
+                    <div className="mt-2">
+                      <input id="email" name="email" type="email" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} 
+                        className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                      />
+                    </div>
+                  </div>
+    
+                  <div>
+                    <label htmlFor='password' className="block text-sm font-medium text-slate-700 dark:text-white">Password</label>
+                    <div className="mt-2 relative">
+                      <input 
+                        id='password' 
+                        type={showPassword ? 'text' : 'password'} 
+                        name='password' 
+                        onChange={e => setPassword(e.target.value)} 
+                        required 
+                        autoComplete='off'
+                        className="block w-full rounded-md border-0 py-2 px-3 pr-10 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                      />
+                      <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                  </div>
+    
+                  <div className="flex flex-col items-center space-y-4 pt-2">
+                    <button type='submit' className="w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                      Sign Up
+                    </button>
+                    <p className="text-sm text-slate-600 dark:text-white">
+                      Already have an account?
+                      <a href='./login' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 ml-1">
+                        Log In
+                      </a>
+                    </p>
+                  </div> 
+              </form>
           </div>
-            <form className="space-y-4 min-w-max" onSubmit={handleSubmit}>
-                <div className="w-[340px] md:w-[300px] md:ml-4">
-                <label htmlFor="firstname" className="block text-sm font-medium leading-6">
-                        First Name
-                    </label>
-                    <div>
-                  <input id="firstname" name="firstname" type="text" autoComplete='off' required onChange={(e) => setFirstName(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
-                  />
-                    </div>
-                </div>
-                <div className="w-[340px] md:w-[300px] md:ml-4">
-                    <label htmlFor="lastname" className="block text-sm font-medium leading-6">
-                        Last Name
-                    </label>
-                    <div>
-                  <input id="lastname" name="lastname" type="text" autoComplete='off' required onChange={(e) => setLastName(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
-                  />
-                    </div>
-                </div>
-              <div className="w-[340px] md:w-[300px] md:ml-4">
-                <label htmlFor="username" className="block text-sm font-medium leading-6">
-                    Email
-                </label>
-                <div>
-                  <input id="username" name="username" type="text" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
-                  />
-                </div>
-              </div>
-  
-              <div className="w-[340px] md:w-[300px] md:ml-4">
-                <div className="flex items-center justify-between w-[340px]">
-                  <label htmlFor='password' className="block text-sm font-medium leading-6 ">Password</label>
-                </div>
-                {/* <div>
-                  <input className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2" id='password' name='password' type='password' required onChange={e => setPassword(e.target.value)} autoComplete='off'/>
-                </div> */}
-                <div className="relative">
-                  <input 
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2 pr-10" 
-                    id='password' 
-                    type={showPassword ? 'text' : 'password'} 
-                    name='password' 
-                    onChange={e => setPassword(e.target.value)} 
-                    required 
-                    autoComplete='off'
-                  />
-                  
-                  {/* Show/Hide Password Toggle Button */}
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer focus:outline-none"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
-                  </button>
-                </div>
-              </div>
-  
-              <div className="w-[340px] md:w-[300px] md:ml-4 flex flex-col items-center space-y-4">
-                <button type='submit' className="mt-3 flex w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
-                <a href='./login' className="text-white text-sm">Already have an account?<span className="text-indigo-300 hover:text-indigo-200 pl-1">Login</span></a>
-              </div> 
-            </form>
         </div>
-      </div>
       <div className="flex-1 bg-white border hidden border-zinc-50 md:flex md:justify-center md:items-center h-screen">
     <div className="text-center">
       <svg className="ghost" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
@@ -163,7 +175,6 @@ const Register  = () => {
     </div>
   </div>
     </div>
-    </>
     )
 }
 

@@ -33,57 +33,51 @@ export default function ChatsView({
   const totalChats = recents.length;
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden h-full animate-fade-in-sm">
+    <div className="flex-1 flex flex-col overflow-hidden h-full animate-fade-in-sm">
       <div className="max-w-4xl mx-auto w-full flex flex-col h-full p-4 sm:p-6 md:p-8">
         
-        {/* Header */}
+        {/* --- Header (Theme-Aware) --- */}
         <div className="flex-shrink-0">
             <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                <h1 className="
-                    text-3xl 
-                    font-light  
-                    text-gray-700 
-                    tracking-tight 
-                    mb-4 sm:mb-0
-                ">
+                <h1 className="text-3xl font-light text-slate-700 dark:text-gray-300 tracking-tight mb-4 sm:mb-0">
                     Your Chat History
                 </h1>
                 <button
                     onClick={onNewChat}
                     disabled={isProcessing}
-                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#7b66ba] rounded-lg hover:bg-[#66549b] disabled:bg-[#9178d9] transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-[#8b5cf6] dark:hover:brightness-[.9] disabled:opacity-50 transition-all rounded-lg"
                 >
                     <FiPlus size={16} />
                     <span>New Chat</span>
                 </button>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative mb-8 border border-gray-300 rounded-lg flex-shrink-0">
+            {/* --- Search Bar (Theme-Aware) --- */}
+            <div className="relative mb-8 flex-shrink-0">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search size={20} className="text-gray-400" />
+                    <Search size={20} className="text-slate-400 dark:text-gray-500" />
                 </div>
                 <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search your chats..."
-                className="
-                w-full 
-                pl-12 pr-4 py-3 
-                text-gray-800
-                rounded-lg 
-                focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
-                transition-all duration-300 
-                "
-                 />
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search your chats..."
+                    className="
+                        w-full pl-12 pr-4 py-3 rounded-lg transition-all duration-300
+                        bg-white dark:bg-slate-700/50 
+                        text-slate-800 dark:text-gray-200
+                        border border-slate-300 dark:border-slate-600
+                        focus:ring-2 focus:ring-violet-300 dark:focus:ring-white/25
+                        focus:border-transparent dark:focus:border-transparent
+                    "
+                />
             </div>
-            <div className="flex-shrink-0 text-sm text-gray-500 mb-4 px-1">
+            <div className="flex-shrink-0 text-sm text-slate-500 dark:text-gray-500 mb-4 px-1">
                 <p>{totalChats} {totalChats === 1 ? 'chat' : 'chats'} with Omni</p>
             </div>
         </div>
 
-        {/* Chat List  */}
+        {/* --- Chat List (Theme-Aware) --- */}
         <div className="flex-1 overflow-hidden">
             <div className="h-full overflow-y-auto">
                 <div className="space-y-3 pb-4">
@@ -91,35 +85,37 @@ export default function ChatsView({
                         filteredRecents.map((chat) => {
                         const originalIndex = recents.findIndex(r => r.chat_id === chat.chat_id);
                         const chatTitle = chat.chat_title || chat.history.find(msg => msg.role === 'user')?.content || 'New Chat';
-                        // Convert the created_at timestamp into a relative string like "about 5 hours ago"
                         const timeAgo = formatDistanceToNow(new Date(chat.created_at), { addSuffix: true });
                         
                         return (
                             <div
-                            key={chat.chat_id}
-                            className="w-full flex items-center gap-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-indigo-300 transition-colors group disabled:opacity-50"
+                                key={chat.chat_id}
+                                className="w-full flex items-center gap-2 p-4 rounded-lg transition-colors group disabled:opacity-50
+                                            border border-slate-200 dark:border-slate-700
+                                            hover:bg-slate-50 dark:hover:bg-slate-700/50
+                                            hover:border-violet-500 "
                             >
                                 <button
-                                key={chat.chat_id}
-                                onClick={() => onSelectChat(originalIndex)}
-                                disabled={isProcessing}
-                                className="flex-1 text-left min-w-0"
+                                    key={chat.chat_id}
+                                    onClick={() => onSelectChat(originalIndex)}
+                                    disabled={isProcessing}
+                                    className="flex-1 text-left min-w-0"
                                 >
-                                    <h2 className="font-semibold text-gray-800 truncate mb-1 group-hover:text-indigo-600">
+                                    <h2 className="font-semibold truncate mb-1 
+                                                text-slate-800 dark:text-gray-200 
+                                                group-hover:text-violet-600 dark:group-hover:text-purple-400">
                                         {chatTitle}
                                     </h2>
-                                    <p className="text-sm text-gray-500 truncate capitalize">
+                                    <p className="text-sm truncate capitalize text-slate-500 dark:text-gray-400">
                                         {`Created ${timeAgo}`}
                                     </p>
                                 </button>
-                                 {/* Delete Icon Button */}
                                 <button
-                                    onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteChat(originalIndex);
-                                    }}
+                                    onClick={(e) => { e.stopPropagation(); onDeleteChat(originalIndex); }}
                                     disabled={isProcessing}
-                                    className="flex-shrink-0 p-2 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors"
+                                    className="flex-shrink-0 p-2 rounded-full text-gray-400 
+                                                hover:bg-red-100 hover:text-red-600 
+                                                dark:hover:bg-red-500/20 dark:hover:text-red-400 transition-colors"
                                     aria-label="Delete chat"
                                 >
                                     <Trash2 size={18} />
@@ -128,8 +124,8 @@ export default function ChatsView({
                         );
                         })
                     ) : (
-                        <div className="text-center py-12 text-gray-500">
-                        <p>No chats found.</p>
+                        <div className="text-center py-12 text-slate-500 dark:text-gray-500">
+                            <p>No chats found.</p>
                         </div>
                     )}
                 </div>

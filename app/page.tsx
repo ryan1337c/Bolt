@@ -13,10 +13,14 @@ import { MarqueeDemo } from '@/components/magicui/review-cards';
 import { FaStar, FaGithub } from 'react-icons/fa';
 import CountUp from 'react-countup';
 import Header from './components/Header';
+import { useTheme } from "next-themes";
+import { RainbowButton } from "@/components/ui/rainbow-button"
+
 
 export default function Home() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -47,34 +51,35 @@ export default function Home() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen text-white overflow-hidden ">
+    <>
       {mounted && (
-        <>
+        <div className={`flex flex-col min-h-screen ${theme === 'dark' ? 'text-white bg-landingPage' : 'text-black bg-landingPageLight'}  overflow-hidden`}>
           <Header />
           <div className="flex flex-col items-center lg:flex-row px-4 pt-10 " >
             {/* Left Side */}
             <div className="md:w-1/2 mt-16 min-h-[45vh]">
               <div className="flex flex-col items-center md:flex-none md:items-start lg:ml-40">
-                <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem] animate-fade-in" sparklesCount={5}>Omni</SparklesText>
+                <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem] animate-fade-in " sparklesCount={5}>Omni</SparklesText>
                 <div className="sm:text-3xl md:text-4xl font-bold flex gap-2">
-                  <FlipText className="text-purple-500">Fast.</FlipText>
-                  <FlipText className="text-purple-300">Smart.</FlipText>
-                  <FlipText className="text-purple-100">Limitless.</FlipText>
+                  <FlipText className={`${theme === 'dark' ? 'text-purple-500' : 'text-violet-600'}`}>Fast.</FlipText>
+                  <FlipText className={`${theme === 'dark' ? 'text-purple-300': 'text-fuchsia-500'}`}>Smart.</FlipText>
+                  <FlipText className={`${theme === 'dark' ? 'text-purple-100' : 'text-pink-500'}`}>Limitless.</FlipText>
                 </div>
                 <div className="mt-8 mb-6 animate-fade-in">
                   Unlock the power of AI models — Omni connects you with cutting-edge agents to supercharge your workflows, automate tasks, and amplify your creativity. Fast, smart, limitless. Your AI assistant, reimagined.
                 </div>
-                <div className="sm:flex sm:justify-center lg:flex-none lg:justify-start">
-                  <button
-                    className="buttonEffects !bg-launch p-3 flex gap-2 items-center rounded-lg animate-fade-in"
+                <div className="sm:flex sm:justify-center lg:flex-none lg:justify-start animate-fade-in">
+                  <RainbowButton
+                    className={`p-5 flex gap-2 items-center rounded-lg bg-landingPageLight dark:bg-launch `}
                     id="launch"
                     onClick={() => {
                       router.push("/pages/home");
                     }}
-                  >
+                    variant={'outline'}
+                    >
                     <FontAwesomeIcon icon={faRocket} id="rocket" />
-                    Launch App
-                  </button>
+                    Launch App 
+                  </RainbowButton>
                 </div>
               </div>
             </div>
@@ -103,16 +108,16 @@ export default function Home() {
 
             <div className={`lg:w-6/12 text-center lg:text-left`}>
               <h3 className={`text-6xl md:text-8xl font-bold transition-opacity duration-700 ease-in ${userCountInView ? 'opacity-100' : 'opacity-0'}`}>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
+                <span className={`text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-purple-600`}>
                   {userCountInView && <CountUp end={100} duration={2.5} suffix="+" />}
                 </span>
               </h3>
 
-              <p className={`mt-4 text-2xl md:text-3xl font-semibold text-gray-200 transition-all duration-700 ease-in-out delay-200 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
+              <p className={`mt-4 text-2xl md:text-3xl font-semibold text-black dark:text-gray-200 transition-all duration-700 ease-in-out delay-200 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
                 Pioneers Building the Future.
               </p>
 
-              <p className={`mt-3 text-lg md:text-xl text-gray-400 transition-all duration-700 ease-in-out delay-500 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
+              <p className={`mt-3 text-lg md:text-xl text-black dark:text-gray-400 transition-all duration-700 ease-in-out delay-500 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
                 Our early adopters are already unlocking a smarter way to work with Omni&apos;s unified AI. They answer complex questions, generate stunning visuals, and tailor professional resumes—all faster than ever before.
               </p>
             </div>
@@ -120,22 +125,24 @@ export default function Home() {
 
           {/* --- Unified AI Core Section  --- */}
           <div ref={coreRef} className="w-full flex flex-col items-center pt-10 pb-16 px-4">
-            <h2 className={`text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-white transition-opacity duration-1000 ease-in ${coreInView ? 'opacity-100' : 'opacity-0'}`}>
+            <h2 className={`text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-white transition-opacity duration-1000 ease-in ${coreInView ? 'opacity-100' : 'opacity-0'}`}>
               One Interface. Many Minds.
             </h2>
             <div className={`
-              w-full max-w-6xl p-3 rounded-2xl bg-black/30 border border-purple-500/30
-              shadow-[0_0_25px_3px_rgba(168,85,247,0.25)]
+              w-full max-w-6xl p-3 rounded-2xl
+              bg-white/50 border border-violet-300
+              shadow-[0_0_25px_3px_rgba(139,92,246,0.25)]
+              dark:bg-black/30 dark:border-purple-500/30
+              dark:shadow-[0_0_25px_3px_rgba(168,85,247,0.25)]
               transition-all duration-1000 ease-in-out
               ${coreInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}
             `}>
               <Beam />
             </div>
           </div>
-
           {/* --- Testimonies Section  --- */}
           <div ref={testimoniesRef} className="w-full flex flex-col items-center mb-20 py-10 px-4">
-            <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-white transition-opacity duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
+            <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-white transition-opacity duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
               Testimonials
             </h2>
             <div className={`flex items-center gap-1 mb-10 transition-all delay-200 duration-1000 ease-in-out ${testimoniesInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}`}>
@@ -151,20 +158,27 @@ export default function Home() {
           </div>
 
           {/* --- Footer Section --- */}
-          <footer className="w-full flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4 sm:gap-0 py-5 px-10 border-t border-white/10 mt-auto bg-black/20">
-            <p className="text-sm font-medium text-gray-400">© 2025 Omni | All Rights Reserved</p>
+          <footer className={`
+            w-full flex flex-col sm:flex-row justify-center sm:justify-between items-center 
+            gap-4 sm:gap-0 py-5 px-10 mt-auto 
+            border-t bg-white/50 border-black/10 
+            dark:bg-black/20 dark:border-white/10
+          `}>
+            <p className="text-sm font-medium text-slate-600 dark:text-gray-400">
+              © 2025 Omni | All Rights Reserved
+            </p>
             <a
               href="https://github.com/ryan1337c" 
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300"
+              className="flex items-center gap-2 text-slate-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors duration-300"
             >
-              <p className="text-sm font-medium ">Created by Ryan Chen</p> 
+              <p className="text-sm font-medium">Created by Ryan Chen</p> 
               <FaGithub className="size-5" />
             </a>
           </footer>
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }

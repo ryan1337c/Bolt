@@ -583,7 +583,7 @@ const downloadImage = async (imageUrl : string) => {
     let processedText = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, language, code) => {
       const lang = language || 'text';
       const blockId = `code-${nanoid()}`
-      return `<div class="code-block border border-gray-200 rounded-lg overflow-hidden bg-gray-50"><div class="flex justify-between items-center px-3 py-0.5 border-b border-gray-200"><span class="text-xs text-gray-600 font-medium">${lang}</span><button class="copy-btn" data-block-id="${blockId}">Copy</button></div><div class="overflow-x-auto"><pre class="p-4"><code id="${blockId}" class="text-sm font-mono text-gray-800">${escapeHtml(code.trim())}</code></pre></div></div>`;
+      return `<div class="code-block border border-gray-200 dark:border-none rounded-lg overflow-hidden bg-gray-50 dark:bg-codeBgDark"><div class="flex justify-between items-center px-3 py-0.5 border-b border-gray-200 dark:border-slate-600"><span class="text-xs text-gray-600 dark:text-textDark font-medium">${lang}</span><button class="copy-btn dark:bg-codeBgDark dark:text-textDark hover:bg-[#e5e7eb] dark:hover:bg-white/10" data-block-id="${blockId}">Copy</button></div><div class="overflow-x-auto"><pre class="p-4"><code id="${blockId}" class="text-sm font-mono text-gray-800 dark:text-textDark">${escapeHtml(code.trim())}</code></pre></div></div>`;
     });
 
     // Then handle other markdown formatting
@@ -591,7 +591,7 @@ const downloadImage = async (imageUrl : string) => {
     return processedText
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-red-600">$1</code>')
+      .replace(/`(.*?)`/g, '<code class="bg-gray-100 dark:bg-chatDark px-1 py-0.5 rounded text-sm font-mono text-red-600 dark:text-red-400">$1</code>')
       .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 mt-6">$1</h1>')
       .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mb-3 mt-5">$1</h2>')
       .replace(/^### (.*$)/gm, '<h3 class="text-lg font-medium mb-2 mt-4">$1</h3>');
@@ -658,25 +658,31 @@ const downloadImage = async (imageUrl : string) => {
   }, []); // No dependencies needed due to using the updater form of setState
 
   const renderInputArea = () => (
-    <div className="bg-white w-full max-w-4xl mx-auto px-2">
-      <div className={`flex flex-col border p-2 bg-white w-full mb-2 rounded-xl shadow-sm
-      transition-all duration-300 ease-in-out ${isTextareaFocused ? 'border-gray-400 shadow-md': 'border-gray-200 hover:border-gray-400'}`}>
+    <div className="bg-white dark:bg-chatDark w-full max-w-4xl mx-auto px-2">
+      <div className={`
+        flex flex-col border p-2 bg-white dark:bg-slate-800 w-full mb-2 rounded-xl shadow-sm
+        transition-all duration-300 ease-in-out 
+        ${isTextareaFocused 
+          ? 'border-gray-400 dark:border-slate-500 shadow-md'
+          : 'border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-500'
+        }`}
+      >
       {/* Uploaded files */}
           {files.length > 0 && (
-          <div className="mb-2 p-2 border-t border-b border-gray-200">
+          <div className="mb-2 p-2 border-t border-b border-gray-200 dark:border-slate-700">
               <div className="flex flex-wrap gap-2">
               {files.map((file, index) => (
-                  <div key={`${file.name}-${index}`} className="flex items-center bg-gray-100 rounded-lg pl-2 pr-1 py-1 text-sm">
-                  <FileText className="w-4 h-4 mr-2 text-gray-600 flex-shrink-0" />
-                  <span className="truncate max-w-xs">{file.name}</span>
-                  <button
-                      type="button"
-                      onClick={() => handleFileDelete(index)}
-                      className="ml-2 p-0.5 rounded-full hover:bg-gray-300"
-                      aria-label={`Remove ${file.name}`}
-                  >
-                      <X className="w-3 h-3 text-gray-700" />
-                  </button>
+                  <div key={`${file.name}-${index}`} className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg pl-2 pr-1 py-1 text-sm">
+                      <FileText className="w-4 h-4 mr-2 text-slate-600 dark:text-gray-300 flex-shrink-0" />
+                      <span className="truncate max-w-xs text-slate-800 dark:text-gray-200">{file.name}</span>
+                      <button
+                          type="button"
+                          onClick={() => handleFileDelete(index)}
+                          className="ml-2 p-0.5 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600"
+                          aria-label={`Remove ${file.name}`}
+                      >
+                          <X className="w-3 h-3 text-slate-700 dark:text-gray-300" />
+                      </button>
                   </div>
               ))}
               </div>
@@ -684,138 +690,74 @@ const downloadImage = async (imageUrl : string) => {
           )}
 
           <div className={`flex items-center`}>
-          <textarea
-          id="message-input"
-          ref={textareaRef}
-          placeholder="Type your message..."
-          wrap="hard"
-          disabled={isProcessing}
-          className="flex-1 mt-1 min-h-[20px] max-h-[150px] resize-none bg-transparent border-none outline-none overflow-y-auto pt-1 text-base break-words whitespace-normal placeholder:text-gray-500"
-          value={userInput}
-          onInput={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-              setUserInput(e.target.value)
-              handleInput()
-          }}
-          onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => handleKeyPress(e)} // Corrected event type here
-          onFocus={() => setIsTextareaFocused(true)}
-          onBlur={() => setIsTextareaFocused(false)}
-          />
-              <button id="send-btn" type="button" onClick={() => sendMessage()} disabled={isProcessing}><AiOutlineSend className={`w-8 h-8 p-1.5 flex items-center justify-center text-white rounded-full border-2
-              transition-colors duration-200 ease-in-out ${userInput ? "bg-black  hover:bg-gray-600" : "bg-gray-300 cursor-not-allowed"}`}/></button>
-          </div>
-          <div className="flex items-center -ml-1">
-          <div className="relative group">
-              <button
-              className="p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 ease-in-out"
-              onClick={() => setIsOpenUpload(!isOpenUpload)}
+            <textarea
+              id="message-input"
+              ref={textareaRef}
+              placeholder="Type your message..."
+              wrap="hard"
               disabled={isProcessing}
-              >
-              <CiSquarePlus size="2.7em" className="text-gray-500" />
-              </button>
-
-              {/* Uploading tip */}
-              {!isOpenUpload && (
-              <div className="absolute bottom-full left-0 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-                  Add files and more
-                  <div className="absolute top-full left-6 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-              </div>
-              )}
-
-              <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              />
-
-
-              {/* Show dropdown */}
-              {isOpenUpload && (
-                  <div className="absolute bottom-full left-0 mb-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
-                  <button
-                      onClick={handleUploadSelect}
-                      className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-150 text-left"
-                  >
-                      <GoPaperclip size={"25px"} className="flex-shrink-0 text-gray-600" />
-
-                      <div className="flex-1 text-sm font-medium text-gray-900">
-                      {upload.name}
-                      </div>
-                      <Check className="w-4 h-4 text-blue-600" />
-                  </button>
-                  </div>
-              )}
+              className="flex-1 mt-1 min-h-[20px] max-h-[150px] resize-none bg-transparent border-none outline-none overflow-y-auto pt-1 text-base break-words whitespace-normal text-black dark:text-textDark placeholder:text-gray-500 dark:placeholder:text-gray-400"
+              value={userInput}
+              onInput={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  setUserInput(e.target.value)
+                  handleInput()
+              }}
+              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => handleKeyPress(e)}
+              onFocus={() => setIsTextareaFocused(true)}
+              onBlur={() => setIsTextareaFocused(false)}
+            />
+            <button id="send-btn" type="button" onClick={() => sendMessage()} disabled={isProcessing || !userInput} className={`w-8 h-8 p-1.5 flex items-center justify-center rounded-full border-none
+            transition-colors duration-200 ease-in-out ${userInput ? "bg-black hover:bg-gray-600 dark:bg-white dark:hover:bg-gray-300" : "bg-gray-300 dark:bg-slate-600 cursor-not-allowed"}`}>
+                <AiOutlineSend className={`w-5 h-5 ${userInput ? "text-white dark:text-black" : "text-gray-500 dark:text-gray-400"}`} />
+            </button>
           </div>
+          
+          <div className="flex items-center justify-between -ml-1">
+              <div className="flex items-center gap-1">
+              <div className="relative group">
+                <button
+                  className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-300 ease-in-out"
+                  onClick={() => setIsOpenUpload(!isOpenUpload)}
+                  disabled={isProcessing}
+                >
+                  <CiSquarePlus size="2em" className="text-gray-500 dark:text-gray-400" />
+                </button>
+                {/* Tooltip */}
+                {!isOpenUpload && ( <div className="absolute bottom-full left-0 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg transition-opacity duration-200 ease-out opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 group-hover:delay-200">Add files and more<div className="absolute top-full left-6 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                {/* Dropdown */}
+                {isOpenUpload && ( <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1"><button onClick={handleUploadSelect} className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><GoPaperclip size={"25px"} className="flex-shrink-0 text-gray-600 dark:text-gray-300" /><div className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">{upload.name}</div><Check className="w-4 h-4 text-blue-600" /></button></div> )}
+              </div>
 
-          <div className="relative inline-block text-left group">
+              <div className="relative inline-block text-left group">
+                <button
+                  onClick={() => setIsOpenTools(!isOpenTools)}
+                  disabled={isProcessing}
+                  className="flex items-center gap-2 px-2 py-1 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors"
+                >
+                    <svg className=" w-5 h-5" viewBox="0 0 256 256" fill="currentColor"><path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z" /></svg>
+                </button>
+                {/* Tooltip */}
+                {!isOpenTools && ( <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity duration-200 ease-out group-hover:delay-200">Search and Tools<div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
+                {/* Dropdown */}
+                {isOpenTools && ( <div className="absolute bottom-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1">{tools.map((tool, index) => ( <button key={index} onClick={() => handleToolSelect(tool.id)} className="w-full flex items-start space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><div className="flex-1 min-w-0"><div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">{tool.name}</div></div>{selectedTool === tool.id && (<Check className="w-4 h-4 text-blue-600" />)}</button>))}</div> )}
+              </div>
+              
+              <div className="relative group inline-block">
+                <button className="p-2.5 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => setIsDictateModalOpen(true)} disabled={isProcessing}>
+                  <VscMic size="20px" />
+                </button>
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity duration-200 ease-out group-hover:delay-200">Dictate<div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div>
+              </div>
+            </div>
+
+            <div className="relative inline-block text-left ml-auto">
               <button
-              onClick={() => setIsOpenTools(!isOpenTools)}
-              disabled={isProcessing}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors"
+                onClick={() => { if (selectedTool !== "image") setIsOpenModel(!isOpenModel) }}
+                className="inline-flex items-center justify-between w-40 md:w-64 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-gray-500 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200"
               >
-                  <svg className=" w-6 h-6" viewBox="0 0 256 256" fill="currentColor">
-                  <path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z" />
-                  </svg>
-              </button>
-
-              {/* Tooltip */}
-              {!isOpenTools && (
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-                  Search and Tools
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-              </div>
-              )}
-
-              {/* Tool Dropdown Menu */}
-              {isOpenTools && (
-              <div className="absolute bottom-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
-                  {tools.map((tool, index) => (
-                  <button
-                      key={index}
-                      onClick={() => handleToolSelect(tool.id)}
-                      className="w-full flex items-start space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors duration-150 text-left"
-                  >
-                      <div className="flex-shrink-0 mt-0.5 text-gray-600">
-                      {tool.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 mb-1">
-                          {tool.name}
-                      </div>
-                      </div>
-                      {selectedTool === tool.id && (
-                          <Check className="w-4 h-4 text-blue-600" />
-                      )}
-                  </button>
-                  ))}
-              </div>
-              )}
-          </div>
-          <div className="relative group inline-block">
-              <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-color"
-              onClick={() => setIsDictateModalOpen(true)}
-              disabled={isProcessing}>
-              <VscMic size="21px" />
-              </button>
-
-              {/* Voice tip */}
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-              Dictate
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-              </div>
-
-          </div>
-          <div className="relative inline-block text-left ml-auto">
-              {/* Trigger Button */}
-              <button
-              onClick={() => {
-                  if (selectedTool !== "image")
-                  setIsOpenModel(!isOpenModel)
-              }
-              }
-              className="inline-flex items-center justify-between w-40 md:w-64 px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors duration-200"
-              >
-              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3">
                   <div className={`w-2 h-2 rounded-full ${
                   selectedModelData?.tier === 'sonnet' ? 'bg-orange-500' :
                   selectedModelData?.tier === 'gpt4' ? 'bg-green-500' :
@@ -825,85 +767,69 @@ const downloadImage = async (imageUrl : string) => {
                   <span className="text-left">
                   {selectedModelData?.name}
                   </span>
-              </div>
-          {selectedTool === "image" ? (
-          <div
-              className="relative group"
-              onMouseEnter={() => setShowTooltip(true)}
-              onMouseLeave={() => setShowTooltip(false)}
-              >
-              <Ban className="w-4 h-4 transition-transform duration-200 text-red-500" />
-
-              {/* Tooltip */}
-              <div className={`absolute bottom-full right-0 mb-2 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap z-10 ${showTooltip ? 'opacity-100': 'opacity-0 pointer-events-none '} transition-opacity duration-75`}>
-                  Model selection disabled for image tool
-                  <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
-              </div>
-          </div>
-          ):  <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                  isOpenModel ? 'transform rotate-180' : ''
-                  }`}
-              />
-              }
+                </div>
+                {selectedTool === "image" ? (
+                <div
+                    className="relative group"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    >
+                    <Ban className="w-4 h-4 transition-transform duration-200 text-red-500" />
+                    <div className={`absolute bottom-full right-0 mb-2 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap z-10 ${showTooltip ? 'opacity-100': 'opacity-0 pointer-events-none '} transition-opacity duration-75`}>
+                        Model selection disabled for image tool
+                        <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                </div>
+                ):  <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                        isOpenModel ? 'transform rotate-180' : ''
+                        }`}
+                    />
+                }
               </button>
-
-              {/* Model Dropdown Menu */}
               {isOpenModel && (
-              <div className="absolute right-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white border border-gray-200 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col max-h-[60vh]">
-                  <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                  {models.map((model) => (
-                      <button
-                      key={model.id}
-                      onClick={() => handleModelSelect(model.id)}
-                      className="group flex items-center w-full px-4 py-3 text-sm hover:bg-gray-50 transition-colors duration-150"
-                      >
-                      <div className="flex items-center flex-1">
-                          <div className={`w-2 h-2 rounded-full mr-3 ${
-                          model.tier === 'sonnet' ? 'bg-orange-500' :
-                          model.tier === 'gpt4' ? 'bg-green-500' :
-                          model.tier === 'deepseek' ? 'bg-blue-500' :
-                          'bg-gray-500'
-                          }`} />
-                          <div className="flex-1 text-left">
-                          <div className="font-medium text-gray-900">{model.name}</div>
-                          <div className="text-gray-500 text-xs mt-0.5">{model.description}</div>
-                          </div>
-                      </div>
-                      {selectedModel === model.id && (
-                          <Check className="w-4 h-4 text-blue-600" />
-                      )}
-                      </button>
-                  ))}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="border-t border-gray-100 px-4 py-3 flex-shrink-0">
-                      <div className="text-xs text-gray-500">
-                          Choose the model that best fits your needs
-                      </div>
-                  </div>
-              </div>
+                <div className="absolute right-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col max-h-[60vh]">
+                    <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                    {models.map((model) => (
+                        <button
+                        key={model.id}
+                        onClick={() => handleModelSelect(model.id)}
+                        className="group flex items-center w-full px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
+                        >
+                        <div className="flex items-center flex-1">
+                            <div className={`w-2 h-2 rounded-full mr-3 ${
+                            model.tier === 'sonnet' ? 'bg-orange-500' :
+                            model.tier === 'gpt4' ? 'bg-green-500' :
+                            model.tier === 'deepseek' ? 'bg-blue-500' :
+                            'bg-gray-500'
+                            }`} />
+                            <div className="flex-1 text-left">
+                                <div className="font-medium text-gray-900 dark:text-gray-100">{model.name}</div>
+                                <div className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{model.description}</div>
+                            </div>
+                        </div>
+                        {selectedModel === model.id && (
+                            <Check className="w-4 h-4 text-blue-600" />
+                        )}
+                        </button>
+                    ))}
+                    </div>
+                    <div className="border-t border-slate-100 dark:border-slate-700 px-4 py-3 flex-shrink-0">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Choose the model that best fits your needs
+                        </div>
+                    </div>
+                </div>
               )}
-
-              {/* Overlay to close dropdown when clicking outside */}
-              {(isOpenModel || isOpenTools || isOpenUpload) && (
-                  <div
-                  className="fixed inset-0 z-0"
-                  onClick={() => {
-                      const clickType = isOpenModel ? "model": isOpenTools ? "tools": "upload";
-                      handleOverlayClick(clickType)
-                  }}
-                  />
-              )}
+            </div>
+            {(isOpenModel || isOpenTools || isOpenUpload) && (<div className="fixed inset-0 z-0" onClick={() => { const clickType = isOpenModel ? "model": isOpenTools ? "tools": "upload"; handleOverlayClick(clickType) }} /> )}
           </div>
-      </div>
     </div>
     </div>
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-white">
+    <div className="flex-1 flex flex-col min-h-0  dark:text-white dark:bg-chatDark">
       {chatHistory.length === 0 && chatMode === "new chat" ? (
         // === EMPTY STATE LAYOUT ===
         <div className="flex-1 flex flex-col items-center justify-center p-4 -mt-16 animate-fade-in-up">
@@ -911,7 +837,7 @@ const downloadImage = async (imageUrl : string) => {
             <div className="inline-block p-4 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mb-6 shadow-lg">
               <FaBolt className="text-white" size={48} />
             </div>
-            <h1 className="text-3xl font-bold text-gray-700">
+            <h1 className="text-3xl font-bold text-gray-700 dark:text-textDark">
               What can I help you with today?
             </h1>
           </div>
@@ -946,7 +872,7 @@ const downloadImage = async (imageUrl : string) => {
                             if (reference)
                               messageRefs.current[index] = reference as HTMLDivElement;
                           }}
-                          className={`text-sm text-left rounded-lg p-3 bg-gray-200 break-words ${chatStyles.talkBubbleUser}`}
+                          className={`text-sm text-left rounded-lg p-3 bg-gray-200 dark:bg-userChatBg dark:text-textDark break-words ${chatStyles.talkBubbleUser}`}
                           style={containerStyle}>
                         {chatMessage.content}
                       </div>
@@ -958,14 +884,16 @@ const downloadImage = async (imageUrl : string) => {
                   else {
                     return (
                       <div key={index} className="flex justify-start w-full mb-4 items-start gap-3">
-                        <FaRobot size="24px" className="mt-1.5 flex-shrink-0 text-gray-600"/>
+                        <FaRobot size="24px" className="mt-1.5 flex-shrink-0 text-gray-600 dark:text-textDark"/>
                         <div
                           className={`
                             min-w-0 flex-1 rounded-lg
                             text-sm text-left
                             p-3
                             bg-white
+                            dark:bg-chatDark
                             text-gray-800
+                            dark:text-textDark
                             break-words
                             max-full
                           `}
@@ -1029,7 +957,7 @@ const downloadImage = async (imageUrl : string) => {
               </div>
             </div>
           </div>
-          <div className="w-full sticky bottom-0 z-10 bg-white flex-shrink-0">
+          <div className="w-full sticky bottom-0 z-10 bg-white dark:bg-chatDark flex-shrink-0">
             {renderInputArea()}
           </div>
         </div>

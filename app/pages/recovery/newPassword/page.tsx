@@ -61,7 +61,7 @@ export default function NewPassword () {
                         {/* Add relative container */}
                         <div className="relative">
                             <input 
-                                className="bg-white text-black w-full px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 pr-10" 
+                                className="bg-white text-black w-full px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 pr-10 [color-scheme:light]" 
                                 id="newPassword" 
                                 name="newPassword" 
                                 placeholder='New password' 
@@ -84,7 +84,7 @@ export default function NewPassword () {
                          {/* Add relative container */}
                         <div className="relative">
                             <input 
-                                className="bg-white text-black w-full px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 pr-10" 
+                                className="bg-white text-black w-full px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2 pr-10 [color-scheme:light]" 
                                 id="confirmPassword" 
                                 name="confirmPassword" 
                                 placeholder='Confirm your password' 

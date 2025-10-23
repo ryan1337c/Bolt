@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { FaRobot, FaEye, FaEyeSlash } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
-import googleButton from './assets/google_signin_buttons/web/1x/btn_google_signin_dark_pressed_web.png'
+import googleButtonLight from './assets/google_signin_buttons/web/1x/btn_google_signin_light_normal_web.png';
+import googleButtonDark from './assets/google_signin_buttons/web/1x/btn_google_signin_dark_normal_web.png';
+import { useTheme } from "next-themes"; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +16,7 @@ const Login = () => {
   const [backing, setBacking] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { theme } = useTheme(); 
 
   const navigate = (url: string) => {
     router.push(url);
@@ -46,77 +49,89 @@ const Login = () => {
 
   return (
     <div> 
-    <div className="min-h-screen flex  text-white">
-      <div className="ml-5 flex gap-2 text-xl font-bold absolute" onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
-        <Link href={`/`} className="flex items-center">
-          {backing && (<div className="appearArrowAnimatiuon p-0 m-0"><IoIosArrowRoundBack size={"40px"} className="backIconAnimation"/></div>)}
-          <FaRobot size={"50px"} className={`${backing ? 'robotIconShrinkAnimation' : ''}`} />
+        <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-landingPage text-white' : 'bg-landingPageLight text-black'}`}> 
+      {/* Back Button */}
+      <div className="absolute top-4 left-4">
+        <Link href={`/`} className="flex items-center gap-2 text-xl font-bold text-slate-800 dark:text-white" onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
+          <div className={`transition-all duration-300 ${backing ? 'w-10 opacity-100' : 'w-0 opacity-0'}`}>
+            <IoIosArrowRoundBack size={40} className="transition-transform duration-300 group-hover:-translate-x-1" />
+          </div>
+          <FaRobot size={40} className="transition-transform duration-300" />
         </Link>
       </div>
-    <div className="flex-1 flex items-center justify-center">
-      <div className="flex flex-col justify-center items-center h-[500px] w-2/3 ">
-          <div className="mb-4 ml-[-7px] text-2xl leading-9 tracking-tight flex flex-col items-center gap-2">
-            <strong>Sign in to your account</strong>
-              <label className={`text-error text-sm ${loginError ? 'visible': 'invisible'}`}>{loginError || '\u00A0'}</label>
-          </div>
-          <div></div>
-          <form className="space-y-4 min-w-max" onSubmit={handleSubmit}>
-            <div className="w-[340px] md:w-[300px] md:ml-4">
-              <label htmlFor="username" className="block text-sm font-medium leading-6">
-                  Email
-              </label>
+
+      {/* --- FORM CONTAINER --- */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+            <div className="mb-6 text-center">
+              <strong className="text-3xl font-bold">Sign in to your account</strong>
+              <p className={`text-red-500 text-sm mt-2 ${loginError ? 'visible': 'invisible'}`}>{loginError || '\u00A0'}</p>
+            </div>
+            
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <input id="username" name="username" type="text" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2"
-                />
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-gray-200">
+                    Email
+                </label>
+                <div className="mt-2">
+                  <input id="email" name="email" type="email" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} 
+                    className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:ring-1 focus:ring-inset focus:ring-violet-400 dark:focus:ring-white sm:text-sm"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="w-[340px] md:w-[300px] md:ml-4">
-              <div className="flex items-center justify-between w-[340px]">
-                <label htmlFor='password' className="block text-sm font-medium leading-6 ">Password</label>
-                <div className="text-sm md:mr-10 font-semibold text-indigo-300 hover:text-indigo-200 cursor-pointer" onClick={() => {
-                  router.push('./recovery/forgotPassword');
-                }}>Forgot password?</div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <label htmlFor='password' className="block text-sm font-medium text-slate-700 dark:text-gray-200">Password</label>
+                  <div className="text-sm">
+                    <a href='./recovery/forgotPassword' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200">
+                      Forgot password?
+                    </a>
+                  </div>
+                </div>
+                <div className="mt-2 relative">
+                  <input 
+                    id='password' 
+                    type={showPassword ? 'text' : 'password'} 
+                    name='password' 
+                    onChange={e => setPassword(e.target.value)} 
+                    required 
+                    autoComplete='off'
+                    className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:ring-1 focus:ring-inset focus:ring-violet-400 dark:focus:ring-white sm:text-sm pr-10" 
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer focus:outline-none"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
-              <div className="relative">
-                <input 
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 sm:text-sm sm:leading-6 pl-2 pr-10" 
-                  id='password' 
-                  type={showPassword ? 'text' : 'password'} 
-                  name='password' 
-                  onChange={e => setPassword(e.target.value)} 
-                  required 
-                  autoComplete='off'
-                />
-                
-                {/* Show/Hide Password Toggle Button */}
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer 
-                  focus:outline-none"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+
+              <div className="flex flex-col items-center space-y-4 pt-2">
+                <button type='submit' className="w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">
+                  Sign In
                 </button>
-              </div>
-            </div>
-
-            <div className="w-[340px] md:w-[300px] md:ml-4 flex flex-col items-center space-y-4">
-              <button type='submit' className="mt-3 w-full justify-center rounded-md bg-indigo-500 py-1.5 text-sm font-semibold leading-6 hover:bg-indigo-400">Sign In</button>
-              <a href='./register' className="text-white text-sm">Don&apos;t have an account? <span className="text-indigo-300 hover:text-indigo-200 pl-1">Sign Up</span></a>
-              <div className="w-full flex items-center gap-4 text-sm pt-3">
-                <hr className="border-t-1 border-white w-[50%]" />
-                OR
-                <hr className="border-t-1 border-white w-[50%]" />
-              </div>
-              <button type="button" onClick={handleGoogleSignIn}>
-                  <img src={googleButton.src} alt="google sign in" />
-              </button>
-            </div> 
-          </form>
+                <p className="text-sm text-slate-600 dark:text-gray-300">
+                  Don't have an account? 
+                  <a href='./register' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 ml-1">
+                    Sign Up
+                  </a>
+                </p>
+                <div className="w-full flex items-center gap-4 text-sm pt-3">
+                  <hr className="w-full border-t border-slate-300 dark:border-white" />
+                  <span className="text-slate-500 dark:text-gray-300">OR</span>
+                  <hr className="w-full border-t border-slate-300 dark:border-white" />
+                </div>
+                <button type="button" onClick={handleGoogleSignIn}>
+                    <img src={theme === 'dark' ? googleButtonDark.src : googleButtonLight.src} alt="google sign in" />
+                </button>
+              </div> 
+            </form>
+        </div>
       </div>
-    </div>
     <div className="flex-1 bg-white border hidden border-zinc-50 md:flex md:justify-center md:items-center h-screen">
   <div className="text-center">
     <svg className="ghost" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
