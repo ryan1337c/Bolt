@@ -35,7 +35,7 @@ export function ThemeToggle() {
         className={`
           relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
           transition-colors duration-200 ease-in-out
-          ${isDarkMode ? "bg-purple-600" : "bg-slate-300"}
+          ${isDarkMode ? "bg-btnDark" : "bg-slate-300"}
         `}
       >
         <span

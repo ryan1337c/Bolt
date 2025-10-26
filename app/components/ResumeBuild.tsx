@@ -138,7 +138,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
                 <a
                   href={pdfUrl}
                   download="Tailored_Resume.pdf"
-                  className="flex items-center gap-2 bg-violet-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-violet-700 transition-transform transform hover:scale-105"
+                  className="flex items-center gap-2 bg-violet-600 dark:bg-btnDark dark:hover:brightness-[.9] text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-violet-700 transition-transform transform hover:scale-105"
                 >
                   <FiDownload className="w-5 h-5" />
                   Download PDF
@@ -147,7 +147,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
             </div>
             <button
                 onClick={handleStartOver}
-                className="w-full mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-600 dark:focus:ring-purple-500"
+                className="w-full mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-btnDark dark:hover:brightness-[.9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-600 dark:focus:ring-purple-500"
             >
                 Start Over
             </button>
@@ -176,13 +176,13 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
           // --- FILE UPLOADED, SHOW FORM (Theme-Aware) ---
           <div className="w-full p-6 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm animate-fade-in-up-sm">
             <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-700 p-3 rounded-lg border border-slate-200 dark:border-slate-600 mb-6">
-                <div className="flex items-center gap-3 min-w-0"><FiFileText className="text-violet-500 dark:text-violet-400 w-6 h-6 flex-shrink-0" /><span className="text-sm font-medium text-slate-700 dark:text-gray-200 truncate">{uploadedFile.name}</span></div>
+                <div className="flex items-center gap-3 min-w-0"><FiFileText className="text-violet-500 dark:text-[#818CF8] w-6 h-6 flex-shrink-0" /><span className="text-sm font-medium text-slate-700 dark:text-gray-200 truncate">{uploadedFile.name}</span></div>
                 <button onClick={handleRemoveFile} className="p-1.5 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/50 dark:hover:text-red-400 transition-colors" aria-label="Remove file"><FiX className="w-5 h-5" /></button>
             </div>
             <form className="space-y-4" onSubmit={handleProceed}>
-              <div><label htmlFor="jobTitle" className="block text-sm font-medium text-slate-700 dark:text-gray-200 mb-1">Job Title</label><input type="text" id="jobTitle" value={jobTitle} required onChange={(e) => setJobTitle(e.target.value)} disabled={isProcessing} className="block w-full px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm" placeholder="e.g., Senior Software Engineer"/></div>
-              <div><label htmlFor="jobDescription" className="block text-sm font-medium text-slate-700 dark:text-gray-200 mb-1">Job Description</label><textarea id="jobDescription" rows={6} value={jobDescription} required onChange={(e) => setJobDescription(e.target.value)} disabled={isProcessing} className="block w-full px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm" placeholder="Paste the full job description here..."/></div>
-              <button type="submit" disabled={isProcessing} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-600 dark:focus:ring-purple-500 transition-colors">{isProcessing ? "Processing..." : "Generate"}</button>
+              <div><label htmlFor="jobTitle" className="block text-sm font-medium text-slate-700 dark:text-gray-200 mb-1">Job Title</label><input type="text" id="jobTitle" value={jobTitle} required onChange={(e) => setJobTitle(e.target.value)} disabled={isProcessing} className="block w-full px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-btnDark/95 sm:text-sm" placeholder="e.g., Senior Software Engineer"/></div>
+              <div><label htmlFor="jobDescription" className="block text-sm font-medium text-slate-700 dark:text-gray-200 mb-1">Job Description</label><textarea id="jobDescription" rows={6} value={jobDescription} required onChange={(e) => setJobDescription(e.target.value)} disabled={isProcessing} className="block w-full px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-btnDark/95 sm:text-sm" placeholder="Paste the full job description here..."/></div>
+              <button type="submit" disabled={isProcessing} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-btnDark dark:hover:brightness-[.9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-600 dark:focus:ring-purple-500 transition-colors">{isProcessing ? "Processing..." : "Generate"}</button>
             </form>
           </div>
         )}

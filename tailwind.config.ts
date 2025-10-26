@@ -27,6 +27,7 @@ const config: Config = {
   			landingPage: '#1e293b',
 			chatDark: '#283548',
 			textDark: '#EDEDED',
+			btnDark: '#6366F1',
 			userChatBg: '#32425A',
 			codeBgDark: '#1E2A3A',
   			hoverLandingPage: '#020617',

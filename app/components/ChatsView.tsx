@@ -45,7 +45,7 @@ export default function ChatsView({
                 <button
                     onClick={onNewChat}
                     disabled={isProcessing}
-                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-[#8b5cf6] dark:hover:brightness-[.9] disabled:opacity-50 transition-all rounded-lg"
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-btnDark dark:hover:brightness-[.9] disabled:opacity-50 transition-all rounded-lg"
                 >
                     <FiPlus size={16} />
                     <span>New Chat</span>
@@ -93,7 +93,7 @@ export default function ChatsView({
                                 className="w-full flex items-center gap-2 p-4 rounded-lg transition-colors group disabled:opacity-50
                                             border border-slate-200 dark:border-slate-700
                                             hover:bg-slate-50 dark:hover:bg-slate-700/50
-                                            hover:border-violet-500 "
+                                            hover:border-violet-500 dark:hover:border-white/15"
                             >
                                 <button
                                     key={chat.chat_id}
@@ -103,7 +103,7 @@ export default function ChatsView({
                                 >
                                     <h2 className="font-semibold truncate mb-1 
                                                 text-slate-800 dark:text-gray-200 
-                                                group-hover:text-violet-600 dark:group-hover:text-purple-400">
+                                                group-hover:text-violet-600 dark:group-hover:text-white">
                                         {chatTitle}
                                     </h2>
                                     <p className="text-sm truncate capitalize text-slate-500 dark:text-gray-400">
