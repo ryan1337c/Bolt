@@ -70,7 +70,7 @@ export default function Home() {
                 </div>
                 <div className="sm:flex sm:justify-center lg:flex-none lg:justify-start animate-fade-in">
                   <RainbowButton
-                    className={`p-5 flex gap-2 items-center rounded-lg bg-landingPageLight dark:bg-launch `}
+                    className={`p-5 flex gap-2 items-center rounded-lg ${theme === 'dark' ? 'bg-launch' : 'bg-landingPageLight'}`}
                     id="launch"
                     onClick={() => {
                       router.push("/pages/home");
@@ -108,16 +108,16 @@ export default function Home() {
 
             <div className={`lg:w-6/12 text-center lg:text-left`}>
               <h3 className={`text-6xl md:text-8xl font-bold transition-opacity duration-700 ease-in ${userCountInView ? 'opacity-100' : 'opacity-0'}`}>
-                <span className={`text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-purple-600`}>
+                <span className={`text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? 'from-purple-400 to-purple-600' : 'from-violet-600 to-pink-500'}`}>
                   {userCountInView && <CountUp end={100} duration={2.5} suffix="+" />}
                 </span>
               </h3>
 
-              <p className={`mt-4 text-2xl md:text-3xl font-semibold text-black dark:text-gray-200 transition-all duration-700 ease-in-out delay-200 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
+              <p className={`mt-4 text-2xl md:text-3xl font-semibold ${theme === 'dark' ? 'text-gray-200' : 'text-black'} transition-all duration-700 ease-in-out delay-200 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
                 Pioneers Building the Future.
               </p>
 
-              <p className={`mt-3 text-lg md:text-xl text-black dark:text-gray-400 transition-all duration-700 ease-in-out delay-500 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
+              <p className={`mt-3 text-lg md:text-xl  ${theme === 'dark' ? 'text-gray-400' : 'text-black'}  transition-all duration-700 ease-in-out delay-500 ${userCountInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-4'}`}>
                 Our early adopters are already unlocking a smarter way to work with Omni&apos;s unified AI. They answer complex questions, generate stunning visuals, and tailor professional resumes—all faster than ever before.
               </p>
             </div>
@@ -125,15 +125,12 @@ export default function Home() {
 
           {/* --- Unified AI Core Section  --- */}
           <div ref={coreRef} className="w-full flex flex-col items-center pt-10 pb-16 px-4">
-            <h2 className={`text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-white transition-opacity duration-1000 ease-in ${coreInView ? 'opacity-100' : 'opacity-0'}`}>
+            <h2 className={`text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? 'from-purple-400 to-white' : 'from-violet-600 to-pink-500'}   transition-opacity duration-1000 ease-in ${coreInView ? 'opacity-100' : 'opacity-0'}`}>
               One Interface. Many Minds.
             </h2>
             <div className={`
               w-full max-w-6xl p-3 rounded-2xl
-              bg-white/50 border border-violet-300
-              shadow-[0_0_25px_3px_rgba(139,92,246,0.25)]
-              dark:bg-black/30 dark:border-purple-500/30
-              dark:shadow-[0_0_25px_3px_rgba(168,85,247,0.25)]
+              ${theme === 'dark' ? "bg-black/30 border-purple-500/30 shadow-[0_0_25px_3px_rgba(168,85,247,0.25)]" : "bg-white/50 border border-violet-300 shadow-[0_0_25px_3px_rgba(139,92,246,0.25)]"}
               transition-all duration-1000 ease-in-out
               ${coreInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}
             `}>
@@ -142,7 +139,7 @@ export default function Home() {
           </div>
           {/* --- Testimonies Section  --- */}
           <div ref={testimoniesRef} className="w-full flex flex-col items-center mb-20 py-10 px-4">
-            <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-white transition-opacity duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
+            <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? "from-purple-400 to-white" : "from-violet-600 to-pink-500"} transition-opacity duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>
               Testimonials
             </h2>
             <div className={`flex items-center gap-1 mb-10 transition-all delay-200 duration-1000 ease-in-out ${testimoniesInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}`}>
@@ -161,17 +158,17 @@ export default function Home() {
           <footer className={`
             w-full flex flex-col sm:flex-row justify-center sm:justify-between items-center 
             gap-4 sm:gap-0 py-5 px-10 mt-auto 
-            border-t bg-white/50 border-black/10 
-            dark:bg-black/20 dark:border-white/10
+            border-t ${theme === 'dark' ? 'bg-black/20 border-white/10' : 'bg-white/50 border-black/10'} 
+            
           `}>
-            <p className="text-sm font-medium text-slate-600 dark:text-gray-400">
+            <p className={`text-sm font-medium ${theme === 'dark' ? "text-gray-400" : "text-slate-600" }`}>
               © 2025 Omni | All Rights Reserved
             </p>
             <a
               href="https://github.com/ryan1337c" 
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-slate-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors duration-300"
+              className={`flex items-center gap-2 ${theme === 'dark' ? "text-gray-400 hover:text-white" : "text-slate-600 hover:text-black"}  transition-colors duration-300`}
             >
               <p className="text-sm font-medium">Created by Ryan Chen</p> 
               <FaGithub className="size-5" />

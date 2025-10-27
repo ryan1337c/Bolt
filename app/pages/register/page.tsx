@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { FaRobot, FaEye, FaEyeSlash} from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
-import { useTheme } from "next-themes"; 
+import { useTheme } from "next-themes";
 
 const Register  = () => {
     const [firstName, setFirstName] = useState('');
@@ -15,7 +15,7 @@ const Register  = () => {
     const [backing, setBacking] = useState(false);
     const [registerError, setRegisterError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const { theme } = useTheme(); 
+    const { theme } = useTheme();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
@@ -45,14 +45,14 @@ const Register  = () => {
     }, []);
 
     if (!mounted) {
-      return null; 
+      return null;
     }
-  
+
     return (
-      <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-landingPage text-white' : 'bg-landingPageLight text-black'}`}> 
+      <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-landingPage text-white' : 'bg-landingPageLight text-black'}`}>
         {/* --- BACK BUTTON --- */}
         <div className="absolute top-4 left-4">
-          <Link href={`/`} className="flex items-center gap-2 text-xl font-bold text-slate-800 dark:text-white" onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
+          <Link href={`/`} className={`flex items-center gap-2 text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`} onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
             {backing && (<div className="appearArrowAnimatiuon p-0 m-0"><IoIosArrowRoundBack size={"40px"} className="backIconAnimation"/></div>)}
             <FaRobot size={40} className={`${backing ? 'robotIconShrinkAnimation' : ''}`} />
           </Link>
@@ -63,70 +63,70 @@ const Register  = () => {
           <div className="w-full max-w-sm">
             <div className="mb-6 text-center">
               <strong className="text-3xl font-bold">Create an account</strong>
-              <p className={`text-red-500 dark:text-error text-sm mt-2 ${registerError ? 'visible': 'invisible'}`}>{registerError || '\u00A0'}</p>
+              <p className={`text-sm mt-2 ${registerError ? 'visible': 'invisible'} ${theme === 'dark' ? 'text-error' : 'text-red-500'}`}>{registerError || '\u00A0'}</p>
             </div>
-              
+
               <form className="space-y-4" onSubmit={handleSubmit}>
                   <div>
-                      <label htmlFor="firstname" className="block text-sm font-medium text-slate-700 dark:text-white">
+                      <label htmlFor="firstname" className={`block text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>
                           First Name
                       </label>
                       <div className="mt-2">
-                        <input id="firstname" name="firstname" type="text" autoComplete='off' required onChange={(e) => setFirstName(e.target.value)} 
-                          className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                        <input id="firstname" name="firstname" type="text" autoComplete='off' required onChange={(e) => setFirstName(e.target.value)}
+                          className={`block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset focus:outline-none focus:ring-1 sm:text-sm ${theme === 'dark' ? 'bg-slate-800 text-white ring-slate-600 focus:ring-purple-400' : 'bg-white text-black ring-slate-300 focus:ring-violet-300'}`}
                         />
                       </div>
                   </div>
                   <div>
-                      <label htmlFor="lastname" className="block text-sm font-medium text-slate-700 dark:text-white">
+                      <label htmlFor="lastname" className={`block text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>
                           Last Name
                       </label>
                       <div className="mt-2">
-                        <input id="lastname" name="lastname" type="text" autoComplete='off' required onChange={(e) => setLastName(e.target.value)} 
-                          className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                        <input id="lastname" name="lastname" type="text" autoComplete='off' required onChange={(e) => setLastName(e.target.value)}
+                          className={`block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset focus:outline-none focus:ring-1 sm:text-sm ${theme === 'dark' ? 'bg-slate-800 text-white ring-slate-600 focus:ring-purple-400' : 'bg-white text-black ring-slate-300 focus:ring-violet-300'}`}
                         />
                       </div>
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-white">
+                    <label htmlFor="email" className={`block text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>
                         Email
                     </label>
                     <div className="mt-2">
-                      <input id="email" name="email" type="email" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} 
-                        className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                      <input id="email" name="email" type="email" autoComplete='off' required onChange={(e) => setEmail(e.target.value)}
+                        className={`block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset focus:outline-none focus:ring-1 sm:text-sm ${theme === 'dark' ? 'bg-slate-800 text-white ring-slate-600 focus:ring-purple-400' : 'bg-white text-black ring-slate-300 focus:ring-violet-300'}`}
                       />
                     </div>
                   </div>
-    
+
                   <div>
-                    <label htmlFor='password' className="block text-sm font-medium text-slate-700 dark:text-white">Password</label>
+                    <label htmlFor='password' className={`block text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-700'}`}>Password</label>
                     <div className="mt-2 relative">
-                      <input 
-                        id='password' 
-                        type={showPassword ? 'text' : 'password'} 
-                        name='password' 
-                        onChange={e => setPassword(e.target.value)} 
-                        required 
+                      <input
+                        id='password'
+                        type={showPassword ? 'text' : 'password'}
+                        name='password'
+                        onChange={e => setPassword(e.target.value)}
+                        required
                         autoComplete='off'
-                        className="block w-full rounded-md border-0 py-2 px-3 pr-10 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-300 dark:focus:ring-purple-400 sm:text-sm"
+                        className={`block w-full rounded-md border-0 py-2 px-3 pr-10 shadow-sm ring-1 ring-inset focus:outline-none focus:ring-1 sm:text-sm ${theme === 'dark' ? 'bg-slate-800 text-white ring-slate-600 focus:ring-purple-400' : 'bg-white text-black ring-slate-300 focus:ring-violet-300'}`}
                       />
                       <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
                       </button>
                     </div>
                   </div>
-    
+
                   <div className="flex flex-col items-center space-y-4 pt-2">
-                    <button type='submit' className="w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                    <button type='submit' className={`w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white ${theme === 'dark' ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-violet-600 hover:bg-violet-700'}`}>
                       Sign Up
                     </button>
-                    <p className="text-sm text-slate-600 dark:text-white">
+                    <p className={`text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-600'}`}>
                       Already have an account?
-                      <a href='./login' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 ml-1">
+                      <a href='./login' className={`font-semibold ml-1 ${theme === 'dark' ? 'text-indigo-300 hover:text-indigo-200' : 'text-violet-600 hover:text-violet-500'}`}>
                         Log In
                       </a>
                     </p>
-                  </div> 
+                  </div>
               </form>
           </div>
         </div>
@@ -167,7 +167,7 @@ const Register  = () => {
           c1.564,0,2.833-1.269,2.833-2.833c0-1.355-0.954-2.485-2.226-2.764c4.419-1.285,9.269-2.074,14.437-2.074
           c7.636,0,15.336,1.684,22.887,5.004c26.766,11.771,29.011,39.047,29.027,39.251V121.405z"/>
       </svg>
-  
+
       <p className="shadowFrame"><svg version="1.1" className="shadow" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="61px" y="20px"
           width="122.436px" height="39.744px" viewBox="0 0 122.436 39.744" enable-background="new 0 0 122.436 39.744">
           <ellipse fill="#1e293b" cx="61.128" cy="19.872" rx="49.25" ry="8.916" />
@@ -178,4 +178,4 @@ const Register  = () => {
     )
 }
 
-export default Register 
+export default Register

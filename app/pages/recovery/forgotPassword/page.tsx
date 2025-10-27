@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { AuthServices } from '@/lib/authServices';
 import { useRouter } from 'next/navigation';
-// Import the back arrow and a new checkmark icon
 import { IoArrowBack } from "react-icons/io5";
 import { FaCheckCircle } from "react-icons/fa";
+import { useTheme } from "next-themes";
 
 export default function ForgotPassword () {
     const [mounted, setMounted] = useState(false);
@@ -13,6 +13,7 @@ export default function ForgotPassword () {
     const [email, setEmail] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
+    const { theme } = useTheme();
    
     useEffect(() => {
         setMounted(true);
@@ -38,7 +39,7 @@ export default function ForgotPassword () {
 
     return(<>
         {mounted && (
-            <div className="h-screen flex items-center justify-center p-5 bg-landingPageLight dark:bg-landingPage">
+            <div className={`h-screen flex items-center justify-center p-5 ${theme === 'dark' ? "bg-landingPage" : "bg-landingPageLight"} `}>
                 <div className="relative flex flex-col bg-white text-black p-10 md:w-[500px] shadow-lg rounded-xl items-center">
                     
                     <button 

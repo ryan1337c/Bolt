@@ -7,7 +7,7 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { AuthServices } from '@/lib/authServices';
 import googleButtonLight from './assets/google_signin_buttons/web/1x/btn_google_signin_light_normal_web.png';
 import googleButtonDark from './assets/google_signin_buttons/web/1x/btn_google_signin_dark_normal_web.png';
-import { useTheme } from "next-themes"; 
+import { useTheme } from "next-themes";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ const Login = () => {
   const [backing, setBacking] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { theme } = useTheme(); 
+  const { theme } = useTheme();
 
   const navigate = (url: string) => {
     router.push(url);
@@ -48,11 +48,11 @@ const Login = () => {
   }
 
   return (
-    <div> 
-        <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-landingPage text-white' : 'bg-landingPageLight text-black'}`}> 
+    <div>
+        <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-landingPage text-white' : 'bg-landingPageLight text-black'}`}>
       {/* Back Button */}
       <div className="absolute top-4 left-4">
-        <Link href={`/`} className="flex items-center gap-2 text-xl font-bold text-slate-800 dark:text-white" onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
+        <Link href={`/`} className={`flex items-center gap-2 text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`} onMouseEnter={() => setBacking(true)} onMouseLeave={() => setBacking(false)}>
           <div className={`transition-all duration-300 ${backing ? 'w-10 opacity-100' : 'w-0 opacity-0'}`}>
             <IoIosArrowRoundBack size={40} className="transition-transform duration-300 group-hover:-translate-x-1" />
           </div>
@@ -67,37 +67,37 @@ const Login = () => {
               <strong className="text-3xl font-bold">Sign in to your account</strong>
               <p className={`text-red-500 text-sm mt-2 ${loginError ? 'visible': 'invisible'}`}>{loginError || '\u00A0'}</p>
             </div>
-            
+
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-gray-200">
+                <label htmlFor="email" className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
                     Email
                 </label>
                 <div className="mt-2">
-                  <input id="email" name="email" type="email" autoComplete='off' required onChange={(e) => setEmail(e.target.value)} 
-                    className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:ring-1 focus:ring-inset focus:ring-violet-400 dark:focus:ring-white sm:text-sm"
+                  <input id="email" name="email" type="email" autoComplete='off' required onChange={(e) => setEmail(e.target.value)}
+                    className={`block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset sm:text-sm focus:ring-1 focus:ring-inset ${theme === 'dark' ? 'bg-slate-800 text-white ring-slate-600 focus:ring-white' : 'bg-white text-black ring-slate-300 focus:ring-violet-400'}`}
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
-                  <label htmlFor='password' className="block text-sm font-medium text-slate-700 dark:text-gray-200">Password</label>
+                  <label htmlFor='password' className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>Password</label>
                   <div className="text-sm">
-                    <a href='./recovery/forgotPassword' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200">
+                    <a href='./recovery/forgotPassword' className={`font-semibold ${theme === 'dark' ? 'text-indigo-300 hover:text-indigo-200' : 'text-violet-600 hover:text-violet-500'}`}>
                       Forgot password?
                     </a>
                   </div>
                 </div>
                 <div className="mt-2 relative">
-                  <input 
-                    id='password' 
-                    type={showPassword ? 'text' : 'password'} 
-                    name='password' 
-                    onChange={e => setPassword(e.target.value)} 
-                    required 
+                  <input
+                    id='password'
+                    type={showPassword ? 'text' : 'password'}
+                    name='password'
+                    onChange={e => setPassword(e.target.value)}
+                    required
                     autoComplete='off'
-                    className="block w-full rounded-md border-0 py-2 px-3 bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 focus:ring-1 focus:ring-inset focus:ring-violet-400 dark:focus:ring-white sm:text-sm pr-10" 
+                    className={`block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset sm:text-sm pr-10 focus:ring-1 focus:ring-inset ${theme === 'dark' ? 'bg-slate-800 text-white ring-slate-600 focus:ring-white' : 'bg-white text-black ring-slate-300 focus:ring-violet-400'}`}
                   />
                   <button
                     type="button"
@@ -111,24 +111,24 @@ const Login = () => {
               </div>
 
               <div className="flex flex-col items-center space-y-4 pt-2">
-                <button type='submit' className="w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">
+                <button type='submit' className={`w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 ${theme === 'dark' ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-violet-600 hover:bg-violet-700'}`}>
                   Sign In
                 </button>
-                <p className="text-sm text-slate-600 dark:text-gray-300">
-                  Don&apos;t have an account? 
-                  <a href='./register' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 ml-1">
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                  Don&apos;t have an account?
+                  <a href='./register' className={`font-semibold ml-1 ${theme === 'dark' ? 'text-indigo-300 hover:text-indigo-200' : 'text-violet-600 hover:text-violet-500'}`}>
                     Sign Up
                   </a>
                 </p>
                 <div className="w-full flex items-center gap-4 text-sm pt-3">
-                  <hr className="w-full border-t border-slate-300 dark:border-white" />
-                  <span className="text-slate-500 dark:text-gray-300">OR</span>
-                  <hr className="w-full border-t border-slate-300 dark:border-white" />
+                  <hr className={`w-full border-t ${theme === 'dark' ? 'border-white' : 'border-slate-300'}`} />
+                  <span className={`${theme === 'dark' ? 'text-gray-300' : 'text-slate-500'}`}>OR</span>
+                  <hr className={`w-full border-t ${theme === 'dark' ? 'border-white' : 'border-slate-300'}`} />
                 </div>
                 <button type="button" onClick={handleGoogleSignIn}>
                     <img src={theme === 'dark' ? googleButtonDark.src : googleButtonLight.src} alt="google sign in" />
                 </button>
-              </div> 
+              </div>
             </form>
         </div>
       </div>
@@ -182,5 +182,3 @@ const Login = () => {
 }
 
 export default Login
-
-
