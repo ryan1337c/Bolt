@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
-  const { setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -14,7 +14,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-full h-9 bg-slate-200 dark:bg-slate-700/50 rounded-md animate-pulse"></div>
+      <div className={`w-full h-9 ${theme === 'dark' ? 'bg-slate-700/50' : 'bg-slate-200'} rounded-md animate-pulse`}></div>
     );
   }
 
@@ -23,7 +23,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-      className="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-md transition-colors"
+      className={`w-full flex items-center justify-between px-4 py-2 text-sm font-semibold ${theme === 'dark' ? 'text-gray-300 hover:bg-slate-700/50': 'text-slate-700 hover:bg-slate-100'} rounded-md transition-colors`}
       aria-label="Toggle Dark Mode"
     >
       <div className="flex items-center gap-3">
