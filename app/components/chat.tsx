@@ -536,7 +536,7 @@ const downloadImage = async (imageUrl : string) => {
           const lastMessageIndex = updatedHistory.length - 1;
           updatedHistory[lastMessageIndex] = {
             ...updatedHistory[lastMessageIndex],
-            ...(isValid ? {} : { content: 'Message is not appropriate.' }),
+            ...(isValid ? {} : selectedModelData?.name === "DeepSeek" ? {content: 'We do no currently support image generation for this model.'} : { content: 'Message is not appropriate.' }),
             imageUrl: image !== 'fail' ? image : '',
             loading: false,
           };
@@ -754,7 +754,7 @@ const downloadImage = async (imageUrl : string) => {
 
             <div className="relative inline-block text-left ml-auto">
               <button
-                onClick={() => { if (selectedTool !== "image") setIsOpenModel(!isOpenModel) }}
+                onClick={() => {setIsOpenModel(!isOpenModel) }}
                 className="inline-flex items-center justify-between w-40 md:w-64 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-gray-500 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200"
               >
                 <div className="flex items-center space-x-3">
@@ -768,7 +768,7 @@ const downloadImage = async (imageUrl : string) => {
                   {selectedModelData?.name}
                   </span>
                 </div>
-                {selectedTool === "image" ? (
+                {selectedTool === "image" && selectedModelData?.name === "DeepSeek" ? (
                 <div
                     className="relative group"
                     onMouseEnter={() => setShowTooltip(true)}

@@ -2,7 +2,7 @@
 import { useAuth } from './context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRocket} from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef} from 'react';
 import { useRouter } from 'next/navigation';
 import { SparklesText } from "@/components/magicui/sparkles-text";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
@@ -10,21 +10,62 @@ import { FlipText } from "@/components/magicui/flip-text";
 import { Beam } from '@/components/magicui/beam';
 import { useInView } from 'react-intersection-observer';
 import { MarqueeDemo } from '@/components/magicui/review-cards';
-import { FaStar, FaGithub } from 'react-icons/fa';
+import { FaStar, FaGithub, FaPlay} from 'react-icons/fa';
+import { BsChatDots, BsCpu, BsFileText, BsImage, BsUpload, BsCodeSlash } from 'react-icons/bs';
 import CountUp from 'react-countup';
 import Header from './components/Header';
 import { useTheme } from "next-themes";
 import { RainbowButton } from "@/components/ui/rainbow-button"
+import FeatureCard from '@/components/ui/FeatureCard';
+import { Feature } from '@/components/types/types';
 
 
 export default function Home() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const handlePlayVideo = () => {
+    if (videoRef.current) {
+        videoRef.current.play();
+        setIsPlaying(true);
+    }
+  };
+
+  const features: Feature[] = [
+    {
+      icon: BsChatDots,
+      title: 'General Chatting',
+      description: 'Engage in natural, intelligent conversations for answers, ideas, and creative collaboration.',
+    },
+    {
+      icon: BsCpu,
+      title: 'LLM Model Selection',
+      description: 'Switch between a variety of powerful large language models to find the perfect mind for your specific task.',
+    },
+    {
+      icon: BsFileText,
+      title: 'Resume Tailor',
+      description: 'Optimize your resume for any job application by letting our AI tailor it to match the job description perfectly.',
+    },
+    {
+      icon: BsImage,
+      title: 'Image Generation',
+      description: 'Bring your ideas to life. Generate stunning, high-quality images from simple text descriptions in seconds.',
+    },
+    {
+      icon: BsUpload,
+      title: 'File Upload & Process',
+      description: 'Securely upload documents and files for the AI to analyze, summarize, or transform based on your needs.',
+    },
+    {
+      icon: BsCodeSlash,
+      title: 'Vibe Coding',
+      description: 'Code in real-time with an AI partner that suggests solutions and helps you squash bugs before they happen.',
+    }
+  ];
 
   // Observer for the User Count section
   const { ref: userCountRef, inView: userCountInView } = useInView({
@@ -49,6 +90,31 @@ export default function Home() {
     triggerOnce: true,
     threshold: 0.2,
   });
+
+  // Observer for the Feature section
+  const { ref: featuresRef, inView: featuresInView } = useInView({ 
+    triggerOnce: true, 
+    threshold: 0.2 
+  });
+
+  const { ref: heroVideoRef, inView: heroVideoInView } = useInView({ 
+    threshold: 0.2 
+  });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // If the video is not in view and it was playing, reset it.
+    if (!heroVideoInView && isPlaying) {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.load();
+        setIsPlaying(false);
+      }
+    }
+  }, [heroVideoInView, isPlaying]);
 
   return (
     <>
@@ -123,6 +189,63 @@ export default function Home() {
             </div>
           </div>
 
+            {/* --- Hero Video Section --- */}
+            <section ref={heroVideoRef} className="w-full flex flex-col items-center py-16 px-4">
+              <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? 'from-purple-400 to-white' : 'from-violet-600 to-pink-500'} transition-opacity duration-1000 ease-in ${heroVideoInView ? 'opacity-100' : 'opacity-0'}`}>
+                See Omni in Action
+              </h2>
+              <p className={`text-lg text-center max-w-2xl mb-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} transition-opacity duration-1000 ease-in delay-200 ${heroVideoInView ? 'opacity-100' : 'opacity-0'}`}>
+                A glimpse into the future of productivity and creative workflows.
+              </p>
+              <div className={`w-full max-w-5xl rounded-2xl overflow-hidden transition-all duration-1000 ease-in-out ${heroVideoInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}
+                  ${theme === 'dark' ? 'shadow-[0_0_35px_5px_rgba(168,85,247,0.2)]' : 'shadow-[0_0_35px_5px_rgba(139,92,246,0.2)]'}
+              `}>
+                <div className="relative w-full aspect-video">
+                  {!isPlaying && (
+                      <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/30 cursor-pointer" onClick={handlePlayVideo}>
+                          <button
+                              className="p-5 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                              aria-label="Play video"
+                          >
+                              <FaPlay className="w-8 h-8 ml-1" />
+                          </button>
+                      </div>
+                  )}
+                  <video
+                    ref={videoRef}
+                    src="omniDemo.mp4"
+                    poster="omniDemoPoster.png"
+                    muted
+                    playsInline
+                    controls={isPlaying}
+                    onEnded={() => setIsPlaying(false)}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </section>
+          
+            {/* --- Features Section --- */}
+            <section ref={featuresRef} className="w-full flex flex-col items-center pt-20 pb-24 px-4">
+              <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? 'from-purple-400 to-white' : 'from-violet-600 to-pink-500'} transition-opacity duration-1000 ease-in ${featuresInView ? 'opacity-100' : 'opacity-0'}`}>
+                Discover What's Possible
+              </h2>
+               <p className={`text-lg text-center max-w-2xl mb-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} transition-opacity duration-1000 ease-in delay-200 ${featuresInView ? 'opacity-100' : 'opacity-0'}`}>
+                Omni is more than just a chatbot. It's a suite of powerful, interconnected AI tools designed to amplify your productivity and creativity.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
+                {features.map((feature, index) => (
+                  <FeatureCard 
+                    key={index} 
+                    feature={feature} 
+                    inView={featuresInView}
+                    index={index}
+                  />
+                ))}
+              </div>
+            </section>
+
           {/* --- Unified AI Core Section  --- */}
           <div ref={coreRef} className="w-full flex flex-col items-center pt-10 pb-16 px-4">
             <h2 className={`text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? 'from-purple-400 to-white' : 'from-violet-600 to-pink-500'}   transition-opacity duration-1000 ease-in ${coreInView ? 'opacity-100' : 'opacity-0'}`}>
@@ -137,6 +260,7 @@ export default function Home() {
               <Beam />
             </div>
           </div>
+
           {/* --- Testimonies Section  --- */}
           <div ref={testimoniesRef} className="w-full flex flex-col items-center mb-20 py-10 px-4">
             <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? "from-purple-400 to-white" : "from-violet-600 to-pink-500"} transition-opacity duration-1000 ease-in ${testimoniesInView ? 'opacity-100' : 'opacity-0'}`}>

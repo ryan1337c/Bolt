@@ -18,7 +18,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -58,7 +58,6 @@ const Header = () => {
           </Link>
         </div>
         <nav className="hidden md:flex flex-1 justify-center items-center gap-8">
-          {/* --- Refactored Nav Links --- */}
           <Link href="/pages/pricing">
             <div className={`transition-colors duration-300 font-medium ${theme === 'dark' ? 'hover:text-white' : 'hover:text-violet-600'}`}>Pricing</div>
           </Link>
@@ -73,7 +72,7 @@ const Header = () => {
               <div className="relative group" ref={profileMenuRef}>
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                // --- Refactored Profile Icon Button ---
+                // Profile Icon Button 
                 className={`
                   m-1 rounded-full hover:ring-4 transition-all
                   ${theme === 'dark' ? 'text-gray-300 hover:ring-gray-400/30' : 'text-slate-600 hover:ring-violet-400/40'}
@@ -84,7 +83,7 @@ const Header = () => {
               </button>
 
                 {!isProfileOpen && (
-                  // --- Refactored Tooltip ---
+                  // Tooltip 
                   <div className={`
                     absolute top-full right-0 mt-1 w-max text-xs font-semibold px-3 py-1.5 rounded-md shadow-lg
                     opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100
@@ -103,11 +102,10 @@ const Header = () => {
                   ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}
                 `}>
                   <ThemeToggle />
-                  {/* --- Refactored HR --- */}
                   <hr className={`my-1 ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}`} />
                   <button
                     onClick={handleLogout}
-                    // --- Refactored Sign Out Button ---
+                    // Sign Out Button 
                     className={`w-full flex items-center gap-3 text-left px-4 py-2 text-sm rounded-md transition-colors ${theme === 'dark' ? 'text-gray-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
                   >
                     <FontAwesomeIcon icon={faArrowRightFromBracket} />
@@ -131,7 +129,6 @@ const Header = () => {
               </Link>
 
               <Link href="/pages/register">
-                {/* --- Refactored Sign Up Button --- */}
                 <ShimmerButton
                   background={theme === 'dark' ? '#334155' : '#ffffff'} 
                   shimmerColor={theme === 'dark' ? '#a78bfa' : '#c4b5fd'}
@@ -154,14 +151,12 @@ const Header = () => {
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          {/* --- Refactored Mobile Menu Container --- */}
           <div className={`
             md:hidden absolute top-full w-64 p-3 right-0 flex flex-col border
             rounded-lg shadow-xl transition-all duration-300 ease-out origin-top-right text-sm
             ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 pointer-events-none scale-95'}
             ${theme === 'dark' ? 'bg-gray-900 border-slate-700' : 'bg-white border-slate-200'}
           `}>
-              {/* --- Refactored Mobile Menu Links --- */}
               <Link href="/pages/pricing" onClick={closeMenu}>
                 <div className={`text-left font-semibold w-full px-4 py-3 rounded-md transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300 hover:text-white hover:bg-slate-700/50' : 'text-slate-700 hover:bg-slate-100 hover:text-violet-700'}`}>
                   Pricing
@@ -172,12 +167,10 @@ const Header = () => {
                   Contact
                 </div>
               </Link>
-              {/* --- Refactored Mobile Menu HR --- */}
               <hr className={`my-2 ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}`} />
               {isLoggedIn ? (
                   <button
                     onClick={handleLogout}
-                    // --- Refactored Mobile Sign Out Button ---
                     className={`w-full flex items-center gap-3 text-left px-4 py-2 rounded-md transition-colors ${theme === 'dark' ? 'text-gray-300 hover:bg-slate-700/50' : 'text-slate-700 hover:bg-slate-100'}`}
                   >
                     <FontAwesomeIcon icon={faArrowRightFromBracket} />
@@ -185,7 +178,6 @@ const Header = () => {
                   </button>
                 ) : (
                 <div className="flex flex-col gap-1">
-                  {/* --- Refactored Mobile Auth Buttons --- */}
                   <Link href="/pages/login" onClick={closeMenu}>
                     <button className={`w-full flex items-center justify-start gap-3 px-4 py-2 rounded-md transition-colors font-semibold ${theme === 'dark' ? 'text-gray-300 hover:bg-slate-700/50' : 'text-slate-700 hover:bg-slate-100 hover:text-violet-700'}`}>
                       <FontAwesomeIcon icon={faArrowRightToBracket} />

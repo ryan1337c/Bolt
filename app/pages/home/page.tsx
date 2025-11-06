@@ -258,8 +258,8 @@ export default function Home() {
                   onClick={() => setChatMode("chats")}>
                   <div className="flex items-center gap-3">
                     <div className="relative w-[24px] h-[24px]">
-                      <HiOutlineChatBubbleOvalLeft size={18} className="absolute top-0 left-0" strokeWidth={2} />
-                      <HiOutlineChatBubbleOvalLeft size={18} className="absolute bottom-0 right-0 scale-x-[-1]" strokeWidth={2} />
+                      <HiOutlineChatBubbleOvalLeft size={18} className="absolute top-0 left-0 transition-transform duration-300 ease-in-out group-hover:-translate-x-0.5" strokeWidth={2} />
+                      <HiOutlineChatBubbleOvalLeft size={18} className="absolute bottom-0 right-0 scale-x-[-1] transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2} />
                     </div>
                     <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>Chats</span>
                   </div>
