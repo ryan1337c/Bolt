@@ -228,10 +228,10 @@ export default function Home() {
             {/* --- Features Section --- */}
             <section ref={featuresRef} className="w-full flex flex-col items-center pt-20 pb-24 px-4">
               <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r ${theme === 'dark' ? 'from-purple-400 to-white' : 'from-violet-600 to-pink-500'} transition-opacity duration-1000 ease-in ${featuresInView ? 'opacity-100' : 'opacity-0'}`}>
-                Discover What's Possible
+                Discover What&apos;s Possible
               </h2>
                <p className={`text-lg text-center max-w-2xl mb-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} transition-opacity duration-1000 ease-in delay-200 ${featuresInView ? 'opacity-100' : 'opacity-0'}`}>
-                Omni is more than just a chatbot. It's a suite of powerful, interconnected AI tools designed to amplify your productivity and creativity.
+                Omni is more than just a chatbot. It&apos;s a suite of powerful, interconnected AI tools designed to amplify your productivity and creativity.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
