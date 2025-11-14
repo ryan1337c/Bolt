@@ -69,6 +69,8 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
       formData.append('jobDescription', jobDescription);
       formData.append('jobTitle', jobTitle);
 
+      let generatedUrl: string | null = null;
+
       try {
         const response = await fetch("/api/generateResume", { 
           method: 'POST',
@@ -82,14 +84,20 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
 
         // Take the response PDF, create a URL, and set it to state for previewing.
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        setPdfUrl(url); // This will trigger the UI to show the result box
+        generatedUrl = window.URL.createObjectURL(blob);
 
       } catch (error: any) {
         console.error('Fetch failed: ', error.message || error);
         alert(`An error occurred: ${error.message}`); 
       } finally {
         setIsProcessing(false);
+
+        // Before updating the state and swapping the UI.
+        if (generatedUrl) {
+          setTimeout(() => {
+            setPdfUrl(generatedUrl);
+          }, 300); 
+        }
       }
   };
 
@@ -125,7 +133,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
             bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
             border-b border-slate-200 dark:border-slate-700
             transition-transform duration-300 ease-in-out
-            ${isProcessing ? 'translate-y-4' : '-translate-y-full'}
+            ${isProcessing ? 'translate-y-0' : '-translate-y-full shadow-none'}
           `}
         >
           <FiLoader className="w-5 h-5 animate-spin text-violet-600 dark:text-violet-400" />
