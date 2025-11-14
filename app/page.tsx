@@ -142,6 +142,7 @@ export default function Home() {
                       router.push("/pages/home");
                     }}
                     variant={'outline'}
+                    size={"lg"}
                     >
                     <FontAwesomeIcon icon={faRocket} id="rocket" />
                     Launch App 
@@ -151,7 +152,7 @@ export default function Home() {
             </div>
 
             {/* Right Side */}
-            <div ref={robotRef} className= {`md:w-1/2 flex justify-center item-start transition-opacity duration-1000 ease-in ${robotInView ? 'opacity-100' : 'opacity-0'}`}>
+            <div ref={robotRef} className= {`hidden md:w-1/2 lg:flex justify-center item-start transition-opacity duration-1000 ease-in ${robotInView ? 'opacity-100' : 'opacity-0'}`}>
               <DotLottieReact
                 src="https://lottie.host/bd5cdb29-22ca-4570-9be6-8bf14baced57/gf7DNNCIz5.lottie"
                 autoplay

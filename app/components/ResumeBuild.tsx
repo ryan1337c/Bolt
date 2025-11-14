@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, ChangeEvent, DragEvent, useEffect } from 'react';
-// Added FiDownload for the new button
-import { FiUploadCloud, FiFileText, FiX, FiDownload } from 'react-icons/fi';
+import { FiUploadCloud, FiFileText, FiX, FiDownload, FiLoader} from 'react-icons/fi';
 
 type ResumeBuildProps = {
   isProcessing: boolean;
@@ -117,6 +116,25 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
   return (
     // Main container now sets the base text colors for each theme.
     <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 text-slate-800 dark:text-gray-200 animate-fade-in-sm">
+      {/* Processing Prompt */}
+        <div
+          className={`
+            absolute top-0 left-1/2 -translate-x-1/2 z-50
+            flex items-center gap-3 px-6 py-3 
+            rounded-b-xl shadow-xl 
+            bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
+            border-b border-slate-200 dark:border-slate-700
+            transition-transform duration-300 ease-in-out
+            ${isProcessing ? 'translate-y-4' : '-translate-y-full'}
+          `}
+        >
+          <FiLoader className="w-5 h-5 animate-spin text-violet-600 dark:text-violet-400" />
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Tailoring your resume, please wait...
+          </p>
+        </div>
+
+
       <div className="w-full max-w-2xl mx-auto">
         {/* --- Header Text (Theme-Aware) --- */}
         <h1 className="text-3xl font-bold text-center mb-2 text-slate-900 dark:text-white">Resume Optimizer</h1>

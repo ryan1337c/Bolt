@@ -201,9 +201,8 @@ export default function Home() {
   return (
     <>
     <main className="w-full flex flex-col h-dvh overflow-hidden">
-    {/* <Header /> */}
     <div className="flex flex-1 overflow-hidden relative">
-        {/* --- Overlay (for mobile sidebar) --- */}
+        {/* Overlay (for mobile sidebar) */}
         {isMobileSidebarOpen && (
           <div 
             className="fixed inset-0 bg-black/60 z-20 md:hidden"

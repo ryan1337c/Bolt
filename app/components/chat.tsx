@@ -42,7 +42,7 @@ export default function Chat({ chat, setRecents, currChatId, isProcessing, setIs
   const [image, setImage] = useState('');
   const [imageTrigger, setImageTrigger] = useState(false);
   const [imageCount, setImageCount] = useState<number>(1);
-  const messageRefs = useRef<HTMLDivElement[]>([]); // **
+  const messageRefs = useRef<HTMLDivElement[]>([]); 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const { chatMode, setChatMode } = useAuth();
@@ -94,7 +94,10 @@ export default function Chat({ chat, setRecents, currChatId, isProcessing, setIs
   // Uploading 
   const [isOpenUpload, setIsOpenUpload] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [files, setFiles] = useState<File[]>([]);
+  interface FileWithPreview extends File {
+    preview: string;
+  }
+  const [files, setFiles] = useState<FileWithPreview[]>([]);
   const upload = {
     name: "Add photos & files",
     icon: "",
@@ -110,18 +113,35 @@ export default function Chat({ chat, setRecents, currChatId, isProcessing, setIs
 const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   if (e.target.files && e.target.files.length > 0) {
+    const file  = e.target.files![0];
+    // Create a temporary url for the image preview of the file
+    const fileWithUrl =  Object.assign(file, {
+      preview: URL.createObjectURL(file)
+    })
     // Add the newly selected file to your component's state
-    setFiles((prevFiles) => [...prevFiles, e.target.files![0]]);
+    setFiles((prevFiles) => [...prevFiles, fileWithUrl]);
   }
 };
 
   const handleFileDelete = (fileIndex: number) => {
-    setFiles((prevFiles) => prevFiles.filter((_, index) => index != fileIndex));
+    setFiles((prevFiles) => {
+      const fileToRemove = prevFiles[fileIndex];
+      // Revoke the object URL of the deleted file to free up memory
+      URL.revokeObjectURL(fileToRemove.preview);
+      return prevFiles.filter((_, index) => index !== fileIndex)
+    });
 
     if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
   }
+
+  // Effect to clean up the object URLs when the components umounts
+  useEffect(() => {
+    return () => {
+      files.forEach(file => URL.revokeObjectURL(file.preview))
+    };
+  }, [files])
 
   // Search and Tools
   const [isOpenTools, setIsOpenTools] = useState(false);
@@ -673,7 +693,18 @@ const downloadImage = async (imageUrl : string) => {
               <div className="flex flex-wrap gap-2">
               {files.map((file, index) => (
                   <div key={`${file.name}-${index}`} className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg pl-2 pr-1 py-1 text-sm">
-                      <FileText className="w-4 h-4 mr-2 text-slate-600 dark:text-gray-300 flex-shrink-0" />
+                      {/* Conditional rendering for image preview */}
+                      {file.type.startsWith('image/') ? (
+                        <img
+                          src={file.preview}
+                          alt={file.name}
+                          className="w-8 h-8 mr-2 object-cover rounded"
+                          // Revoke the object URL on load to free up memory as soon as the image is loaded
+                          onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)}
+                        />
+                      ) : (
+                        <FileText className="w-4 h-4 mr-2 text-slate-600 dark:text-gray-300 flex-shrink-0" />
+                      )}
                       <span className="truncate max-w-xs text-slate-800 dark:text-gray-200">{file.name}</span>
                       <button
                           type="button"
@@ -831,7 +862,7 @@ const downloadImage = async (imageUrl : string) => {
   return (
     <div className="flex-1 flex flex-col min-h-0  dark:text-white dark:bg-chatDark">
       {chatHistory.length === 0 && chatMode === "new chat" ? (
-        // === EMPTY STATE LAYOUT ===
+        // Empty chat state 
         <div className="flex-1 flex flex-col items-center justify-center p-4 -mt-16 animate-fade-in-up">
           <div className="text-center">
             <div className="inline-block p-4 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mb-6 shadow-lg">
@@ -846,7 +877,7 @@ const downloadImage = async (imageUrl : string) => {
           </div>
         </div>
       ) : (
-        // === ACTIVE CHAT LAYOUT ===
+        // Active chat state
         <div className="w-full flex flex-col flex-1 min-h-0 animate-fade-in-sm">
           <div className="relative flex-1 min-h-0">
             <div className="absolute inset-0 overflow-hidden">
@@ -868,13 +899,15 @@ const downloadImage = async (imageUrl : string) => {
                     return (
                       <div key={index} className="flex justify-end w-full mb-4">
                         <div
-                          ref={(reference) => {
-                            if (reference)
-                              messageRefs.current[index] = reference as HTMLDivElement;
-                          }}
-                          className={`text-sm text-left rounded-lg p-3 bg-gray-200 dark:bg-userChatBg dark:text-textDark break-words ${chatStyles.talkBubbleUser}`}
-                          style={containerStyle}>
-                        {chatMessage.content}
+                        ref={(reference) => {
+                          if (reference)
+                            messageRefs.current[index] = reference as HTMLDivElement;
+                        }}
+                        className={`text-sm text-left rounded-lg p-3 bg-gray-200 dark:bg-userChatBg dark:text-textDark break-words ${chatStyles.talkBubbleUser}`}
+                        style={containerStyle}>
+                          {/* Display any images for file uploads */}
+                          {}
+                          {chatMessage.content}
                       </div>
                       </div>
                     );
@@ -932,7 +965,7 @@ const downloadImage = async (imageUrl : string) => {
                                     className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                                   />
                                   
-                                  {/* 3. The Download Button Overlay */}
+                                  {/* The Download Button Overlay */}
                                   <button
                                     onClick={() => downloadImage(chatMessage.imageUrl)}
                                     className={`
