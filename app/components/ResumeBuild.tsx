@@ -132,7 +132,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
             rounded-b-xl shadow-xl 
             bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
             border-b border-slate-200 dark:border-slate-700
-            transition-transform duration-300 ease-in-out
+            transition-[transform,box-shadow] duration-300 ease-in-out
             ${isProcessing ? 'translate-y-0' : '-translate-y-full shadow-none'}
           `}
         >
