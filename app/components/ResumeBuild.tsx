@@ -129,11 +129,11 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
           className={`
             absolute top-0 left-1/2 -translate-x-1/2 z-50
             flex items-center gap-3 px-6 py-3 
-            rounded-b-xl shadow-xl 
+            rounded-b-xl
             bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
             border-b border-slate-200 dark:border-slate-700
-            transition-[transform,box-shadow] duration-300 ease-in-out
-            ${isProcessing ? 'translate-y-0' : '-translate-y-full shadow-none'}
+            transition-transform-shadow duration-300 ease-in-out
+            ${isProcessing ? 'translate-y-0 shadow-xl' : '-translate-y-full shadow-none'}
           `}
         >
           <FiLoader className="w-5 h-5 animate-spin text-violet-600 dark:text-violet-400" />

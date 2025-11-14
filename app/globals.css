@@ -336,6 +336,14 @@ input {
   transition: background-color 0.2s ease-in-out; /* transition-colors duration-200 */
 }
 
+@layer utilities {
+  .transition-transform-shadow {
+    transition-property: transform, box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+}
+
 @layer base {
   .theme {
     --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
