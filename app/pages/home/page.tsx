@@ -153,8 +153,18 @@ export default function Home() {
 
       console.log("Successfully deleted chat!");
 
-      // Update recents
-      setRecents(prev => prev.filter(chat => chat.chat_id !== chatToDelete.chat_id));
+      // Check if this is the last chat
+      if (recents.length === 1) {
+        // If it is, reset to the "new chat" view
+        setRecents([]);
+        setChatMode('new chat');
+      } else {
+        setRecents(prev => prev.filter(chat => chat.chat_id !== chatToDelete.chat_id));
+        
+        if (currChat >= recents.length - 1) {
+            setCurrChat(0);
+        }
+      }
     }
     catch(error: any) {
       const message = error.message || 'An unexpected error occurred';
