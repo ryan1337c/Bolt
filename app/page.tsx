@@ -214,7 +214,7 @@ export default function Home() {
                   )}
                   <video
                     ref={videoRef}
-                    src="omniDemo.mp4"
+                    src="OmniDemo.mp4"
                     poster="omniDemoPoster.png"
                     muted
                     playsInline
