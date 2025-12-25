@@ -379,7 +379,7 @@ export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProp
             </div>
             <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">No quizzes found</h3>
             <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-2">
-              We couldn&apos;t find any quizzes matching "{searchTerm}". Try creating a new one!
+              We couldn&apos;t find any quizzes matching &quot;{searchTerm}&quot;. Try creating a new one!
             </p>
           </div>
         )}
@@ -400,7 +400,7 @@ export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProp
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete Quiz?</h3>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  Are you sure you want to delete <span className="font-bold text-slate-800 dark:text-slate-200">"{quizToDelete.title}"</span>? This action cannot be undone.
+                  Are you sure you want to delete <span className="font-bold text-slate-800 dark:text-slate-200">&quot;{quizToDelete.title}&quot;</span>? This action cannot be undone.
                 </p>
               </div>
               <button onClick={closeDeleteModal} className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"><X size={20} /></button>
