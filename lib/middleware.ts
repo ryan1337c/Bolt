@@ -33,17 +33,23 @@ const supabaseKey = process.env.NEXT_PUBLIC_ANON_KEY;
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/pages/login') &&
-    !request.nextUrl.pathname.startsWith('/pages/register') &&
-    !request.nextUrl.pathname.startsWith('/pages/contact') &&
-    !request.nextUrl.pathname.startsWith('/pages/pricing')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+
+  const publicRoutes = ['/pages/login', '/pages/register', '/pages/contact', '/pages/pricing'];
+  const isPublicRoute = publicRoutes.some(route => 
+    request.nextUrl.pathname.startsWith(route)
+  );
+  // Redirect logged-in users away from public auth pages
+  if (user && (request.nextUrl.pathname.startsWith('/pages/login') || 
+                request.nextUrl.pathname.startsWith('/pages/register'))) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/'; // or '/dashboard' or wherever your home is
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect non-logged-in users to login
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/pages/login';
-    console.log("User", user);
     return NextResponse.redirect(url);
   }
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

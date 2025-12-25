@@ -18,19 +18,26 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Close profile menu if clicked outside
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
+      }
+
+      // Close mobile menu if clicked outside
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
-  }, [profileMenuRef])
+  }, [profileMenuRef, mobileMenuRef])
 
   const handleLogout = async () => {
     const auth = new AuthServices();
@@ -143,7 +150,7 @@ const Header = () => {
         )}
           </div>
           
-        <div className='relative md:hidden'>
+        <div className='relative md:hidden' ref={mobileMenuRef}>
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="transition-colors"
@@ -169,13 +176,16 @@ const Header = () => {
               </Link>
               <hr className={`my-2 ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}`} />
               {isLoggedIn ? (
-                  <button
+                  <> 
+                    <ThemeToggle />
+                    <button
                     onClick={handleLogout}
                     className={`w-full flex items-center gap-3 text-left px-4 py-2 rounded-md transition-colors ${theme === 'dark' ? 'text-gray-300 hover:bg-slate-700/50' : 'text-slate-700 hover:bg-slate-100'}`}
                   >
                     <FontAwesomeIcon icon={faArrowRightFromBracket} />
                     Sign Out
                   </button>
+                  </>
                 ) : (
                 <div className="flex flex-col gap-1">
                   <Link href="/pages/login" onClick={closeMenu}>

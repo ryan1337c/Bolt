@@ -123,7 +123,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
 
   return (
     // Main container now sets the base text colors for each theme.
-    <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 text-slate-800 dark:text-gray-200 animate-fade-in-sm">
+    <div className="flex-1 flex flex-col items-center justify-center py-4 px-6 sm:p-8 text-slate-800 dark:text-gray-200 animate-fade-in-sm">
       {/* Processing Prompt */}
         <div
           className={`

@@ -19,10 +19,6 @@ const Register  = () => {
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
-    const navigate = (url: string) => {
-      router.push(url);
-    }
-
     const handleSubmit = async(e: React.FormEvent) => {
       e.preventDefault();
       const auth = new AuthServices()
@@ -30,7 +26,7 @@ const Register  = () => {
         const result = await auth.signup(firstName, lastName, email, password);
         console.log("Result: ", result);
         // navigate to verification notify page
-        navigate(`./verify/?id=${result.user?.id}&email=${result.user?.email}`);
+        window.location.href = `./verify/?id=${result.user?.id}&email=${result.user?.email}`
       }
       catch (error: any) {
         const message = error.message || 'An unexpected error occurred';

@@ -860,7 +860,7 @@ const downloadImage = async (imageUrl : string) => {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0  dark:text-white dark:bg-chatDark">
+    <div className="flex-1 flex flex-col min-h-0 dark:text-white dark:bg-chatDark">
       {chatHistory.length === 0 && chatMode === "new chat" ? (
         // Empty chat state 
         <div className="flex-1 flex flex-col items-center justify-center p-4 -mt-16 animate-fade-in-up">

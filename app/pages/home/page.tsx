@@ -21,6 +21,9 @@ import SidebarTooltip from "@/app/components/SidebarTooltip";
 import ResumeBuild from "@/app/components/ResumeBuild";
 import { useTheme } from "next-themes";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
+import { MdOutlineQuiz } from "react-icons/md";
+import { TbCards } from "react-icons/tb";
+import QuizView from "@/app/components/QuizView";
 
 
 export interface ChatMessage {
@@ -227,7 +230,7 @@ export default function Home() {
           ${isSidebarExpanded ? 'w-64' : 'w-20'}
           ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}>
-          <div className="flex flex-col h-full p-4 text-slate-800 dark:text-textDark overflow-hidden">
+          <div className="flex flex-col h-full p-4 text-slate-800 dark:text-textDark">
             {/* Section 1: Header */}
             <div className={`flex-shrink-0 flex items-center mb-6 justify-between`}>
               <div className="flex items-center overflow-hidden">
@@ -244,7 +247,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Section 2: Actions */}
+            {/* Section 2: New Chat / Chat */}
             <div className="flex-shrink-0 space-y-2">
               <SidebarTooltip text="New Chat" isSidebarExpanded={isSidebarExpanded}>
                 <button 
@@ -260,6 +263,7 @@ export default function Home() {
                   </div>
                 </button>
               </SidebarTooltip>
+            
               <SidebarTooltip text="Chats" isSidebarExpanded={isSidebarExpanded}>
                 <button 
                   disabled={isProcessing}
@@ -290,8 +294,48 @@ export default function Home() {
                 </div>
               </button>
             </SidebarTooltip>
+
+            {/* Section 4 Multiple Choice Quiz */}
+            <SidebarTooltip text="Quiz" isSidebarExpanded={isSidebarExpanded}>
+              <button
+                disabled={isProcessing}
+                className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "quiz" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
+                onClick={() => { setChatMode("quiz"); setCurrChat(0); }}>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                      <MdOutlineQuiz 
+                        size={22} 
+                        className="transition-transform duration-300 ease-in-out group-hover:scale-110 group-hover:-rotate-12" 
+                      />
+                    </div>
+                    <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
+                      Quiz
+                    </span>
+                  </div>
+              </button>
+            </SidebarTooltip>
+
+            {/* Section 5: Flashcards */}
+            <SidebarTooltip text="Flashcards" isSidebarExpanded={isSidebarExpanded}>
+              <button 
+                disabled={isProcessing}
+                className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "flashcards" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
+                onClick={() => { setChatMode("flashcards"); setCurrChat(0); }}>
+                <div className="flex items-center gap-3">
+                  <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                    <TbCards 
+                      size={24} 
+                      className="transition-transform duration-300 ease-in-out group-hover:scale-110 group-hover:-translate-y-0.5 group-hover:rotate-6" 
+                    />
+                  </div>
+                  <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
+                    Flashcards
+                  </span>
+                </div>
+              </button>
+            </SidebarTooltip>
             
-            {/* Section 4: Recents */}
+            {/* Section 6: Recents */}
             <div className={`pt-6 flex flex-col flex-grow min-h-0`}>
               <h3 className={`flex-shrink-0 px-3 text-sm font-medium text-slate-500 dark:text-gray-400 transition-opacity duration-300 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0'}`}>Recents</h3>
               <div className={`mt-2 flex-grow space-y-2 overflow-y-auto scrollbar-custom transition-opacity duration-300 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0'}`}>
@@ -322,14 +366,14 @@ export default function Home() {
               {openMenuId && (<div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)}></div>)}
             </div>
 
-            {/* Section 5: Profile Menu */}
+            {/* Section 7: Profile Menu */}
             <div className='mt-auto flex-shrink-0 pt-4 border-t border-black/10 dark:border-white/10'>
               <div ref={sidebarProfileMenuRef} className="relative">
                 <button onClick={() => setIsSidebarProfileOpen(!isSidebarProfileOpen)} className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10 ${isSidebarProfileOpen && 'bg-black/10 dark:bg-white/10'}`}>
                   <FaUserCircle size={30} className="flex-shrink-0 text-slate-600 dark:text-gray-300" />
                   <span className={`whitespace-nowrap font-semibold text-sm overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>Profile</span>
                 </button>
-                <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-3 flex flex-col gap-1 transition-all duration-300 ease-out origin-bottom ${isSidebarProfileOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                <div className={`absolute bottom-full left-0 z-50 mb-2 w-60 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-3 flex flex-col gap-1 transition-all duration-300 ease-out origin-bottom ${isSidebarProfileOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
                   <div className=""><ThemeToggle /></div>
                   <hr className="border-slate-200 dark:border-slate-700 my-1" />
                   <button onClick={async () => { 
@@ -351,7 +395,7 @@ export default function Home() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-chatDark transition-transform duration-300 ease-in-out z-10">
-        <header className={`flex-shrink-0 flex items-center p-4 relative z-30 `}>
+        <header className={`flex-shrink-0 flex items-center p-4 relative z-30 ${chatMode !== 'recents' ? 'md:hidden' : ''}`}>
           {/* Hamburger Menu */}
           <div className="md:hidden mr-2 sm:mr-4">
             <button 
@@ -380,20 +424,26 @@ export default function Home() {
           )}
         </header>
 
-        {chatMode === "chats" ? (
+        {chatMode === "chats" ? 
           <ChatsView
             recents={recents}
             onNewChat={handleNewChat}
             onSelectChat={handleSelectChat}
             isProcessing={isProcessing}
             onDeleteChat={handleDelete}
-          />
-          ) : chatMode === "resume" ? (
+          /> 
+          :
+          chatMode === "resume" ? 
             <ResumeBuild 
               isProcessing={isProcessing}
               setIsProcessing={setIsProcessing}
-            />
-          ) : 
+            /> 
+          :
+          chatMode === "quiz" ? 
+          <QuizView isProcessing={isProcessing} setIsProcessing={setIsProcessing} /> 
+          :
+          chatMode === "flashcards" ?
+          <></> :
           <Chat 
             chat={chatMode === "recents" && recents[currChat] ? recents[currChat].history : []} 
             setRecents={setRecents} 

@@ -18,10 +18,6 @@ const Login = () => {
   const router = useRouter();
   const { theme } = useTheme();
 
-  const navigate = (url: string) => {
-    router.push(url);
-  }
-
   const handleGoogleSignIn = async() => {
     const auth = new AuthServices();
     try {
@@ -37,7 +33,7 @@ const Login = () => {
     const auth = new AuthServices();
     try {
       await auth.login(email, password);
-      navigate(`./home`);
+      window.location.href = "./home";
     }
     catch (error: any) {
         const message = error.message || 'An unexpected error occurred';

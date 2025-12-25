@@ -7,7 +7,7 @@ import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 interface AuthContextType {
     isLoggedIn: boolean;
     chatMode: string;
-    setChatMode: React.Dispatch<React.SetStateAction<string>>;
+    setChatMode: (mode: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +21,26 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [chatMode, setChatMode] = useState("new chat"); // new chat, recents, chat
+    const [chatMode, setChatModeState] = useState("new chat"); // new chat, recents, chat, quiz, flashcards, resume
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    // Recover mode on mount
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const savedMode = localStorage.getItem("chatMode");
+            if (savedMode) {
+                setChatModeState(savedMode);
+            }
+        };
+        setIsInitialized(true);
+    }, [])
+
+    const setChatMode = (mode: string) => {
+        setChatModeState(mode);
+        if (typeof window !== "undefined") {
+            localStorage.setItem("chatMode", mode)
+        }
+    }
 
     useEffect(() => {
 
@@ -52,6 +71,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             };
 
         }, []);
+
+        // Prevents rendering children until we know the correct chatMode
+        if (!isInitialized)
+            return null;
 
     return (
         <AuthContext.Provider value={{ isLoggedIn, chatMode, setChatMode }}>

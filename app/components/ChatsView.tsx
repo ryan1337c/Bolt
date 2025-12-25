@@ -34,20 +34,20 @@ export default function ChatsView({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden h-full animate-fade-in-sm">
-      <div className="max-w-4xl mx-auto w-full flex flex-col h-full p-4 sm:p-6 md:p-8">
+      <div className="max-w-4xl mx-auto w-full flex flex-col h-full py-4 px-6 md:p-10 ">
         
         {/* --- Header (Theme-Aware) --- */}
         <div className="flex-shrink-0">
             <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                <h1 className="text-3xl font-light text-slate-700 dark:text-gray-300 tracking-tight mb-4 sm:mb-0">
+                <h1 className="text-3xl font-bold text-slate-700 dark:text-gray-300 tracking-tight mb-4 sm:mb-0">
                     Your Chat History
                 </h1>
                 <button
                     onClick={onNewChat}
                     disabled={isProcessing}
-                    className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 dark:bg-btnDark dark:hover:brightness-[.9] disabled:opacity-50 transition-all rounded-lg"
+                    className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium shadow-md hover:shadow-lg text-white bg-violet-600 hover:bg-violet-700 dark:bg-btnDark dark:hover:brightness-[.9] disabled:opacity-50 transition-all rounded-lg"
                 >
-                    <FiPlus size={16} />
+                    <FiPlus size={20} />
                     <span>New Chat</span>
                 </button>
             </div>
@@ -63,7 +63,7 @@ export default function ChatsView({
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search your chats..."
                     className="
-                        w-full pl-12 pr-4 py-3 rounded-lg transition-all duration-300
+                        w-full pl-12 pr-4 py-3 rounded-lg transition-all 
                         bg-white dark:bg-slate-700/50 
                         text-slate-800 dark:text-gray-200
                         border border-slate-300 dark:border-slate-600
