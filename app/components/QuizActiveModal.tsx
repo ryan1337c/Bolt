@@ -581,7 +581,7 @@ export default function QuizActiveModal({ quizId, quizTitle, questions, duration
                         <Clock size={32} />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-white">Time's Up!</h3>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white">Time&apos;s Up!</h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
                            Your answers have been automatically submitted. All work has been saved and is ready for review.
                         </p>
