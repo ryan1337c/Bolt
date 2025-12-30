@@ -39,7 +39,7 @@ export default function ForgotPassword () {
 
     return(<>
         {mounted && (
-            <div className={`h-screen flex items-center justify-center p-5 ${theme === 'dark' ? "bg-landingPage" : "bg-landingPageLight"} `}>
+            <div className="h-screen flex items-center justify-center p-5 bg-landingPageLight dark:bg-landingPage">
                 <div className="relative flex flex-col bg-white text-black p-10 md:w-[500px] shadow-lg rounded-xl items-center">
                     
                     <button 
@@ -57,7 +57,7 @@ export default function ForgotPassword () {
                         <div className="flex flex-col gap-2">
                             <label className="text-left font-semibold">Email</label>
                             <input className="bg-white text-black px-4 py-2 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.3)] focus:outline-none focus:ring-2
-                                [color-scheme:light]" 
+                                [color-scheme:light] appearance-none" 
                             id="email" name="email" placeholder='Enter email' type="email" required 
                             onChange={(e) => setEmail(e.target.value)}></input>
                             

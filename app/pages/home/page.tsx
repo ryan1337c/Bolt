@@ -256,7 +256,7 @@ export default function Home() {
                   onClick={() => { setChatMode("new chat"); setCurrChat(0); }}>
                   <div className="flex items-center gap-3">
                     <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
-                      <FaCircle className="absolute transition-transform duration-300 ease-in-out group-hover:scale-110" color={theme === 'dark' ? '#6366F1' : '#8b5cf6'} size={24} />
+                      <FaCircle className="absolute transition-transform duration-300 ease-in-out group-hover:scale-110 [--plus-bg:#8b5cf6] dark:[--plus-bg:#6366F1]" color={"var(--plus-bg)"} size={24} />
                       <FiPlus className="absolute text-textDark transition-transform duration-300 ease-in-out group-hover:scale-125" size={24 * 0.6} strokeWidth={3} />
                     </div>
                     <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>New Chat</span>
