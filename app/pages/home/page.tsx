@@ -19,7 +19,6 @@ import RenameModal from "@/app/components/RenameModal";
 import ChatsView from "@/app/components/ChatsView";
 import SidebarTooltip from "@/app/components/SidebarTooltip";
 import ResumeBuild from "@/app/components/ResumeBuild";
-import { useTheme } from "next-themes";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { MdOutlineQuiz } from "react-icons/md";
 import { TbCards } from "react-icons/tb";
@@ -47,7 +46,6 @@ export interface RecentChat {
 
 export default function Home() {
   const { chatMode, setChatMode } = useAuth();
-  const { theme } = useTheme();
 
   // State for the NEW sidebar profile menu
   const [isSidebarProfileOpen, setIsSidebarProfileOpen] = useState(false);
