@@ -737,7 +737,7 @@ export default function FlashcardsView({ isProcessing, setIsProcessing }: Flashc
               <div className="flex-shrink-0 bg-red-100 dark:bg-red-900/30 p-2 rounded-full text-red-600 dark:text-red-400"><AlertTriangle size={24} /></div>
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete {itemToDelete.type === 'folder' ? 'Folder' : 'Deck'}?</h3>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Are you sure you want to delete <span className="font-bold text-slate-800 dark:text-slate-200">"{itemToDelete.title}"</span>? {itemToDelete.type === 'folder' && " This will delete all items inside it."} <br/>This action cannot be undone.</p>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Are you sure you want to delete <span className="font-bold text-slate-800 dark:text-slate-200">&quot;{itemToDelete.title}&quot;</span>? {itemToDelete.type === 'folder' && " This will delete all items inside it."} <br/>This action cannot be undone.</p>
               </div>
               <button onClick={closeDeleteModal} className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"><X size={20} /></button>
             </div>
