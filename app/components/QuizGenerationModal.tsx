@@ -87,6 +87,7 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
   const [duration, setDuration] = useState('600'); 
   
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [serverError, setServerError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSession = async() => {
@@ -102,6 +103,14 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
     }
     fetchSession();
   }, []);
+
+  // Auto-dismiss server error after 4 seconds
+  useEffect(() => {
+    if (serverError) {
+        const timer = setTimeout(() => setServerError(null), 4000);
+        return () => clearTimeout(timer);
+    }
+  }, [serverError]);
 
   const handleClose = () => {
     setTitle('');
@@ -163,6 +172,9 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
   if (!isOpen) return null;
 
   const handleGenerate = async () => {
+    setFormErrors({});
+    setServerError(null);
+
     // Validation
     const newErrors: FormErrors = {};
     let hasError = false;
@@ -210,6 +222,7 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
             handleClose();
         } catch(e) { 
             console.error(e); 
+            setServerError("An unexpected error occurred. Please try again.");
         } finally {
             setIsProcessing(false);
         }
@@ -244,7 +257,7 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
           }
           catch(error: any) {
             console.log(`generate quiz error ${error}` );
-            alert("Failed to generate quiz. Please try again.");
+            setServerError(error.message || "An unexpected error occurred. Please try again.");
           }
           finally {
             setIsProcessing(false);
@@ -259,6 +272,7 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
               handleClose();
           } catch (error) {
               console.error(error);
+              setServerError("An unexpected error occurred. Please try again.");
           } finally {
               setIsProcessing(false);
           }
@@ -356,7 +370,22 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
   const durationTriggerClasses = `${inputBaseClasses} h-auto outline-none border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-sm ">
+      {/* SLIDE-DOWN ERROR TOAST */}
+      {serverError && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[70] w-full max-w-md px-4 animate-in slide-in-from-top-4 duration-300 fade-in">
+            <div className="bg-red-50 dark:bg-red-900/90 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-100 px-4 py-3 rounded-xl shadow-lg flex items-center gap-3">
+                <AlertTriangle size={20} className="shrink-0 text-red-600 dark:text-red-400" />
+                <p className="text-sm font-medium">{serverError}</p>
+                <button 
+                    onClick={() => setServerError(null)}
+                    className="ml-auto p-1 hover:bg-red-100 dark:hover:bg-red-800 rounded-full transition-colors"
+                >
+                    <X size={16} />
+                </button>
+            </div>
+        </div>
+      )}
       <div 
         className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]"
         role="dialog"

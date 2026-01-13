@@ -63,12 +63,12 @@ export default function ChatsView({
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search your chats..."
                     className="
-                        w-full pl-12 pr-4 py-3 rounded-lg transition-all 
-                        bg-white dark:bg-slate-700/50 
-                        text-slate-800 dark:text-gray-200
-                        border border-slate-300 dark:border-slate-600
-                        focus:ring-2 focus:ring-violet-300 dark:focus:ring-white/25
-                        focus:border-transparent dark:focus:border-transparent
+                        w-full pl-12 pr-4 py-3 rounded-xl transition-all 
+                        bg-white dark:bg-slate-800
+                        text-slate-800 dark:text-slate-100
+                        border border-slate-200 dark:border-slate-700
+                        focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500
+                        focus:border-transparent dark:focus:border-transparent shadow-sm
                     "
                 />
             </div>

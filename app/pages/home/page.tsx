@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { MdOutlineQuiz } from "react-icons/md";
 import { TbCards } from "react-icons/tb";
 import QuizView from "@/app/components/QuizView";
+import FlashcardsView from "@/app/components/FlashcardsView";
 
 
 export interface ChatMessage {
@@ -441,7 +442,8 @@ export default function Home() {
           <QuizView isProcessing={isProcessing} setIsProcessing={setIsProcessing} /> 
           :
           chatMode === "flashcards" ?
-          <></> :
+          <FlashcardsView isProcessing={isProcessing} 
+            setIsProcessing={setIsProcessing}/> :
           <Chat 
             chat={chatMode === "recents" && recents[currChat] ? recents[currChat].history : []} 
             setRecents={setRecents} 

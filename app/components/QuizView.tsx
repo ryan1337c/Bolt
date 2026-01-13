@@ -21,6 +21,7 @@ import QuizGenerationModal from './QuizGenerationModal';
 import QuizActiveModal, { Question, Choice } from './QuizActiveModal'; 
 import { PublicServices } from '@/lib/publicServices';
 import { AuthServices } from '@/lib/authServices';
+import { timeAgo } from '@/lib/utils';
 
 type QuizViewProps = {
     isProcessing: boolean,
@@ -59,28 +60,6 @@ const formatDuration = (seconds: number) => {
 const formatMode = (mode: string) => {
     if (!mode) return 'Manual';
     return mode.toLowerCase() === 'ai' ? 'AI Generated' : 'Manual';
-};
-
-const timeAgo = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    try {
-        const date = new Date(dateString);
-        const now = new Date();
-        const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + "y ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + "mo ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + "d ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + "h ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + "m ago";
-        return Math.floor(seconds) + "s ago";
-    } catch (e) {
-        return dateString;
-    }
 };
 
 export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProps) {
