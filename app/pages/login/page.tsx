@@ -1,6 +1,5 @@
 'use client'
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link';
 import { FaRobot, FaEye, FaEyeSlash } from "react-icons/fa";
 import { IoIosArrowRoundBack } from "react-icons/io";
@@ -14,29 +13,53 @@ const Login = () => {
   const [loginError, setLoginError] = useState('');
   const [backing, setBacking] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleGoogleSignIn = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
     const auth = new AuthServices();
     try {
       await auth.oAuthSignup();
     }
     catch (error: any) {
-      console.log('Error in signing in with google oAuth.')
+      console.log('Error in signing in with google oAuth.');
+      setIsProcessing(false);
     }
   }
 
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      // Ensures that if the user leaves this page, the cursor is normal
+      document.body.style.cursor = 'default';
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(''); 
+    setIsProcessing(true);
+
+    // FORCE the cursor on the entire body
+    document.body.style.cursor = 'wait';
+
     const auth = new AuthServices();
     try {
       await auth.login(email, password);
+
+      // 3. Reset cursor before navigating
+      document.body.style.cursor = 'default';
+
       window.location.href = "./home";
     }
     catch (error: any) {
       const message = error.message || 'An unexpected error occurred';
       console.error(`${message}`);
       setLoginError(message);
+      setIsProcessing(false);
+      // RESET the cursor if login fails
+      document.body.style.cursor = 'default';
     }
   }
 
@@ -47,7 +70,8 @@ const Login = () => {
         <div className="absolute top-4 left-4">
           <Link 
             href={`/`} 
-            className="flex items-center gap-2 text-xl font-bold text-slate-800 dark:text-white" 
+            tabIndex={isProcessing ? -1 : 0}
+            className={`flex items-center gap-2 text-xl font-bold text-slate-800 dark:text-white ${isProcessing ? 'pointer-events-none opacity-50' : ''}`}
             onMouseEnter={() => setBacking(true)} 
             onMouseLeave={() => setBacking(false)}
           >
@@ -74,12 +98,14 @@ const Login = () => {
                 <div className="mt-2">
                   <input 
                     id="email" 
+                    disabled={isProcessing}
                     name="email" 
                     type="email" 
                     autoComplete='off' 
                     required 
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset sm:text-sm focus:ring-1 focus:ring-inset bg-white text-black ring-slate-300 focus:ring-violet-400 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-white appearance-none"
+                    className={`block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset sm:text-sm focus:ring-1 focus:ring-inset bg-white text-black ring-slate-300 focus:ring-violet-400 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-white appearance-none 
+                      ${isProcessing ? 'opacity-50 pointer-events-none' : '' }`}
                   />
                 </div>
               </div>
@@ -88,24 +114,31 @@ const Login = () => {
                 <div className="flex items-center justify-between">
                   <label htmlFor='password' className="block text-sm font-medium text-slate-700 dark:text-gray-200">Password</label>
                   <div className="text-sm">
-                    <a href='./recovery/forgotPassword' className="font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200">
+                    <Link 
+                      href='./recovery/forgotPassword' 
+                      tabIndex={isProcessing ? -1 : 0}
+                      className={`font-semibold text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 ${isProcessing ? 'pointer-events-none opacity-50' : ''}`}
+                    >
                       Forgot password?
-                    </a>
+                    </Link>
                   </div>
                 </div>
                 <div className="mt-2 relative">
                   <input
                     id='password'
+                    disabled={isProcessing}
                     type={showPassword ? 'text' : 'password'}
                     name='password'
                     onChange={e => setPassword(e.target.value)}
                     required
                     autoComplete='off'
-                    className="block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset sm:text-sm pr-10 focus:ring-1 focus:ring-inset bg-white text-black ring-slate-300 focus:ring-violet-400 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-white appearance-none"
+                    className={`block w-full rounded-md border-0 py-2 px-3 shadow-sm ring-1 ring-inset sm:text-sm pr-10 focus:ring-1 focus:ring-inset bg-white text-black ring-slate-300 focus:ring-violet-400 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-white appearance-none
+                      ${isProcessing ? 'opacity-70 pointer-events-none' : ''}`}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer focus:outline-none"
+                    disabled={isProcessing}
+                    className={`absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer focus:outline-none ${isProcessing ? 'opacity-70 cursor-wait' : ''}`}
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
@@ -115,21 +148,29 @@ const Login = () => {
               </div>
 
               <div className="flex flex-col items-center space-y-4 pt-2">
-                <button type='submit' className="w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 bg-violet-600 hover:bg-violet-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                <button 
+                type='submit' 
+                disabled={isProcessing}
+                className={`w-full justify-center rounded-md py-2 px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 bg-violet-600 hover:bg-violet-700 dark:bg-indigo-500 dark:hover:bg-indigo-400
+                ${isProcessing ? 'opacity-70 pointer-events-none' : ''}`}>
                   Sign In
                 </button>
                 <p className="text-sm text-slate-600 dark:text-gray-300">
                   Don&apos;t have an account?
-                  <a href='./register' className="font-semibold ml-1 text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200">
+                  <Link 
+                    href='./register' 
+                    tabIndex={isProcessing ? -1 : 0}
+                    className={`font-semibold ml-1 text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 ${isProcessing ? 'pointer-events-none opacity-50' : ''}`}
+                  >
                     Sign Up
-                  </a>
+                  </Link>
                 </p>
                 <div className="w-full flex items-center gap-4 text-sm pt-3">
                   <hr className="w-full border-t border-slate-300 dark:border-white" />
                   <span className="text-slate-500 dark:text-gray-300">OR</span>
                   <hr className="w-full border-t border-slate-300 dark:border-white" />
                 </div>
-                <button type="button" onClick={handleGoogleSignIn}>
+                <button type="button" disabled={isProcessing} onClick={handleGoogleSignIn} className={isProcessing ? 'opacity-50 grayscale pointer-events-none' : ''}>
                     {/* Replaced logic with Tailwind's dark: visibility classes */}
                     <img src={googleButtonLight.src} alt="google sign in" className="dark:hidden" />
                     <img src={googleButtonDark.src} alt="google sign in" className="hidden dark:block" />
