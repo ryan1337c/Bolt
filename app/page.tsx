@@ -1,7 +1,7 @@
 "use client"
 import { useAuth } from './context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRocket} from '@fortawesome/free-solid-svg-icons';
+import { faRocket, faXmark} from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState, useRef} from 'react';
 import { useRouter } from 'next/navigation';
 import { SparklesText } from "@/components/magicui/sparkles-text";
@@ -24,6 +24,9 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // State for Privacy Policy Modal
+  const [isPolicyOpen, setIsPolicyOpen] = useState(false);
 
   const handlePlayVideo = () => {
     if (videoRef.current) {
@@ -280,23 +283,77 @@ export default function Home() {
           {/* --- Footer Section --- */}
           <footer className={`
             w-full flex flex-col sm:flex-row justify-center sm:justify-between items-center 
-            gap-4 sm:gap-0 py-5 px-10 mt-auto 
-            border-t dark:bg-black/20 dark:border-white/10 bg-white/50 border-black/10'} 
-            
+            gap-3 sm:gap-0 py-5 px-10 mt-auto 
+            border-t dark:bg-black/20 dark:border-white/10 bg-white/50 border-black/10
           `}>
-            <p className={`text-sm font-medium dark:text-gray-400 text-slate-600`}>
-              © 2025 Omni | All Rights Reserved
-            </p>
+            <div className="flex flex-col items-center sm:items-start gap-3">
+                <p className={`text-sm font-medium dark:text-gray-400 text-slate-600`}>
+                © 2025 Omni | All Rights Reserved
+                </p>
+                <button 
+                    onClick={() => setIsPolicyOpen(true)}
+                    className="text-xs dark:text-gray-500 text-slate-600 hover:underline transition-all"
+                >
+                    Privacy & Cookies Policy
+                </button>
+            </div>
+
             <a
               href="https://github.com/ryan1337c" 
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center gap-2 dark:text-gray-400 dark:hover:text-white text-slate-600 hover:text-black  transition-colors duration-300`}
+              className={`flex items-center gap-2 dark:text-gray-400 dark:hover:text-white text-slate-600 hover:text-black transition-colors duration-300`}
             >
               <p className="text-sm font-medium">Created by Ryan Chen</p> 
               <FaGithub className="size-5" />
             </a>
           </footer>
+
+          {/* --- Privacy & Cookies Modal --- */}
+          {isPolicyOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+              <div className="relative w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-white dark:bg-zinc-900 rounded-2xl p-8 border dark:border-white/10 shadow-2xl">
+                <button 
+                  onClick={() => setIsPolicyOpen(false)}
+                  className="absolute top-4 right-4 p-2 text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  <FontAwesomeIcon icon={faXmark} className="size-6" />
+                </button>
+
+                <h2 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-500 dark:from-purple-400 dark:to-white">
+                  Privacy & Cookies Policy
+                </h2>
+
+                <div className="space-y-6 text-sm dark:text-gray-300 text-gray-600 leading-relaxed">
+                  <section>
+                    <h3 className="text-lg font-semibold dark:text-white text-black mb-2">1. Information We Collect</h3>
+                    <p>Omni collects minimal data necessary to provide AI services, including account information (email) and usage metadata to improve model performance. We do not sell your personal data to third parties.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold dark:text-white text-black mb-2">2. How We Use AI Models</h3>
+                    <p>When you interact with Omni, your prompts are processed by various LLMs. While we ensure secure transit, please avoid sharing sensitive personal identifiers within chats.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold dark:text-white text-black mb-2">3. Cookies & Tracking</h3>
+                    <p> We use essential cookies to store your login state and maintain your session security. 
+                      We also use analytical cookies via Vercel to understand how users interact with our interface to optimize the &quot;Omni&quot; experience. 
+                      Our tracking is used strictly for performance optimization and does not track you across other websites.</p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold dark:text-white text-black mb-2">4. Data Security</h3>
+                    <p>We implement industry-standard encryption to protect your files and chat history. You can request data deletion at any time via your account settings.</p>
+                  </section>
+
+                  <p className="pt-4 border-t dark:border-white/10 italic">
+                    Last Updated: January 2025. By using Omni, you agree to these terms.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
