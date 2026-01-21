@@ -19,25 +19,30 @@ import { useAuth } from '@/app/context/AuthContext';
 import { RecentChat } from "../pages/home/page";
 
 
+type MessageImage = {
+  id: string;
+  url: string;
+  order_index: number;
+}
+
 export interface ChatMessage {
   role: string;
   content: string;
-  imageUrl: string;
-  clickedInHistory: boolean; 
+  imageUrls: MessageImage[];
   loading: boolean;
   isNew: boolean;
 }
 
 type ChatProps = {
-  chat: ChatMessage[];
   setRecents: React.Dispatch<React.SetStateAction<RecentChat[]>>;
-  currChatId: string;
+  currChatId: string | null;
+  setCurrChatId: (id: string) => void; 
   isProcessing: boolean;
   setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 
-export default function Chat({ chat, setRecents, currChatId, isProcessing, setIsProcessing}: ChatProps) {
+export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessing, setIsProcessing}: ChatProps) {
   const [userInput, setUserInput] = useState('');
   const [image, setImage] = useState('');
   const [imageTrigger, setImageTrigger] = useState(false);
@@ -50,6 +55,7 @@ export default function Chat({ chat, setRecents, currChatId, isProcessing, setIs
   // chat history stuff
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   // chat box stuff
   const chatBoxRef = useRef<HTMLDivElement>(null);
@@ -110,18 +116,18 @@ export default function Chat({ chat, setRecents, currChatId, isProcessing, setIs
     fileInputRef.current?.click();
   }
 
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
-  if (e.target.files && e.target.files.length > 0) {
-    const file  = e.target.files![0];
-    // Create a temporary url for the image preview of the file
-    const fileWithUrl =  Object.assign(file, {
-      preview: URL.createObjectURL(file)
-    })
-    // Add the newly selected file to your component's state
-    setFiles((prevFiles) => [...prevFiles, fileWithUrl]);
-  }
-};
+    if (e.target.files && e.target.files.length > 0) {
+      const file  = e.target.files![0];
+      // Create a temporary url for the image preview of the file
+      const fileWithUrl =  Object.assign(file, {
+        preview: URL.createObjectURL(file)
+      })
+      // Add the newly selected file to your component's state
+      setFiles((prevFiles) => [...prevFiles, fileWithUrl]);
+    }
+  };
 
   const handleFileDelete = (fileIndex: number) => {
     setFiles((prevFiles) => {
@@ -136,12 +142,38 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       }
   }
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+
+    for (let i = 0; i < items.length; i++) {
+      // Check if the pasted item is an image
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          // Prevent the default paste behavior (so it doesn't try to paste binary text)
+          e.preventDefault();
+
+          // Create a temporary url for the image preview (same logic as handleFileChange)
+          const fileWithUrl = Object.assign(file, {
+            preview: URL.createObjectURL(file)
+          });
+
+          // Add the pasted file to your files state
+          setFiles((prevFiles) => [...prevFiles, fileWithUrl]);
+        }
+      }
+  }
+};
+
   // Effect to clean up the object URLs when the components umounts
   useEffect(() => {
     return () => {
-      files.forEach(file => URL.revokeObjectURL(file.preview))
+      // We still want to cleanup, but only on UNMOUNT
+      files.forEach(file => {
+        if (file.preview) URL.revokeObjectURL(file.preview);
+      });
     };
-  }, [files])
+  }, []); // Empty array means "only run when component is destroyed"
 
   // Search and Tools
   const [isOpenTools, setIsOpenTools] = useState(false);
@@ -156,6 +188,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsOpenTools(false);
     // Tool logic
     setSelectedTool(toolId)
+
   }
 
   const handleOverlayClick = (clickType: string) => {
@@ -189,91 +222,11 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     return history.map(({ role, content }) => ({ role, content}));
   }
 
-  const generateImage = async() => {
+  const generateImage = async(filesToUpload: (File & { preview: string })[]) => {
     setIsProcessing(true);
-    
-    try {
-      const response = await fetch('../api/generateImage', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        prompt: `${userInput}`
-      }),
-    });
 
-    if (!response.ok) {
-      setIsValid(false)
-      console.log("Something went wrong when generating image on server side");
-      setImage("fail");
-    }
-      else {
-        const data = await response.json();
-        const imageUrl = await publicServices.uploadImage(data.url);
-        setImage(imageUrl);
-        setIsValid(true)
-      }
-    }
-   catch (error: any) {
-      // Network issue
-      console.error('Fetch failed: ', error.message || error);
-      setImage("fail");
-    }
-
-    setImageTrigger(prev => !prev);
-    // setIsProcessing(false);
-    
-  }
-
-  const generateResponse = async() => {
-    setIsProcessing(true);
-    console.log("history", chatHistory);
-    try{
-      const response = await fetch('../api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          history: filterForOpenAI(chatHistory),
-          modelId: selectedModel
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
-      }
-
-      // Access the response message
-      const aiMessage = data.response;
-
-      console.log("AI message: ", aiMessage);
-
-      // Update chat ai chat history 
-      setChatHistory(prevHistory => {
-        const updatedHistory = [...prevHistory];
-        const lastMessageIndex = updatedHistory.length - 1;
-        updatedHistory[lastMessageIndex] = {
-          ...updatedHistory[lastMessageIndex],
-          content: aiMessage,
-          loading: false,
-        }
-        return updatedHistory;
-      })
-    }
-    catch(error: any) {
-      console.error('Fetch failed: ', error.message || error);
-    }
-
-    // setIsProcessing(false);
-  }
-
-  const generateResponseWithUpload = async() => {
-    setIsProcessing(true);
-    if (selectedTool === "image") {
+    // Guards for image generation using file uploads as it is not supported yet 
+    if (filesToUpload.length > 0) {
       // Update chat ai chat history 
       setChatHistory(prevHistory => {
         const updatedHistory = [...prevHistory];
@@ -289,125 +242,258 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      // setIsProcessing(false);
+      setIsProcessing(false);
       return;
     }
 
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append("files", file);
-    })
-    formData.append("modelId", selectedModel);
-    formData.append("userInput", chatHistory[chatHistory.length - 1 - 1].content)
-
-    setFiles([]); 
-    // reset value fo file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    try {
-      const response = await fetch('../api/generateWithUpload', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-            if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
-      }
-
-      // Access the response message
-      const aiMessage = data.response;
-
-      console.log("AI message: ", aiMessage);
-
+    // Guard check cause some models don't support it
+    if (selectedModel !== "gpt-4o") {
       // Update chat ai chat history 
       setChatHistory(prevHistory => {
         const updatedHistory = [...prevHistory];
         const lastMessageIndex = updatedHistory.length - 1;
         updatedHistory[lastMessageIndex] = {
           ...updatedHistory[lastMessageIndex],
-          content: aiMessage,
+          content: `As of now, ${selectedModel} does not suppor image generation`,
           loading: false,
         }
         return updatedHistory;
       })
+      setIsProcessing(false);
+      return;
+    }
+    
+    try {
+      const response = await fetch('../api/generateImage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: `${userInput}`
+      }),
+      });
 
+      if (!response.ok) {
+        setIsValid(false)
+        throw new Error("Something went wrong when generating image on server side");
+      }
+      const data = await response.json();
+      const imageUrls = await publicServices.uploadImages([data.url]);
+      setImage(imageUrls[0]);
+      setIsValid(true)
+    }
+    catch (error: any) {
+      // Network issue
+      console.error('Fetch failed: ', error.message || error);
+      setImage("fail");
+    }
+
+    setImageTrigger(prev => !prev);
+    // setIsProcessing(false);
+    
+  }
+
+  const generateResponse = async(filesToUpload: (File & { preview: string })[], messages: ChatMessage[], chatId: string | null) => {
+    setIsProcessing(true);
+
+    // Guard reponse for models that don't support image processing yet
+      if (selectedModelData?.name === "DeepSeek" && filesToUpload.length > 0) {
+        // Update chat ai chat history 
+        setChatHistory(prevHistory => {
+          const updatedHistory = [...prevHistory];
+          const lastMessageIndex = updatedHistory.length - 1;
+          updatedHistory[lastMessageIndex] = {
+            ...updatedHistory[lastMessageIndex],
+            content: `As of now, we do not support file processing for ${selectedModelData.id}`,
+            loading: false,
+          }
+          return updatedHistory;
+        })
+        setFiles([]); 
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        setIsProcessing(false);
+        return;
+      }
+
+    try{
+      const formData = new FormData();
+      formData.append("modelId", selectedModel);
+      formData.append("history", JSON.stringify(filterForOpenAI(messages)));
+
+      // Use the passed 'messages' parameter to find the user message
+      const userMessage = messages[messages.length - 2]; 
+
+      if (filesToUpload.length > 0) {
+        // Add files
+        filesToUpload.forEach(f => formData.append("files", f))
+        formData.append("userInput", userMessage.content);
+     }
+
+      const response = await fetch('../api/generate', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong');
+      }
+
+      // Access the response message
+      const aiMessage = data.response;
+
+      // Upload images if needed
+      let uploadedImages: MessageImage[] = [];
+      if (filesToUpload.length > 0) {
+        const blobUrls = filesToUpload.map(f => f.preview);  // Get blob URLs from files
+        const publicUrls = await publicServices.uploadImages(blobUrls); // Uploads to public bucket 
+        
+        uploadedImages = publicUrls.map((url, index) => ({
+          id: '',
+          url: url,
+          order_index: index
+        }));
+      }
+
+      const updatedUserMessage = {
+        ...userMessage,
+        imageUrls: uploadedImages
+      };
+
+      // Save to database
+      await publicServices.addMessages(chatId, [
+        updatedUserMessage,
+        {
+          role: "assistant",
+          content: aiMessage,
+          imageUrls: [],
+          loading: false,
+          isNew: true
+        }
+      ]);
+
+      // Update UI
+      setChatHistory(prevHistory => {
+        const updated = [...prevHistory];
+        updated[updated.length - 2] = updatedUserMessage;
+        updated[updated.length - 1] = {
+          ...updated[updated.length - 1],
+          content: aiMessage,
+          loading: false,
+        };
+        return updated;
+      });
+    
     }
     catch(error: any) {
       console.error('Fetch failed: ', error.message || error);
-      // set ai loading to false
+      setFiles([]); 
       setChatHistory(prevHistory => {
         const updatedHistory = [...prevHistory];
         const lastMessageIndex = updatedHistory.length - 1;
         updatedHistory[lastMessageIndex] = {
           ...updatedHistory[lastMessageIndex],
-          content: `${selectedModel} does not support one of the file(s) formats`,
+          content: `${error.message}`,
           loading: false,
         }
         return updatedHistory;
       })
     }
-
-    // setIsProcessing(false);
+    finally{
+      setIsProcessing(false);
+    }
   }
 
   const sendMessage = async () => {
-    if (userInput) {
+    if (userInput || files.length > 0) {
+      try {
+        let activeChatId = currChatId;
 
-      let clicked = false;
-      if (chatHistory.length === 0)
-        clicked = true;
-      
-      // Define the user's new message
-      const userMessage: ChatMessage = {
-        role: "user",
-        content: userInput,
-        imageUrl: '',
-        clickedInHistory: clicked,
-        loading: false,
-        isNew: true,
-      };
-
-      // Define the AI's new placeholder/loading message
-      const aiPlaceholderMessage: ChatMessage = {
-        role: "assistant",
-        content: selectedTool === "image" ? Messages.imgGeneration : '',
-        imageUrl: '',
-        clickedInHistory: false,
-        loading: true,
-        isNew: true,
-      };
-
-      // Atomically update the chat history with both messages at once
-      setChatHistory(prevHistory => [...prevHistory, userMessage, aiPlaceholderMessage]);
-
-      
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
-
-      
-      const messageInput = (document.getElementById("message-input") as HTMLInputElement);
-      messageInput.value = '';
-      setUserInput('');
-
-      if (selectedTool === 'image' && files.length == 0)
-        await generateImage();
-
-
-    //     Force placeholder to re-render
-    if (textareaRef.current) {
-      textareaRef.current.blur();
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 10);
-      if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto';
+        const filesToProcess = [...files]; // Capture current files
+        setFiles([]); // This hides the files from the input area UI instantly
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
         }
-    }
+
+        // CREATE CHAT FIRST if it's a new chat
+        if (chatMode === "new chat") {
+          const session = await authServices.getSession();
+          const { id } = session.user;
+          
+          const newHistory = {
+            chat_title: userInput.substring(0, 50) || "New Chat"
+          };
+          
+          const data = await publicServices.addHistory(id, newHistory);
+          activeChatId = data.chat_id;
+          setCurrChatId(data.chat_id);
+          setRecents(prev => [data, ...prev]);
+          setChatMode("recents");
+        }
+
+        // Map existing file previews to the imageUrls format immediately
+        const temporaryImages: MessageImage[] = filesToProcess.map((file, index) => ({
+          id: `temp-${index}-${Date.now()}`, // Temporary ID
+          url: file.preview,           // The blob URL from URL.createObjectURL
+          order_index: index
+        }));
+
+        // Create Messages
+        const userMessage: ChatMessage = {
+          role: "user",
+          content: userInput,
+          imageUrls: temporaryImages,
+          loading: false,
+          isNew: true,
+        };
+
+        const aiPlaceholderMessage: ChatMessage = {
+          role: "assistant",
+          content: selectedTool === "image" ? Messages.imgGeneration : '',
+          imageUrls: [], 
+          loading: true,
+          isNew: true,
+        };
+
+        // Build the new messages array
+        const newMessages = [...chatHistory, userMessage, aiPlaceholderMessage];
+
+        // Update UI 
+        setChatHistory(prevHistory => [...prevHistory, userMessage, aiPlaceholderMessage]);
+        setUserInput('');
+
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+
+        const messageInput = (document.getElementById("message-input") as HTMLInputElement);
+        messageInput.value = '';
+
+        // Generate reponse based on selected tool
+        if (selectedTool === 'image')
+          await generateImage(filesToProcess);
+        else 
+          await generateResponse(filesToProcess, newMessages, activeChatId)
+        
+        // Force placeholder to re-render
+        if (textareaRef.current) {
+          textareaRef.current.blur();
+          setTimeout(() => {
+            textareaRef.current?.focus();
+          }, 10);
+          if (textareaRef.current) {
+              textareaRef.current.style.height = 'auto';
+            }
+        }
+
+      }
+      catch(error) {
+        console.error("Error sending message:", error);
+      }
 
     }
   }
@@ -468,8 +554,48 @@ const downloadImage = async (imageUrl : string) => {
 
   // This is the useEffect that syncs local state with the parent
   useEffect(() => {
-    setChatHistory(chat);
-  }, [currChatId, chatMode]);
+    const fetchMessages = async() => {
+      if (!currChatId) {
+        setChatHistory([]);
+        return;
+      }
+
+      // Only show loading if we don't have messages yet (initial load)
+      if (chatHistory.length === 0) {
+        setHistoryLoading(true);
+      }
+
+      try {
+        const messages = await publicServices.fetchMessages(currChatId);
+
+        // Prevented UI wipe during chat creation (race condition where if the DB returns 0 messages, but our local UI already has messages)
+        if (messages.length === 0 && chatHistory.length > 0) {
+          return;
+        }
+
+        const formattedHistory = (messages as ChatMessage[]).map(msg => ({
+          role: msg.role,
+          content: msg.content,
+          loading: false,
+          isNew: false,
+          imageUrls: msg.imageUrls
+            .sort((a, b) => a.order_index - b.order_index),
+        }));
+
+      console.log(formattedHistory);
+
+        setChatHistory(formattedHistory);
+      }
+      catch(error) {
+        console.error("Error fetching messages:", error);
+      }
+      finally{
+        setHistoryLoading(false);
+      }
+    }
+
+    fetchMessages();
+  }, [currChatId]);
 
   useEffect(() => {
     if (chatHistory.length > 0) {
@@ -477,76 +603,39 @@ const downloadImage = async (imageUrl : string) => {
     }
   }, [chatHistory]);
 
-  useEffect(() => {
-    // Scroll to the bottom every time chatHistory is updated
-    const shouldUpdate = chatHistory.length > 0 && chatHistory.at(-1)?.loading === false;
-    console.log("Chat Length: ", chatHistory.length)
-    console.log("Last message done loading?: ", chatHistory.at(-1)?.loading)
-    const updateChatHistory = async() => {
-      try {
-        // Fetch user session
-        const session = await authServices.getSession();
-        const {email} = session.user
+  // useEffect(() => {
+  //   const shouldUpdate = chatHistory.length > 0 && chatHistory.at(-1)?.loading === false;
 
-        await publicServices.updateHistory(email, chatHistory, currChatId);
+  //   const createChatHistory = async() => {
+  //     try{
+  //       const session = await authServices.getSession();
+  //       const {id} = session.user;
 
-        console.log("Chat history updated")
+  //       const newHistory = {
+  //         chat_title: chatHistory.at(-2)?.content || null
+  //       }
+  //       const data = await publicServices.addHistory(id, newHistory);
 
-        // Update recents by replacing the old chat with new one
-        setRecents(prev => 
-          prev.map(session => 
-            session.chat_id === currChatId ? {...session, history: chatHistory} : session
-          )
-        );
+  //       console.log("Chat history created successfully!");
 
-      }
-      catch (error: any) {
-        const message = error.message || 'An unexpected error occurred';
-        console.error(message);
-      }
-    }
+  //       if (data) {
+  //         // Add new chat history to recents
+  //         setRecents(prev => [data, ...prev])
+  //         setChatMode("recents")
+  //       }
+  //     }
+  //     catch( error: any) {
+  //       const message = error.message || 'An unexpected error occurred';
+  //       console.error(message);
+  //     }
+  //   }
 
-    const createChatHistory = async() => {
-      try{
-        const session = await authServices.getSession();
-        const {id, email} = session.user;
+  //   // Update new chat
+  //   if (shouldUpdate && chatMode == "new chat") {
+  //     createChatHistory();
 
-        const data = await publicServices.addHistory(id, email, chatHistory);
-
-        console.log("Chat history created successfully!");
-
-        if (data) {
-          // Add new chat history to recents
-          setRecents(prev => [data, ...prev])
-          
-          setChatMode("recents")
-        }
-      }
-      catch( error: any) {
-        const message = error.message || 'An unexpected error occurred';
-        console.error(message);
-      }
-    }
-
-    if (shouldUpdate) {
-      if (chatMode === "recents")
-        updateChatHistory();
-      else if (chatMode === "new chat")
-        createChatHistory();
-
-    }
-
-    const shouldGenerateResponse = chatHistory.length > 0 && chatHistory.at(-1)?.loading === true;
-
-
-    if (shouldGenerateResponse && selectedTool === "reasoning" && files.length == 0) 
-        generateResponse();
-    
-    // Responses with uploads
-    if (files.length > 0 && shouldGenerateResponse) 
-      generateResponseWithUpload()
-    
-  }, [chatHistory]); // Depend on chatHistory to trigger when new messages are added
+  //   } 
+  // }, [chatHistory]); 
 
   useEffect(() => {
     if (image) {
@@ -557,7 +646,11 @@ const downloadImage = async (imageUrl : string) => {
           updatedHistory[lastMessageIndex] = {
             ...updatedHistory[lastMessageIndex],
             ...(isValid ? {} : selectedModelData?.name === "DeepSeek" ? {content: 'We do no currently support image generation for this model.'} : { content: 'Message is not appropriate.' }),
-            imageUrl: image !== 'fail' ? image : '',
+            imageUrls: image !== 'fail' ? [{
+              id: '',
+              url: image,
+              order_index: 0
+            }] : [],
             loading: false,
           };
 
@@ -574,6 +667,7 @@ const downloadImage = async (imageUrl : string) => {
 
   },[imageTrigger]);
 
+  // Handles initial scroll to bottom of chat on load
   useEffect(() => {
     scrollToBottom();
 
@@ -700,7 +794,7 @@ const downloadImage = async (imageUrl : string) => {
                           alt={file.name}
                           className="w-8 h-8 mr-2 object-cover rounded"
                           // Revoke the object URL on load to free up memory as soon as the image is loaded
-                          onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)}
+                          // onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)}
                         />
                       ) : (
                         <FileText className="w-4 h-4 mr-2 text-slate-600 dark:text-gray-300 flex-shrink-0" />
@@ -725,6 +819,7 @@ const downloadImage = async (imageUrl : string) => {
               id="message-input"
               ref={textareaRef}
               placeholder="Type your message..."
+              onPaste={handlePaste}
               wrap="hard"
               disabled={isProcessing}
               className="flex-1 mt-1 min-h-[20px] max-h-[150px] resize-none bg-transparent border-none outline-none overflow-y-auto pt-1 text-base break-words whitespace-normal text-black dark:text-textDark placeholder:text-gray-500 dark:placeholder:text-gray-400"
@@ -757,7 +852,7 @@ const downloadImage = async (imageUrl : string) => {
                 {!isOpenUpload && ( <div className="absolute bottom-full left-0 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg transition-opacity duration-200 ease-out opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 group-hover:delay-200">Add files and more<div className="absolute top-full left-6 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                 {/* Dropdown */}
-                {isOpenUpload && ( <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1"><button onClick={handleUploadSelect} className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><GoPaperclip size={"25px"} className="flex-shrink-0 text-gray-600 dark:text-gray-300" /><div className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">{upload.name}</div><Check className="w-4 h-4 text-blue-600" /></button></div> )}
+                {isOpenUpload && ( <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1"><button onClick={handleUploadSelect} className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><GoPaperclip size={"25px"} className="flex-shrink-0 text-gray-600 dark:text-gray-300" /><div className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">{upload.name}</div><Check className="w-4 h-4 text-blue-600 dark:text-blue-400" /></button></div> )}
               </div>
 
               <div className="relative inline-block text-left group">
@@ -771,7 +866,7 @@ const downloadImage = async (imageUrl : string) => {
                 {/* Tooltip */}
                 {!isOpenTools && ( <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity duration-200 ease-out group-hover:delay-200">Search and Tools<div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
                 {/* Dropdown */}
-                {isOpenTools && ( <div className="absolute bottom-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1">{tools.map((tool, index) => ( <button key={index} onClick={() => handleToolSelect(tool.id)} className="w-full flex items-start space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><div className="flex-1 min-w-0"><div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">{tool.name}</div></div>{selectedTool === tool.id && (<Check className="w-4 h-4 text-blue-600" />)}</button>))}</div> )}
+                {isOpenTools && ( <div className="absolute bottom-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1">{tools.map((tool, index) => ( <button key={index} onClick={() => handleToolSelect(tool.id)} className="w-full flex items-start space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><div className="flex-1 min-w-0"><div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">{tool.name}</div></div>{selectedTool === tool.id && (<Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />)}</button>))}</div> )}
               </div>
               
               <div className="relative group inline-block">
@@ -840,7 +935,7 @@ const downloadImage = async (imageUrl : string) => {
                             </div>
                         </div>
                         {selectedModel === model.id && (
-                            <Check className="w-4 h-4 text-blue-600" />
+                            <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         )}
                         </button>
                     ))}
@@ -881,112 +976,123 @@ const downloadImage = async (imageUrl : string) => {
         <div className="w-full flex flex-col flex-1 min-h-0 animate-fade-in-sm">
           <div className="relative flex-1 min-h-0">
             <div className="absolute inset-0 overflow-hidden">
-              <div id="chat-box" ref={chatBoxRef} className="h-full overflow-y-auto scrollbar-custom p-4 max-w-4xl mx-auto">
-                {chatHistory.map((chatMessage,index) => {
-                  const minWidth = 100;
-                  const maxWidth = 500;
-                  const textWidth = chatMessage.content.length * 10;
-                  const finalWidth = Math.min(Math.max(minWidth, textWidth), maxWidth);
-                  const containerStyle = {
-                    maxWidth: `${finalWidth}px`,
-                  }
-                  const bubbleStyle = {
-                    maxWidth: '500px',
-                  };
+              <div 
+                id="chat-box" 
+                ref={chatBoxRef} 
+                className="h-full overflow-y-auto scrollbar-custom w-full"
+              >
+                <div className="w-full max-w-4xl mx-auto px-4 py-6">
+                  {chatHistory.map((chatMessage,index) => {
 
-                  // display user messages
-                  if (chatMessage.role === 'user') {
-                    return (
-                      <div key={index} className="flex justify-end w-full mb-4">
-                        <div
-                        ref={(reference) => {
-                          if (reference)
-                            messageRefs.current[index] = reference as HTMLDivElement;
-                        }}
-                        className={`text-sm text-left rounded-lg p-3 bg-gray-200 dark:bg-userChatBg dark:text-textDark break-words ${chatStyles.talkBubbleUser}`}
-                        style={containerStyle}>
-                          {/* Display any images for file uploads */}
-                          {}
-                          {chatMessage.content}
-                      </div>
-                      </div>
-                    );
-                  }
+                    // display user messages
+                    if (chatMessage.role === 'user') {
+                      const hasImages = chatMessage.imageUrls && chatMessage.imageUrls.length > 0;
 
-                  // display ai messages
-                  else {
-                    return (
-                      <div key={index} className="flex justify-start w-full mb-4 items-start gap-3">
-                        <FaRobot size="24px" className="mt-1.5 flex-shrink-0 text-gray-600 dark:text-textDark"/>
-                        <div
-                          className={`
-                            min-w-0 flex-1 rounded-lg
-                            text-sm text-left
-                            p-3
-                            bg-white
-                            dark:bg-chatDark
-                            text-gray-800
-                            dark:text-textDark
-                            break-words
-                            max-full
-                          `}
-                        >
-                          {chatMessage.loading ? (
-                            <div className="flex items-center gap-1.5">
-                              <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" style={{ animationDelay: '0.1s' }} />
-                              <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                              <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" style={{ animationDelay: '0.3s' }} />
-                            </div>
-                          ) : (
-                            <div className="flex flex-col">
-                              {chatMessage.isNew ? (
-                                <TypeWriter
-                                  content={formatMarkdown(chatMessage.content)}
-                                  baseSpeed={15}
-                                  containerRef={chatBoxRef}
-                                  isAutoScrollRef={isAutoScroll}
-                                  onComplete={handleTypingComplete}
-                                />
-                              ) : (
-                                <div
-                                  className="whitespace-pre-wrap text-sm"
-                                  dangerouslySetInnerHTML={{ __html: formatMarkdown(chatMessage.content) }}
-                                />
-                              )}
-
-                              {chatMessage.imageUrl && (
-                                <div className="mt-2 relative w-64 h-64 rounded-md overflow-hidden group">
-                                  <Image
-                                    src={chatMessage.imageUrl}
-                                    alt="Generated Image"
-                                    width={256}
-                                    height={256}
-                                    priority
-                                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                      return (
+                        <div key={index} className="flex justify-end w-full mb-4">
+                          <div
+                          ref={(reference) => {
+                            if (reference)
+                              messageRefs.current[index] = reference as HTMLDivElement;
+                          }}
+                          className={`max-w-[70%] md:max-w-[500px] w-fit text-sm text-left rounded-lg p-3 bg-gray-200 dark:bg-userChatBg dark:text-textDark break-words ${chatStyles.talkBubbleUser}`}
+                          /*style={userContainerStyle}*/>
+                            {/* Display any images for file uploads */}
+                            {hasImages && (
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {chatMessage.imageUrls?.map((image, i) => (
+                                  <img 
+                                    key={i} 
+                                    src={image.url} 
+                                    alt="User upload"
+                                    className="w-full h-auto max-h-80 rounded-md object-contain" 
                                   />
-                                  
-                                  {/* The Download Button Overlay */}
-                                  <button
-                                    onClick={() => downloadImage(chatMessage.imageUrl)}
-                                    className={`
-                                      absolute inset-0 w-full h-full flex items-center justify-center
-                                      bg-black/60 text-white font-semibold text-sm
-                                      opacity-0 group-hover:opacity-100
-                                      transition-opacity duration-300
-                                    `}
-                                  >
-                                    Download Image
-                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Display the text content */}
+                            <div className="whitespace-pre-wrap">
+                              {chatMessage.content}
+                            </div>
+                        </div>
+                        </div>
+                      );
+                    }
+
+                    // display ai messages
+                    else {
+                      return (
+                        <div key={index} className="flex justify-start w-full mb-4 items-start gap-3">
+                          <FaRobot size="24px" className="mt-1.5 flex-shrink-0 text-gray-600 dark:text-textDark"/>
+                          <div
+                            className={`
+                              min-w-0 flex-1 rounded-lg
+                              text-sm text-left
+                              p-3
+                              bg-white
+                              dark:bg-chatDark
+                              text-gray-800
+                              dark:text-textDark
+                              break-words
+                              max-full
+                            `}
+                          >
+                            {chatMessage.loading ? (
+                              <div className="flex items-center gap-1.5">
+                                <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                                <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                <div className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" style={{ animationDelay: '0.3s' }} />
+                              </div>
+                            ) : (
+                              <div className="flex flex-col">
+                                {chatMessage.isNew ? (
+                                  <TypeWriter
+                                    content={formatMarkdown(chatMessage.content)}
+                                    baseSpeed={5}
+                                    containerRef={chatBoxRef}
+                                    isAutoScrollRef={isAutoScroll}
+                                    onComplete={handleTypingComplete}
+                                  />
+                                ) : (
+                                  <div
+                                    className="whitespace-pre-wrap text-sm"
+                                    dangerouslySetInnerHTML={{ __html: formatMarkdown(chatMessage.content) }}
+                                  />
+                                )}
+
+                              {/* Inside the Assistant rendering block */}
+                              {chatMessage.imageUrls && chatMessage.imageUrls.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {chatMessage.imageUrls.map((image, i) => (
+                                    <div key={i} className="relative w-64 h-64 rounded-md overflow-hidden group">
+                                      <Image
+                                        src={image.url}
+                                        alt="Generated Content"
+                                        width={256}
+                                        height={256}
+                                        priority
+                                        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                                      />
+                                      <button
+                                        onClick={() => downloadImage(image.url)}
+                                        className="absolute inset-0 w-full h-full flex items-center justify-center bg-black/60 text-white font-semibold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                      >
+                                        Download Image
+                                      </button>
+                                    </div>
+                                  ))}
                                 </div>
                               )}
-                            </div>
-                          )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  }
-                })}
-                <div ref={messagesEndRef}></div>
+                      )
+                    }
+                  })}
+                  <div ref={messagesEndRef}></div>
+                </div>
               </div>
             </div>
           </div>

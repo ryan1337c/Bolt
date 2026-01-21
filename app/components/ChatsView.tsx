@@ -9,9 +9,9 @@ import { formatDistanceToNow } from 'date-fns';
 interface ChatsViewProps {
   recents: RecentChat[];
   onNewChat: () => void;
-  onSelectChat: (index: number) => void;
+  onSelectChat: (id: string) => void;
   isProcessing: boolean;
-  onDeleteChat: (index: number) => void 
+  onDeleteChat: (id: string) => void;
 }
 
 export default function ChatsView({ 
@@ -25,7 +25,7 @@ export default function ChatsView({
 
   // Filter the chats based on the search term
   const filteredRecents = recents.filter(chat => {
-    const title = chat.chat_title || chat.history.find(msg => msg.role === 'user')?.content || '';
+    const title = chat.chat_title;
     return title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
@@ -83,8 +83,7 @@ export default function ChatsView({
                 <div className="space-y-3 pb-4">
                     {filteredRecents.length > 0 ? (
                         filteredRecents.map((chat) => {
-                        const originalIndex = recents.findIndex(r => r.chat_id === chat.chat_id);
-                        const chatTitle = chat.chat_title || chat.history.find(msg => msg.role === 'user')?.content || 'New Chat';
+                        const chatTitle = chat.chat_title;
                         const timeAgo = formatDistanceToNow(new Date(chat.created_at), { addSuffix: true });
                         
                         return (
@@ -97,7 +96,7 @@ export default function ChatsView({
                             >
                                 <button
                                     key={chat.chat_id}
-                                    onClick={() => onSelectChat(originalIndex)}
+                                    onClick={() => onSelectChat(chat.chat_id)}
                                     disabled={isProcessing}
                                     className="flex-1 text-left min-w-0"
                                 >
@@ -111,7 +110,7 @@ export default function ChatsView({
                                     </p>
                                 </button>
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); onDeleteChat(originalIndex); }}
+                                    onClick={(e) => { e.stopPropagation(); onDeleteChat(chat.chat_id); }}
                                     disabled={isProcessing}
                                     className="flex-shrink-0 p-2 rounded-full text-gray-400 
                                                 hover:bg-red-100 hover:text-red-600 

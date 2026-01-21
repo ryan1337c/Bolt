@@ -41,7 +41,6 @@ type QuizGenerationModalProps = {
 }
 
 const DURATION_OPTIONS = [
-    { value: '90', label: '1.5 Minutes'},
     { value: "300", label: "5 Minutes" },   
     { value: "600", label: "10 Minutes" },  
     { value: "900", label: "15 Minutes" },  

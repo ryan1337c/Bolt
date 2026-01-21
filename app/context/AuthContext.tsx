@@ -26,20 +26,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // Recover mode on mount
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const savedMode = localStorage.getItem("chatMode");
-            if (savedMode) {
-                setChatModeState(savedMode);
-            }
-        };
+        // if (typeof window !== "undefined") {
+        //     const savedMode = localStorage.getItem("chatMode");
+        //     if (savedMode) {
+        //         setChatModeState(savedMode);
+        //     }
+        // };
         setIsInitialized(true);
     }, [])
 
     const setChatMode = (mode: string) => {
         setChatModeState(mode);
-        if (typeof window !== "undefined") {
-            localStorage.setItem("chatMode", mode)
-        }
+        // if (typeof window !== "undefined") {
+        //     localStorage.setItem("chatMode", mode)
+        // }
     }
 
     useEffect(() => {

@@ -25,156 +25,107 @@ import { TbCards } from "react-icons/tb";
 import QuizView from "@/app/components/QuizView";
 import FlashcardsView from "@/app/components/FlashcardsView";
 
-
-export interface ChatMessage {
-  role: string;
-  content: string;
-  imageUrl: string;
-  clickedInHistory: boolean; 
-  loading: boolean;
-  isNew: boolean;
-}
-
-export type ChatSession = ChatMessage[];
-
 export interface RecentChat {
-  history: ChatSession;
   chat_id: string;
   created_at: string;
   chat_title: string;
 }
 
-
 export default function Home() {
   const { chatMode, setChatMode } = useAuth();
+  const router = useRouter();
+  const authServices = new AuthServices();
+  const publicServices = new PublicServices();
 
-  // State for the NEW sidebar profile menu
+  // Sidebar state
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSidebarProfileOpen, setIsSidebarProfileOpen] = useState(false);
   const sidebarProfileMenuRef = useRef<HTMLDivElement>(null); // Ref for the menu
 
-  // side bar stuff
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const router = useRouter();
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [currChat, setCurrChat] = useState(0);
+  // chat state
+  const [currChatId, setCurrChatId] = useState<string | null>(null);
   const [recents, setRecents] = useState<RecentChat[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [chatToRename, setChatToRename] = useState<RecentChat | null>(null);
 
-  // Title
+  // Modal state
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputValue, setRenameInputValue] = useState('');
-  
-  // auth
-  const authServices = new AuthServices();
-  const publicServices = new PublicServices();
-  
+  const [chatToRename, setChatToRename] = useState<RecentChat | null>(null);
 
-  let currentChatTitle = "New Chat"; // Default for 'new chat' mode
-  if (chatMode === 'recents' && recents[currChat]) {
-    const currentChat = recents[currChat];
-    
-    // Use the custom title if it exists, otherwise fall back to the first message's content.
-    console.log("current title", currentChat.chat_title );
-    currentChatTitle = currentChat.chat_title || 
-                      currentChat.history.find(msg => msg.role === 'user')?.content || 
-                      'Chat History'; // Fallback for empty chats
-  }
+  // Find the active chat object from the list
+  const activeChat = recents.find(r => r.chat_id === currChatId);
+  const currentChatTitle = activeChat?.chat_title || (chatMode === "new chat" ? "New Chat" : "Untitled");
 
-
+  // Recovery: If we are in 'recents' mode but have no ID, go to new chat
+  useEffect(() => {
+    if (chatMode === 'recents' && !currChatId && recents.length > 0) {
+        setCurrChatId(recents[0].chat_id);
+    }
+  }, [chatMode, recents]);
 
   // handle opening, closing, and submitting the modal
-  const handleOpenRenameModal = (chatIndex: number = currChat) => {
-    const chat = recents[chatIndex];
-    if (chat) {
-      // Remember the entire chat object we intend to rename.
-      setChatToRename(chat); 
-      
-      // Set the input value for the modal.
-      const title = chat.chat_title || 
-                    chat.history.find(msg => msg.role === 'user')?.content || 
-                    'Chat History';
-      setRenameInputValue(title);
+  const handleOpenRenameModal = (chat?: RecentChat) => {
+    const targetChat = chat || activeChat;
+    if (targetChat) {
+      setChatToRename(targetChat); 
+      setRenameInputValue(targetChat.chat_title || "Untitled");
       setIsRenameModalOpen(true);
     }
   };
 
   const handleNewChat = () => {
+    setCurrChatId(null);
     setChatMode('new chat');
   };
 
-  const handleSelectChat = (index: number) => {
-    setCurrChat(index);
+  const handleSelectChat = (id: string) => {
+    setCurrChatId(id);
     setChatMode('recents'); 
-  };
-
-  const handleCloseRenameModal = () => {
-    setIsRenameModalOpen(false);
-    setChatToRename(null); 
   };
 
   const handleRenameSubmit = async (newTitle: string) => {
     if (!chatToRename) return;
-
     try {
         // Fetch user session
         const session = await authServices.getSession();
-        const {email} = session.user
+        const { id } = session.user
 
-        await publicServices.updateChatTitle(email, chatToRename.chat_id, newTitle);
-
-        console.log("Title has been succesfully changed to: ", newTitle);
+        await publicServices.updateChatTitle(id, chatToRename.chat_id, newTitle);
 
         // update recents
-        setRecents(prev => {
-          return prev.map(chat => {
-            // If this is the chat we just updated, return the new version
-            if (chat.chat_id === chatToRename.chat_id) {
-              return {...chat, chat_title: newTitle}
-            }
-            return chat
-          })
-        })
-
+        setRecents(prev => prev.map(chat => 
+          chat.chat_id === chatToRename.chat_id ? {...chat, chat_title: newTitle} : chat
+        ));
     }
     catch (error: any) {
-      const message = error.message || 'An unexpected error occurred';
-      console.error(message);
+      console.error(error);
     }
-    handleCloseRenameModal();
+    setIsRenameModalOpen(false);
   };
 
-  const handleDelete = async(chatIndex: number) => {
-    const chatToDelete = recents[chatIndex];
-    try{
-      // Fetch user session
-      const session = await authServices.getSession();
-      const {email} = session.user
-      await publicServices.deleteHistory(email, chatToDelete.history, chatToDelete.chat_id);
-
-      console.log("Successfully deleted chat!");
-
-      // Check if this is the last chat
-      if (recents.length === 1) {
-        // If it is, reset to the "new chat" view
-        setRecents([]);
-        setChatMode('new chat');
-      } else {
-        setRecents(prev => prev.filter(chat => chat.chat_id !== chatToDelete.chat_id));
-        
-        if (currChat >= recents.length - 1) {
-            setCurrChat(0);
+  const handleDelete = async (id: string) => {
+    try {
+      await publicServices.deleteHistory(id);
+      setRecents(prev => {
+        const updated = prev.filter(chat => chat.chat_id !== id);
+        // If we deleted the chat we were currently viewing
+        if (id === currChatId) {
+            if (updated.length > 0) {
+                setCurrChatId(updated[0].chat_id);
+            } else {
+                handleNewChat();
+            }
         }
-      }
+        return updated;
+      });
+    } catch (error) {
+      console.error("Delete failed:", error);
     }
-    catch(error: any) {
-      const message = error.message || 'An unexpected error occurred';
-      console.error(message);
-    }
-  }
+  };
 
-  // useEffect to close the sidebar profile menu when clicking outside
+  // UseEffect to close the sidebar profile menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (sidebarProfileMenuRef.current && !sidebarProfileMenuRef.current.contains(event.target as Node)) {
@@ -187,25 +138,17 @@ export default function Home() {
     };
   }, [sidebarProfileMenuRef]);
 
+  // Fetch initial history
   useEffect(() => {
-    // Fetch recent chats
-    const fetchRecents = async() => {
-      try{
-        // Fetch user session
+    const fetchRecents = async () => {
+      try {
         const session = await authServices.getSession();
-
-        const {id} = session.user
-
-        // Fetch user chat history
-        const recents = await publicServices.fetchHistory(id);
-
-        setRecents(recents)
+        const data = await publicServices.fetchHistory(session.user.id);
+        setRecents(data);
+      } catch (error) {
+        console.error("Fetch history error:", error);
       }
-      catch (error: any) {
-        const message = error.message || 'An unexpected error occurred';
-        console.error(message);
-      }
-    }
+    };
     fetchRecents();
   }, []);
 
@@ -252,7 +195,7 @@ export default function Home() {
                 <button 
                   disabled={isProcessing}
                   className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark hover:bg-violet-200 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
-                  onClick={() => { setChatMode("new chat"); setCurrChat(0); }}>
+                  onClick={handleNewChat}>
                   <div className="flex items-center gap-3">
                     <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
                       <FaCircle className="absolute transition-transform duration-300 ease-in-out group-hover:scale-110 [--plus-bg:#8b5cf6] dark:[--plus-bg:#6366F1]" color={"var(--plus-bg)"} size={24} />
@@ -284,7 +227,7 @@ export default function Home() {
               <button 
                 disabled={isProcessing}
                 className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "resume" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
-                onClick={() => { setChatMode("resume"); setCurrChat(0); }}>
+                onClick={() => setChatMode("resume")}>
                 <div className="flex items-center gap-3">
                   <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
                     <IoDocumentTextOutline size={22} className="transition-transform duration-300 ease-in-out group-hover:scale-110" />
@@ -299,7 +242,7 @@ export default function Home() {
               <button
                 disabled={isProcessing}
                 className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "quiz" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
-                onClick={() => { setChatMode("quiz"); setCurrChat(0); }}>
+                onClick={() => setChatMode("quiz")}>
                   <div className="flex items-center gap-3">
                     <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
                       <MdOutlineQuiz 
@@ -319,7 +262,7 @@ export default function Home() {
               <button 
                 disabled={isProcessing}
                 className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "flashcards" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
-                onClick={() => { setChatMode("flashcards"); setCurrChat(0); }}>
+                onClick={() => setChatMode("flashcards")}>
                 <div className="flex items-center gap-3">
                   <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
                     <TbCards 
@@ -339,13 +282,11 @@ export default function Home() {
               <h3 className={`flex-shrink-0 px-3 text-sm font-medium text-slate-500 dark:text-gray-400 transition-opacity duration-300 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0'}`}>Recents</h3>
               <div className={`mt-2 flex-grow space-y-2 overflow-y-auto scrollbar-custom transition-opacity duration-300 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0'}`}>
                 {recents.map((chat, index) => {
-                  const firstUserMessage = chat.history.find(msg => msg.role === 'user');
-                  const chatTitle = chat.chat_title || firstUserMessage?.content || 'New Chat';
                   return (
                     <div key={chat.chat_id} className="relative group">
-                      <div className={`flex items-center w-full rounded-lg transition-colors duration-200 ${currChat === index && chatMode === 'recents' ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/10'}`}>
-                        <button onClick={() => { setCurrChat(index); setChatMode("recents"); }} disabled={isProcessing} className="flex-grow text-left p-3 text-sm truncate disabled:opacity-50 text-slate-700 dark:text-textDark">
-                          {chatTitle}
+                      <div className={`flex items-center w-full rounded-lg transition-colors duration-200 ${currChatId === chat.chat_id && chatMode === 'recents' ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/10'}`}>
+                        <button onClick={() => handleSelectChat(chat.chat_id)} disabled={isProcessing} className="flex-grow text-left p-3 text-sm truncate disabled:opacity-50 text-slate-700 dark:text-textDark">
+                          {chat.chat_title || 'Untitled'}
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === chat.chat_id ? null : chat.chat_id); }} disabled={isProcessing} className="flex-shrink-0 p-2 mr-1 rounded-full hover:bg-black/10 dark:hover:bg-white/20 disabled:opacity-50 text-slate-600 dark:text-textDark" aria-label="Chat options">
                           <MoreHorizontal size={16} />
@@ -354,8 +295,8 @@ export default function Home() {
                       {openMenuId === chat.chat_id && (
                         <div className="absolute top-0 right-8 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg shadow-xl z-50 py-1 animate-fade-in-up-sm">
                           <button onClick={() => setOpenMenuId(null)} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left text-slate-700 dark:text-textDark hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"><Star size={14} className="text-yellow-400" /><span>Starred</span></button>
-                          <button onClick={() => { handleOpenRenameModal(index); setOpenMenuId(null); }} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left text-slate-700 dark:text-textDark hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"><Pencil size={14} /><span>Rename</span></button>
-                          <button onClick={() => { handleDelete(index); setOpenMenuId(null); }} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left text-red-500 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20 transition-colors"><Trash2 size={14} /><span>Delete</span></button>
+                          <button onClick={() => { handleOpenRenameModal(chat); setOpenMenuId(null); }} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left text-slate-700 dark:text-textDark hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"><Pencil size={14} /><span>Rename</span></button>
+                          <button onClick={() => { handleDelete(chat.chat_id); setOpenMenuId(null); }} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left text-red-500 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20 transition-colors"><Trash2 size={14} /><span>Delete</span></button>
                         </div>
                       )}
                     </div>
@@ -445,9 +386,9 @@ export default function Home() {
           <FlashcardsView isProcessing={isProcessing} 
             setIsProcessing={setIsProcessing}/> :
           <Chat 
-            chat={chatMode === "recents" && recents[currChat] ? recents[currChat].history : []} 
             setRecents={setRecents} 
-            currChatId={chatMode === "recents" && recents[currChat] ? recents[currChat].chat_id : ""}
+            currChatId={currChatId} // Pass string ID
+            setCurrChatId={setCurrChatId} // Pass setter to Chat.tsx
             isProcessing={isProcessing} 
             setIsProcessing={setIsProcessing}
           />
@@ -463,7 +404,7 @@ export default function Home() {
   {/* RENDER THE MODAL conditionally at the end of the main tag */}
   <RenameModal
     isOpen={isRenameModalOpen}
-    onClose={handleCloseRenameModal}
+    onClose={() => setIsRenameModalOpen(false)}
     onSubmit={handleRenameSubmit}
     currentTitle={renameInputValue}
     setInputValue={setRenameInputValue}
