@@ -2,9 +2,15 @@
 import React, { useEffect, useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import Header from '@/app/components/Header';
+import { useRouter } from 'next/navigation';
 
 export default function PricingPage() {
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push('./login');
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -55,7 +61,7 @@ export default function PricingPage() {
                       </li>
                     </ul>
                   </div>
-                  <button className="mt-8 w-full py-3 px-6 text-white font-semibold rounded-lg transition-colors duration-300 bg-violet-600 hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700">
+                  <button onClick={handleGetStarted} className="mt-8 w-full py-3 px-6 text-white font-semibold rounded-lg transition-colors duration-300 bg-violet-600 hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700">
                     Get Started for Free
                   </button>
                 </div>
