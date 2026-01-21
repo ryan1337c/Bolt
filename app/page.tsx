@@ -11,7 +11,7 @@ import { Beam } from '@/components/magicui/beam';
 import { useInView } from 'react-intersection-observer';
 import { MarqueeDemo } from '@/components/magicui/review-cards';
 import { FaStar, FaGithub, FaPlay} from 'react-icons/fa';
-import { BsChatDots, BsCpu, BsFileText, BsImage, BsUpload, BsCodeSlash } from 'react-icons/bs';
+import { BsChatDots, BsCpu, BsFileText, BsImage, BsUpload, BsCodeSlash, BsPatchQuestion, BsStickies } from 'react-icons/bs';
 import CountUp from 'react-countup';
 import Header from './components/Header';
 import { RainbowButton } from "@/components/ui/rainbow-button"
@@ -57,6 +57,16 @@ export default function Home() {
       description: 'Bring your ideas to life. Generate stunning, high-quality images from simple text descriptions in seconds.',
     },
     {
+      icon: BsPatchQuestion,
+      title: 'Quiz Generation',
+      description: 'Test your knowledge with custom quizzes. Choose between instant AI automation from your documents or manual creation for total control.',
+    },
+    {
+      icon: BsStickies,
+      title: 'Flashcard Generation',
+      description: 'Level up your study sessions. Seamlessly switch between AI-powered automated cards and precise manual entry.',
+    },
+    {
       icon: BsUpload,
       title: 'File Upload & Process',
       description: 'Securely upload documents and files for the AI to analyze, summarize, or transform based on your needs.',
@@ -65,7 +75,7 @@ export default function Home() {
       icon: BsCodeSlash,
       title: 'Vibe Coding',
       description: 'Code in real-time with an AI partner that suggests solutions and helps you squash bugs before they happen.',
-    }
+    }  
   ];
 
   // Observer for the User Count section
