@@ -175,7 +175,7 @@ const Register = () => {
                 <p className="text-sm text-slate-600 dark:text-white">
                   Already have an account?
                   <Link 
-                    href='/login' 
+                    href='./login' 
                     tabIndex={isProcessing ? -1 : 0}
                     className={`font-semibold ml-1 text-violet-600 hover:text-violet-500 dark:text-indigo-300 dark:hover:text-indigo-200 
                       ${isProcessing ? 'pointer-events-none opacity-50' : ''}`}

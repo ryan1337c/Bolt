@@ -502,3 +502,23 @@ input {
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+.login-button {
+  --login-bg: #7c3aed;
+  --login-shimmer: #e9d5ff;
+}
+
+.dark .login-button {
+  --login-bg: #1e293b;
+  --login-shimmer: #a78bfa;
+}
+
+.register-button {
+  --reg-bg: #ffffff;
+  --reg-shimmer: #c4b5fd;
+}
+
+.dark .register-button {
+  --reg-bg: #334155;
+  --reg-shimmer: #a78bfa;
+}
