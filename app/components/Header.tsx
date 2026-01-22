@@ -111,7 +111,7 @@ const Header = () => {
                   background="var(--login-bg)"
                   shimmerColor="var(--login-shimmer)"
                   shimmerSize='0.1em'
-                  className="p-2 flex gap-2 items-center font-semibold text-white rounded-lg"
+                  className="login-button p-2 flex gap-2 items-center font-semibold text-white rounded-lg"
                 >
                   <FontAwesomeIcon icon={faArrowRightToBracket} />
                   Log In
@@ -123,7 +123,7 @@ const Header = () => {
                   background="var(--reg-bg)" 
                   shimmerColor="var(--reg-shimmer)"
                   shimmerSize='0.1em'
-                  className="p-2 flex gap-2 items-center font-semibold rounded-lg text-violet-600 dark:text-gray-300 "
+                  className="register-button p-2 flex gap-2 items-center font-semibold rounded-lg text-violet-600 dark:text-gray-300 "
                 >
                   <FontAwesomeIcon icon={faUserPlus} />
                   Sign Up
