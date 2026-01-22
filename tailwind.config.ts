@@ -8,10 +8,12 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
 	safelist: [
+	"animate-shimmer-slide",
+	"animate-spin-around",
 	{
 		pattern: /^\[--.*\]$/,
-	}
-  ],
+	},
+	],
   theme: {
   	extend: {
   		backgroundImage: {
@@ -159,8 +161,8 @@ const config: Config = {
 			'rainbow': "rainbow 2s linear infinite",
 			'bubble-on': 'bubble-on 0.2s ease-in-out forwards',
 			'bubble-off': 'bubble-off 0.2s ease-in-out forwards',
-			'shimmer-slide': 'shimmer-slide var(--speed) ease-in-out infinite alternate',
-        	'spin-around': 'spin-around calc(var(--speed) * 2) infinite linear',
+			'shimmer-slide': 'shimmer-slide var(--speed, 3s) ease-in-out infinite alternate',
+        	'spin-around': 'spin-around calc(var(--speed, 3s) * 2) infinite linear',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

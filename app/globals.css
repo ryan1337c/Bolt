@@ -6,6 +6,10 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --login-bg: #7c3aed;
+  --login-shimmer: #e9d5ff;
+  --reg-bg: #ffffff;
+  --reg-shimmer: #c4b5fd;
 }
 
 body {
@@ -445,6 +449,10 @@ input {
     --color-3: oklch(69.6% 0.165 251);
     --color-4: oklch(80.2% 0.134 225);
     --color-5: oklch(90.7% 0.231 133);
+    --login-bg: #1e293b;
+    --login-shimmer: #a78bfa;
+    --reg-bg: #334155;
+    --reg-shimmer: #a78bfa;
   }
 }
 
@@ -501,24 +509,4 @@ input {
 
 .rotate-y-180 {
   transform: rotateY(180deg);
-}
-
-.login-button {
-  --login-bg: #7c3aed;
-  --login-shimmer: #e9d5ff;
-}
-
-.dark .login-button {
-  --login-bg: #1e293b;
-  --login-shimmer: #a78bfa;
-}
-
-.register-button {
-  --reg-bg: #ffffff;
-  --reg-shimmer: #c4b5fd;
-}
-
-.dark .register-button {
-  --reg-bg: #334155;
-  --reg-shimmer: #a78bfa;
 }
