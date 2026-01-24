@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { InlineMath, BlockMath } from 'react-katex';
 
 interface TypeWriter {
   content: string;
@@ -7,20 +8,88 @@ interface TypeWriter {
   className?: string;
   containerRef?: React.RefObject<HTMLDivElement>;
   isAutoScrollRef?: React.MutableRefObject<boolean>;
+  formatMarkdown: (text: string) => string; // Add this prop
 }
 
-const TypeWriter: React.FC<TypeWriter> = ({ content, 
+// Helper function to parse content into segments
+const parseContentSegments = (content: string) => {
+  const segments: Array<{type: 'text' | 'math' | 'code', content: string, isBlock?: boolean, language?: string}> = [];
+  
+  // Combined regex for math and code blocks
+  const combinedRegex = /(```[\w]*\n[\s\S]*?```|\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g;
+  
+  let lastIndex = 0;
+  let match;
+
+  while ((match = combinedRegex.exec(content)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      segments.push({
+        type: 'text',
+        content: content.slice(lastIndex, match.index)
+      });
+    }
+    
+    const matchedContent = match[0];
+    
+    // Check if it's a code block
+    if (matchedContent.startsWith('```')) {
+      const codeMatch = matchedContent.match(/```(\w+)?\n([\s\S]*?)```/);
+      segments.push({
+        type: 'code',
+        content: matchedContent,
+        language: codeMatch?.[1] || 'text'
+      });
+    }
+    // Check if it's block math
+    else if (matchedContent.startsWith('\\[') || matchedContent.startsWith('$')) {
+      segments.push({
+        type: 'math',
+        content: matchedContent,
+        isBlock: true
+      });
+    }
+    // Otherwise it's inline math
+    else {
+      segments.push({
+        type: 'math',
+        content: matchedContent,
+        isBlock: false
+      });
+    }
+    
+    lastIndex = match.index + matchedContent.length;
+  }
+
+  // Add remaining text
+  if (lastIndex < content.length) {
+    segments.push({
+      type: 'text',
+      content: content.slice(lastIndex)
+    });
+  }
+
+  return segments.length > 0 ? segments : [{type: 'text' as const, content}];
+};
+
+const TypeWriter: React.FC<TypeWriter> = ({ 
+  content, 
   baseSpeed = 25,
   onComplete,
   className = "",
   containerRef,
-  isAutoScrollRef}) => {
-   const [displayedContent, setDisplayedContent] = useState<string>('');
+  isAutoScrollRef,
+  formatMarkdown
+}) => {
+  const [displayedSegments, setDisplayedSegments] = useState<Array<{type: 'text' | 'math' | 'code', content: string, isBlock?: boolean, language?: string}>>([]);
+  const [currentText, setCurrentText] = useState<string>('');
   const [isTyping, setIsTyping] = useState<boolean>(true);
   const animationRef = useRef<number | null>(null);
-  const indexRef = useRef<number>(0);
+  const segmentIndexRef = useRef<number>(0);
+  const charIndexRef = useRef<number>(0);
   const lastFrameTime = useRef<number>(0);
   const accumulator = useRef<number>(0);
+  const segmentsRef = useRef<Array<{type: 'text' | 'math' | 'code', content: string, isBlock?: boolean, language?: string}>>([]);
 
   // Memoized speed calculation
   const getCharSpeed = useCallback((char: string, nextChar?: string, prevChar?: string): number => {
@@ -62,17 +131,57 @@ const TypeWriter: React.FC<TypeWriter> = ({ content,
     const deltaTime = currentTime - lastFrameTime.current;
     accumulator.current += deltaTime;
 
-    const currentIndex = indexRef.current;
-    
-    if (currentIndex >= content.length) {
+    const currentSegmentIndex = segmentIndexRef.current;
+    const currentCharIndex = charIndexRef.current;
+
+    // Check if we're done
+    if (currentSegmentIndex >= segmentsRef.current.length) {
       setIsTyping(false);
       onComplete?.();
       return;
     }
 
-    const char = content[currentIndex];
-    const nextChar = content[currentIndex + 1];
-    const prevChar = content[currentIndex - 1];
+    const currentSegment = segmentsRef.current[currentSegmentIndex];
+
+    // Handle math and code segments - show instantly
+    if (currentSegment.type === 'math' || currentSegment.type === 'code') {
+      // Add completed segment to displayed list
+      setDisplayedSegments(prev => [...prev, currentSegment]);
+      setCurrentText('');
+      
+      // Move to next segment
+      segmentIndexRef.current = currentSegmentIndex + 1;
+      charIndexRef.current = 0;
+      
+      // Scroll
+      requestAnimationFrame(() => {
+        if (isAutoScrollRef?.current && containerRef?.current) {
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+      });
+      
+      lastFrameTime.current = currentTime;
+      animationRef.current = requestAnimationFrame(animate);
+      return;
+    }
+
+    // Handle text segments - type character by character
+    if (currentCharIndex >= currentSegment.content.length) {
+      // Complete this text segment
+      setDisplayedSegments(prev => [...prev, currentSegment]);
+      setCurrentText('');
+      
+      // Move to next segment
+      segmentIndexRef.current = currentSegmentIndex + 1;
+      charIndexRef.current = 0;
+      lastFrameTime.current = currentTime;
+      animationRef.current = requestAnimationFrame(animate);
+      return;
+    }
+
+    const char = currentSegment.content[currentCharIndex];
+    const nextChar = currentSegment.content[currentCharIndex + 1];
+    const prevChar = currentSegment.content[currentCharIndex - 1];
     const charSpeed = getCharSpeed(char, nextChar, prevChar);
 
     if (accumulator.current >= charSpeed) {
@@ -80,29 +189,23 @@ const TypeWriter: React.FC<TypeWriter> = ({ content,
       let charsToAdd = Math.floor(accumulator.current / charSpeed);
       charsToAdd = Math.min(charsToAdd, 3); // Max 3 chars at once for smoothness
       
-      const newIndex = Math.min(currentIndex + charsToAdd, content.length);
-      indexRef.current = newIndex;
+      const newCharIndex = Math.min(currentCharIndex + charsToAdd, currentSegment.content.length);
+      charIndexRef.current = newCharIndex;
 
-      const partial = content.slice(0, newIndex);
-      setDisplayedContent(partial.replace(/\n/g, '<br/>'));
+      setCurrentText(currentSegment.content.slice(0, newCharIndex));
       accumulator.current = accumulator.current % charSpeed;
 
       // Scroll only if allowed and containerRef is valid
       requestAnimationFrame(() => {
         if (isAutoScrollRef?.current && containerRef?.current) {
-          containerRef.current.offsetHeight; // trigger reflow
           containerRef.current.scrollTop = containerRef.current.scrollHeight;
-          console.log("Auto Scrolling Enabled");
-        } else {
-          console.log("Auto Scrolling Disabled");
         }
       });
-
     }
 
     lastFrameTime.current = currentTime;
     animationRef.current = requestAnimationFrame(animate);
-  }, [content, getCharSpeed, onComplete]);
+  }, [getCharSpeed, onComplete, containerRef, isAutoScrollRef]);
 
   // Skip animation handler
   const skipAnimation = useCallback((): void => {
@@ -110,21 +213,28 @@ const TypeWriter: React.FC<TypeWriter> = ({ content,
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      setDisplayedContent(content);
+      setDisplayedSegments(segmentsRef.current);
+      setCurrentText('');
       setIsTyping(false);
-      indexRef.current = content.length;
+      segmentIndexRef.current = segmentsRef.current.length;
+      charIndexRef.current = 0;
       onComplete?.();
     }
-  }, [isTyping, content, onComplete]);
+  }, [isTyping, onComplete]);
 
   // Start animation
   useEffect(() => {
     if (!content) return;
     
+    // Parse content into segments
+    segmentsRef.current = parseContentSegments(content);
+    
     // Reset state
-    setDisplayedContent('');
+    setDisplayedSegments([]);
+    setCurrentText('');
     setIsTyping(true);
-    indexRef.current = 0;
+    segmentIndexRef.current = 0;
+    charIndexRef.current = 0;
     lastFrameTime.current = 0;
     accumulator.current = 0;
 
@@ -138,6 +248,59 @@ const TypeWriter: React.FC<TypeWriter> = ({ content,
     };
   }, [content, animate]);
 
+  // Render the segments
+  const renderSegment = (segment: {type: 'text' | 'math' | 'code', content: string, isBlock?: boolean, language?: string}, index: number) => {
+    if (segment.type === 'code') {
+      const codeMatch = segment.content.match(/```(\w+)?\n([\s\S]*?)```/);
+      const language = codeMatch?.[1] || 'text';
+      const code = codeMatch?.[2]?.trim() || '';
+      const blockId = `code-${index}-${Date.now()}`;
+      
+      return (
+        <div key={`code-${index}`} className="code-block border border-gray-200 dark:border-none rounded-lg overflow-hidden bg-gray-50 dark:bg-codeBgDark my-2">
+          <div className="flex justify-between items-center px-3 py-0.5 border-b border-gray-200 dark:border-slate-600">
+            <span className="text-xs text-gray-600 dark:text-textDark font-medium">{language}</span>
+            <button className="copy-btn dark:bg-codeBgDark dark:text-textDark hover:bg-[#e5e7eb] dark:hover:bg-white/10" data-block-id={blockId}>
+              Copy
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <pre className="p-4">
+              <code id={blockId} className="text-sm font-mono text-gray-800 dark:text-textDark">
+                {code}
+              </code>
+            </pre>
+          </div>
+        </div>
+      );
+    }
+    
+    if (segment.type === 'math') {
+      const mathContent = segment.content.replace(/^\\\[|\\\]$|^\\\(|\\\)$|^\$\$|\$\$|^\$|\$/g, '').trim();
+      
+      if (segment.isBlock) {
+        return (
+          <div key={`math-block-${index}`} className="my-4">
+            <BlockMath math={mathContent} />
+          </div>
+        );
+      } else {
+        return (
+          <span key={`math-inline-${index}`}>
+            <InlineMath math={mathContent} />
+          </span>
+        );
+      }
+    } else {
+      return (
+        <span 
+          key={`text-${index}`}
+          dangerouslySetInnerHTML={{ __html: formatMarkdown(segment.content) }}
+        />
+      );
+    }
+  };
+
   return (
     <div 
       className={`relative ${className} text-sm`}
@@ -146,18 +309,21 @@ const TypeWriter: React.FC<TypeWriter> = ({ content,
       title={isTyping ? "Click to skip animation" : ""}
     >
       <div className="max-w-none prose-sm">
-        <div 
-          className="whitespace-pre-wrap"
-          dangerouslySetInnerHTML={{
-            __html: displayedContent
-          }}
-        />
+        <div className="whitespace-pre-wrap">
+          {/* Render completed segments */}
+          {displayedSegments.map((segment, index) => renderSegment(segment, index))}
+          
+          {/* Render currently typing text */}
+          {currentText && (
+            <span dangerouslySetInnerHTML={{ __html: formatMarkdown(currentText) }} />
+          )}
+          
+          {/* Animated cursor */}
+          {isTyping && (
+            <span className="inline-block w-0.5 h-5 bg-blue-500 animate-pulse ml-1 align-text-bottom" />
+          )}
+        </div>
       </div>
-      
-      {/* Animated cursor */}
-      {isTyping && (
-        <span className="inline-block w-0.5 h-5 bg-blue-500 animate-pulse ml-1 align-text-bottom" />
-      )}
     </div>
   );
 };

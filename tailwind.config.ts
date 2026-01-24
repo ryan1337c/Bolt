@@ -7,13 +7,14 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-	safelist: [
-	"animate-shimmer-slide",
-	"animate-spin-around",
-	{
-		pattern: /^\[--.*\]$/,
-	},
-	],
+safelist: [
+  {
+    pattern: /^\[--.*\]$/,
+  },
+  {
+    pattern: /^animate-/,
+  },
+],
   theme: {
   	extend: {
   		backgroundImage: {
