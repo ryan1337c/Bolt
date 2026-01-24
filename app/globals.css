@@ -3,21 +3,6 @@
 @tailwind utilities;
 @import 'katex/dist/katex.min.css';
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-  --login-bg: #7c3aed;
-  --login-shimmer: #e9d5ff;
-  --reg-bg: #ffffff;
-  --reg-shimmer: #c4b5fd;
-}
-
-body {
-  color: rgb(var(--background-end-rgb));
-  background-color: rgb(var(--foreground-rgb));
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -419,6 +404,13 @@ input {
     --color-3: oklch(69.6% 0.165 251);
     --color-4: oklch(80.2% 0.134 225);
     --color-5: oklch(90.7% 0.231 133);
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
+    --login-bg: #7c3aed;
+    --login-shimmer: #e9d5ff;
+    --reg-bg: #ffffff;
+    --reg-shimmer: #c4b5fd;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -454,12 +446,31 @@ input {
     --login-shimmer: #a78bfa;
     --reg-bg: #334155;
     --reg-shimmer: #a78bfa;
-  }
-}
 
-@layer base {
+     /* Theming overrides */
+    --login-bg: #1e293b;
+    --login-shimmer: #a78bfa;
+    --reg-bg: #334155;
+    --reg-shimmer: #a78bfa;
+  }
+
+  :root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --login-bg: #7c3aed;
+  --login-shimmer: #e9d5ff;
+  --reg-bg: #ffffff;
+  --reg-shimmer: #c4b5fd;
+  }
+
+  body {
+    color: rgb(var(--background-end-rgb));
+    background-color: rgb(var(--foreground-rgb));
+  }
+
   * {
-    @apply border-border;
+  @apply border-border;
   }
   body {
     @apply bg-background text-foreground;

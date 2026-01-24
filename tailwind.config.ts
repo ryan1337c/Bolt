@@ -11,9 +11,6 @@ safelist: [
   {
     pattern: /^\[--.*\]$/,
   },
-  {
-    pattern: /^animate-/,
-  },
 ],
   theme: {
   	extend: {
@@ -152,6 +149,10 @@ safelist: [
 					transform: "translateZ(0) rotate(360deg)",
 				},
 			},
+			"shine": {
+				"0%": { left: "-100%" },
+				"100%": { left: "100%" },
+			},
 
   		},
   		animation: {
@@ -164,6 +165,7 @@ safelist: [
 			'bubble-off': 'bubble-off 0.2s ease-in-out forwards',
 			'shimmer-slide': 'shimmer-slide var(--speed, 3s) ease-in-out infinite alternate',
         	'spin-around': 'spin-around calc(var(--speed, 3s) * 2) infinite linear',
+			 "shine": "shine 3s infinite",
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

@@ -16,6 +16,7 @@ import {
   Type,
   Eraser
 } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 type FlashcardGenerationModalProps = {
   onClose: () => void;
@@ -297,6 +298,19 @@ export default function FlashcardGenerationModal({
     setFormErrors(prev => ({ ...prev, manual: undefined }));
   };
 
+  // Add a mounting check for Next.js SSR
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    // 3. LOCK SCROLL: Prevent background scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  if (!mounted) return null;
+
   // Styles
   const inputBaseClasses = "w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 transition-all placeholder-slate-400 disabled:opacity-50 disabled:cursor-not-allowed";
   
@@ -306,7 +320,7 @@ export default function FlashcardGenerationModal({
         : "border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-500";
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-sm">
       {/* SLIDE-DOWN ERROR TOAST */}
       {serverError && (
@@ -617,6 +631,7 @@ export default function FlashcardGenerationModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { faArrowRightToBracket, faUserPlus, faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-import { ShimmerButton } from "@/components/ui/shimmer-button"
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 
 const Header = () => {
   const { isLoggedIn } = useAuth();
@@ -107,27 +107,17 @@ const Header = () => {
             ) : (
             <div className="flex items-center gap-4">
               <Link href="/pages/login">
-                <ShimmerButton
-                  background="var(--login-bg)"
-                  shimmerColor="var(--login-shimmer)"
-                  shimmerSize='0.1em'
-                  className="login-button p-2 flex gap-2 items-center font-semibold text-white rounded-lg"
-                >
+                <PrimaryButton variant="primary">
                   <FontAwesomeIcon icon={faArrowRightToBracket} />
                   Log In
-                </ShimmerButton>
+                </PrimaryButton>
               </Link>
 
               <Link href="/pages/register">
-                <ShimmerButton
-                  background="var(--reg-bg)" 
-                  shimmerColor="var(--reg-shimmer)"
-                  shimmerSize='0.1em'
-                  className="register-button p-2 flex gap-2 items-center font-semibold rounded-lg text-violet-600 dark:text-gray-300 "
-                >
+                <PrimaryButton variant="outline">
                   <FontAwesomeIcon icon={faUserPlus} />
                   Sign Up
-                </ShimmerButton>
+                </PrimaryButton>
               </Link>
             </div>
         )}

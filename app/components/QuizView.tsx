@@ -22,6 +22,7 @@ import QuizActiveModal, { Question, Choice } from './QuizActiveModal';
 import { PublicServices } from '@/lib/publicServices';
 import { AuthServices } from '@/lib/authServices';
 import { timeAgo } from '@/lib/utils';
+import { createPortal } from 'react-dom';
 
 type QuizViewProps = {
     isProcessing: boolean,
@@ -65,6 +66,7 @@ const formatMode = (mode: string) => {
 export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [mounted, setMounted] = useState(false); 
 
   // Quiz edit state
   const [quizEditorState, setQuizEditorState] = useState<QuizEditorState>({
@@ -84,6 +86,21 @@ export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProp
   const authServices = new AuthServices();
   
   const [quizToDelete, setQuizToDelete] = useState<{id: number, title: string} | null>(null);
+
+  // Handle mounting and body scroll lock
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const isPopupOpen = !!quizToDelete || quizEditorState.isOpen;
+    if (isPopupOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [quizToDelete, quizEditorState.isOpen]);
 
   const filteredQuizzes = quizzes.filter(quiz => 
     quiz.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -212,6 +229,8 @@ export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProp
         />
     );
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="relative flex flex-col h-full w-full text-slate-300 dark:text-gray-200 overflow-y-auto custom-scrollbar animate-fade-in-sm">
@@ -365,7 +384,7 @@ export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProp
       </div>
 
       {/* Delete Confirmation Modal */}
-      {quizToDelete && (
+      {quizToDelete && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-sm">
           <div 
             className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700"
@@ -389,20 +408,24 @@ export default function QuizView({ isProcessing, setIsProcessing }: QuizViewProp
               <button onClick={confirmDelete} disabled={isProcessing} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">Delete Quiz</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-    <QuizGenerationModal 
-        isOpen={quizEditorState.isOpen}
-        onClose={closeEditorModal}
-        isProcessing={isProcessing}
-        setIsProcessing={setIsProcessing}
-        onQuizCreated={handleQuizCreated}
-        onQuizUpdated={handleQuizUpdate}
-        editMode={quizEditorState.mode === 'edit'}
-        initialData={quizEditorState.quizData}
-    />
-
+      {/* Generation/Editor Modal */}
+      {quizEditorState.isOpen && createPortal(
+        <QuizGenerationModal 
+            isOpen={quizEditorState.isOpen}
+            onClose={closeEditorModal}
+            isProcessing={isProcessing}
+            setIsProcessing={setIsProcessing}
+            onQuizCreated={handleQuizCreated}
+            onQuizUpdated={handleQuizUpdate}
+            editMode={quizEditorState.mode === 'edit'}
+            initialData={quizEditorState.quizData}
+        />,
+      document.body
+      )}
     </div>
   );
 }
