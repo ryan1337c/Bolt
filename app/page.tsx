@@ -108,8 +108,16 @@ export default function Home() {
     threshold: 0.2 
   });
 
+  // Observer for the video demo ref
   const { ref: heroVideoRef, inView: heroVideoInView } = useInView({ 
-    threshold: 0.2 
+    threshold: 0.2,
+    triggerOnce: true,
+  });
+
+  // Add this with your other observer hooks
+  const { ref: flipTextRef, inView: flipTextInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
   });
 
   useEffect(() => {
@@ -137,7 +145,7 @@ export default function Home() {
             <div className="md:w-1/2 mt-16 min-h-[45vh]">
               <div className="flex flex-col items-center md:flex-none md:items-start lg:ml-40">
                 <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem] animate-fade-in " sparklesCount={5}>Omni</SparklesText>
-                <div className="sm:text-3xl md:text-4xl font-bold flex gap-2">
+                <div ref={flipTextRef} className="sm:text-3xl md:text-4xl font-bold flex gap-2">
                   <FlipText className={`dark:text-purple-500 text-violet-600`}>Fast.</FlipText>
                   <FlipText className={`dark:text-purple-300 text-fuchsia-500`}>Smart.</FlipText>
                   <FlipText className={`dark:text-purple-100 text-pink-500`}>Limitless.</FlipText>
