@@ -25,6 +25,7 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [heroVideoSectionSeen, setHeroVideoSectionSeen] = useState(false);
+  const [flipTextAnimationDone, setFlipTextAnimationDone] = useState(false);
 
   // State for Privacy Policy Modal
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
@@ -112,7 +113,6 @@ export default function Home() {
   // Observer for the video demo ref (no triggerOnce so we can pause/restart when out of view)
   const { ref: heroVideoRef, inView: heroVideoInView } = useInView({ 
     threshold: 0.2,
-    triggerOnce: true,
   });
 
   // Add this with your other observer hooks
@@ -131,6 +131,13 @@ export default function Home() {
     const t = setTimeout(() => setHeroVideoSectionSeen(true), 1200);
     return () => clearTimeout(t);
   }, [heroVideoInView]);
+
+  // After flip text has been in view and animated once, switch to static text so it never replays on scroll
+  useEffect(() => {
+    if (!flipTextInView) return;
+    const t = setTimeout(() => setFlipTextAnimationDone(true), 2000);
+    return () => clearTimeout(t);
+  }, [flipTextInView]);
 
   useEffect(() => {
     // If the video is not in view and it was playing, reset it.
@@ -154,9 +161,25 @@ export default function Home() {
               <div className="flex flex-col items-center md:flex-none md:items-start lg:ml-40">
                 <SparklesText className="sm:text-8xl lg:text-9xl -ml-[0.4rem] animate-fade-in " sparklesCount={5}>Omni</SparklesText>
                 <div ref={flipTextRef} className="sm:text-3xl md:text-4xl font-bold flex gap-2">
-                  <FlipText className={`dark:text-purple-500 text-violet-600`}>Fast.</FlipText>
-                  <FlipText className={`dark:text-purple-300 text-fuchsia-500`}>Smart.</FlipText>
-                  <FlipText className={`dark:text-purple-100 text-pink-500`}>Limitless.</FlipText>
+                  {flipTextAnimationDone ? (
+                    <>
+                      <span className="origin-center drop-shadow-sm dark:text-purple-500 text-violet-600">Fast.</span>
+                      <span className="origin-center drop-shadow-sm dark:text-purple-300 text-fuchsia-500">Smart.</span>
+                      <span className="origin-center drop-shadow-sm dark:text-purple-100 text-pink-500">Limitless.</span>
+                    </>
+                  ) : flipTextInView ? (
+                    <>
+                      <FlipText className="dark:text-purple-500 text-violet-600">Fast.</FlipText>
+                      <FlipText className="dark:text-purple-300 text-fuchsia-500">Smart.</FlipText>
+                      <FlipText className="dark:text-purple-100 text-pink-500">Limitless.</FlipText>
+                    </>
+                  ) : (
+                    <>
+                      <span className="origin-center drop-shadow-sm dark:text-purple-500 text-violet-600">Fast.</span>
+                      <span className="origin-center drop-shadow-sm dark:text-purple-300 text-fuchsia-500">Smart.</span>
+                      <span className="origin-center drop-shadow-sm dark:text-purple-100 text-pink-500">Limitless.</span>
+                    </>
+                  )}
                 </div>
                 <div className="mt-8 mb-6 animate-fade-in">
                   Unlock the power of AI models — Omni connects you with cutting-edge agents to supercharge your workflows, automate tasks, and amplify your creativity. Fast, smart, limitless. Your AI assistant, reimagined.
