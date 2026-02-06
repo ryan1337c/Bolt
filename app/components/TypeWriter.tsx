@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { InlineMath, BlockMath } from 'react-katex';
 
+export type ContentSegment = {
+  type: 'text' | 'math' | 'code';
+  content: string;
+  isBlock?: boolean;
+  language?: string;
+};
+
 interface TypeWriter {
   content: string;
   baseSpeed?: number;
@@ -8,12 +15,12 @@ interface TypeWriter {
   className?: string;
   containerRef?: React.RefObject<HTMLDivElement>;
   isAutoScrollRef?: React.MutableRefObject<boolean>;
-  formatMarkdown: (text: string) => string; // Add this prop
+  formatMarkdown: (text: string) => string;
 }
 
-// Helper function to parse content into segments
-const parseContentSegments = (content: string) => {
-  const segments: Array<{type: 'text' | 'math' | 'code', content: string, isBlock?: boolean, language?: string}> = [];
+// Exported: parse content into segments (code blocks, math, text)
+export const parseContentSegments = (content: string): ContentSegment[] => {
+  const segments: ContentSegment[] = [];
   
   // Combined regex for math and code blocks
   const combinedRegex = /(```[\w]*\n[\s\S]*?```|\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g;
@@ -71,6 +78,59 @@ const parseContentSegments = (content: string) => {
 
   return segments.length > 0 ? segments : [{type: 'text' as const, content}];
 };
+
+// Exported: render segments (code blocks, math, text) — same output as TypeWriter
+export function renderContentSegments(
+  segments: ContentSegment[],
+  formatMarkdown: (text: string) => string
+): React.ReactNode {
+  return segments.map((segment, index) => {
+    if (segment.type === 'code') {
+      const codeMatch = segment.content.match(/```(\w+)?\n([\s\S]*?)```/);
+      const language = codeMatch?.[1] || 'text';
+      const code = codeMatch?.[2]?.trim() || '';
+      const blockId = `code-${index}-${Date.now()}`;
+      return (
+        <div key={`code-${index}`} className="code-block border border-gray-200 dark:border-none rounded-lg overflow-hidden bg-gray-50 dark:bg-codeBgDark my-2">
+          <div className="flex justify-between items-center px-3 py-0.5 border-b border-gray-200 dark:border-slate-600">
+            <span className="text-xs text-gray-600 dark:text-textDark font-medium">{language}</span>
+            <button type="button" className="copy-btn dark:bg-codeBgDark dark:text-textDark hover:bg-[#e5e7eb] dark:hover:bg-white/10" data-block-id={blockId}>
+              Copy
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <pre className="p-4">
+              <code id={blockId} className="text-sm font-mono text-gray-800 dark:text-textDark">
+                {code}
+              </code>
+            </pre>
+          </div>
+        </div>
+      );
+    }
+    if (segment.type === 'math') {
+      const mathContent = segment.content.replace(/^\\\[|\\\]$|^\\\(|\\\)$|^\$\$|\$\$|^\$|\$/g, '').trim();
+      if (segment.isBlock) {
+        return (
+          <div key={`math-block-${index}`} className="my-4">
+            <BlockMath math={mathContent} />
+          </div>
+        );
+      }
+      return (
+        <span key={`math-inline-${index}`}>
+          <InlineMath math={mathContent} />
+        </span>
+      );
+    }
+    return (
+      <span
+        key={`text-${index}`}
+        dangerouslySetInnerHTML={{ __html: formatMarkdown(segment.content) }}
+      />
+    );
+  });
+}
 
 const TypeWriter: React.FC<TypeWriter> = ({ 
   content, 

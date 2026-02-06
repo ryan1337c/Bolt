@@ -24,6 +24,7 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [heroVideoSectionSeen, setHeroVideoSectionSeen] = useState(false);
 
   // State for Privacy Policy Modal
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
@@ -108,7 +109,7 @@ export default function Home() {
     threshold: 0.2 
   });
 
-  // Observer for the video demo ref
+  // Observer for the video demo ref (no triggerOnce so we can pause/restart when out of view)
   const { ref: heroVideoRef, inView: heroVideoInView } = useInView({ 
     threshold: 0.2,
     triggerOnce: true,
@@ -123,6 +124,13 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Mark hero video section as "seen" only after the first fade-in has finished (so we see the animation)
+  useEffect(() => {
+    if (!heroVideoInView) return;
+    const t = setTimeout(() => setHeroVideoSectionSeen(true), 1200);
+    return () => clearTimeout(t);
+  }, [heroVideoInView]);
 
   useEffect(() => {
     // If the video is not in view and it was playing, reset it.
@@ -211,13 +219,13 @@ export default function Home() {
 
             {/* --- Hero Video Section --- */}
             <section ref={heroVideoRef} className="w-full flex flex-col items-center py-16 px-4">
-              <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r dark:from-purple-400 dark:to-white from-violet-600 to-pink-500 transition-opacity duration-1000 ease-in ${heroVideoInView ? 'opacity-100' : 'opacity-0'}`}>
+              <h2 className={`text-4xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r dark:from-purple-400 dark:to-white from-violet-600 to-pink-500 ${heroVideoSectionSeen ? 'transition-none' : 'transition-opacity duration-1000 ease-in'} ${heroVideoInView ? 'opacity-100' : 'opacity-0'}`}>
                 See Omni in Action
               </h2>
-              <p className={`text-lg text-center max-w-2xl mb-8 dark:text-gray-400 text-gray-600 transition-opacity duration-1000 ease-in delay-200 ${heroVideoInView ? 'opacity-100' : 'opacity-0'}`}>
+              <p className={`text-lg text-center max-w-2xl mb-8 dark:text-gray-400 text-gray-600 ${heroVideoSectionSeen ? 'transition-none' : 'transition-opacity duration-1000 ease-in delay-200'} ${heroVideoInView ? 'opacity-100' : 'opacity-0'}`}>
                 A glimpse into the future of productivity and creative workflows.
               </p>
-              <div className={`w-full max-w-5xl rounded-2xl overflow-hidden transition-all duration-1000 ease-in-out ${heroVideoInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}
+              <div className={`w-full max-w-5xl rounded-2xl overflow-hidden ${heroVideoSectionSeen ? 'transition-none' : 'transition-all duration-1000 ease-in-out'} ${heroVideoInView ? 'opacity-100 transform-none' : 'opacity-0 translate-y-10'}
                   dark:shadow-[0_0_35px_5px_rgba(168,85,247,0.2)] shadow-[0_0_35px_5px_rgba(139,92,246,0.2)]
               `}>
                 <div className="relative w-full aspect-video">

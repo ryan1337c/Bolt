@@ -3,7 +3,7 @@ import { FaRobot, FaBolt} from "react-icons/fa";
 
 import { useState, useEffect, useRef, useCallback} from "react";
 import Messages from "../../util/assistantMessages";
-import TypeWriter from './TypeWriter';
+import TypeWriter, { parseContentSegments, renderContentSegments } from './TypeWriter';
 import chatStyles from './chatBubble.module.css'
 import { AiOutlineSend } from "react-icons/ai";
 import { CiSquarePlus} from "react-icons/ci";
@@ -17,9 +17,6 @@ import { GoPaperclip } from "react-icons/go";
 import SpeechRecognitionModal from "./SpeechRecognitionModal";
 import { useAuth } from '@/app/context/AuthContext';
 import { RecentChat } from "../pages/home/page";
-import { InlineMath, BlockMath } from 'react-katex';
-
-
 type MessageImage = {
   id: string;
   url: string;
@@ -719,66 +716,6 @@ const downloadImage = async (imageUrl : string) => {
       .replace(/`(.*?)`/g, '<code class="bg-gray-100 dark:bg-chatDark px-1 py-0.5 rounded text-sm font-mono text-red-600 dark:text-red-400">$1</code>');
   };
 
-  // Add this function before your Chat component
-const renderContentWithMath = (text: string) => {
-  const parts: JSX.Element[] = [];
-  let lastIndex = 0;
-  let key = 0;
-
-  // Combined regex to find both block and inline math
-  const mathRegex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g;
-  
-  let match;
-  while ((match = mathRegex.exec(text)) !== null) {
-    // Add text before the math
-    if (match.index > lastIndex) {
-      const textBefore = text.slice(lastIndex, match.index);
-      parts.push(
-        <span 
-          key={`text-${key++}`} 
-          dangerouslySetInnerHTML={{ __html: formatMarkdown(textBefore) }} 
-        />
-      );
-    }
-
-    const mathContent = match[0];
-    
-    // Check if it's block math
-    if (mathContent.startsWith('\\[') || mathContent.startsWith('$$')) {
-      const math = mathContent.replace(/^\\\[|\\\]$|^\$\$|\$\$$/g, '').trim();
-      parts.push(
-        <div key={`block-${key++}`} className="my-4">
-          <BlockMath math={math} />
-        </div>
-      );
-    } 
-    // Otherwise it's inline math
-    else {
-      const math = mathContent.replace(/^\\\(|\\\)$|^\$|\$$/g, '').trim();
-      parts.push(
-        <span key={`inline-${key++}`}>
-          <InlineMath math={math} />
-        </span>
-      );
-    }
-
-    lastIndex = match.index + mathContent.length;
-  }
-
-  // Add remaining text
-  if (lastIndex < text.length) {
-    const remainingText = text.slice(lastIndex);
-    parts.push(
-      <span 
-        key={`text-${key++}`} 
-        dangerouslySetInnerHTML={{ __html: formatMarkdown(remainingText) }} 
-      />
-    );
-  }
-
-  return <>{parts}</>;
-};
-
   // HTML escape function
   const escapeHtml = (text: string): string => {
     const div = document.createElement('div');
@@ -1124,8 +1061,8 @@ const renderContentWithMath = (text: string) => {
                                     formatMarkdown={formatMarkdown}
                                   />
                                 ) : (
-                                <div className="whitespace-pre-wrap text-sm">
-                                  {renderContentWithMath(chatMessage.content)}
+                                <div className="whitespace-pre-wrap text-sm max-w-none prose-sm">
+                                  {renderContentSegments(parseContentSegments(chatMessage.content), formatMarkdown)}
                                 </div>
                                 )}
 
