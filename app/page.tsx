@@ -163,9 +163,21 @@ export default function Home() {
                 <div ref={flipTextRef} className="sm:text-3xl md:text-4xl font-bold flex gap-2">
                   {flipTextAnimationDone ? (
                     <>
-                      <span className="origin-center drop-shadow-sm dark:text-purple-500 text-violet-600">Fast.</span>
-                      <span className="origin-center drop-shadow-sm dark:text-purple-300 text-fuchsia-500">Smart.</span>
-                      <span className="origin-center drop-shadow-sm dark:text-purple-100 text-pink-500">Limitless.</span>
+                      <div className="flex space-x-0.5">
+                        {"Fast.".split("").map((char, i) => (
+                          <span key={i} className="origin-center drop-shadow-sm dark:text-purple-500 text-violet-600">{char}</span>
+                        ))}
+                      </div>
+                      <div className="flex space-x-0.5">
+                        {"Smart.".split("").map((char, i) => (
+                          <span key={i} className="origin-center drop-shadow-sm dark:text-purple-300 text-fuchsia-500">{char}</span>
+                        ))}
+                      </div>
+                      <div className="flex space-x-0.5">
+                        {"Limitless.".split("").map((char, i) => (
+                          <span key={i} className="origin-center drop-shadow-sm dark:text-purple-100 text-pink-500">{char}</span>
+                        ))}
+                      </div>
                     </>
                   ) : flipTextInView ? (
                     <>
@@ -175,9 +187,21 @@ export default function Home() {
                     </>
                   ) : (
                     <>
-                      <span className="origin-center drop-shadow-sm dark:text-purple-500 text-violet-600">Fast.</span>
-                      <span className="origin-center drop-shadow-sm dark:text-purple-300 text-fuchsia-500">Smart.</span>
-                      <span className="origin-center drop-shadow-sm dark:text-purple-100 text-pink-500">Limitless.</span>
+                      <div className="flex space-x-0.5">
+                        {"Fast.".split("").map((char, i) => (
+                          <span key={i} className="origin-center drop-shadow-sm dark:text-purple-500 text-violet-600">{char}</span>
+                        ))}
+                      </div>
+                      <div className="flex space-x-0.5">
+                        {"Smart.".split("").map((char, i) => (
+                          <span key={i} className="origin-center drop-shadow-sm dark:text-purple-300 text-fuchsia-500">{char}</span>
+                        ))}
+                      </div>
+                      <div className="flex space-x-0.5">
+                        {"Limitless.".split("").map((char, i) => (
+                          <span key={i} className="origin-center drop-shadow-sm dark:text-purple-100 text-pink-500">{char}</span>
+                        ))}
+                      </div>
                     </>
                   )}
                 </div>
