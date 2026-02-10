@@ -536,8 +536,8 @@ export default function FlashcardGenerationModal({
                   <AlignLeft size={16} />
                   Topic or Text <span className="text-red-500">*</span>
                 </label>
-                <span className={`text-xs font-medium ${topic.length >= 1000 ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
-                    {topic.length}/1000
+                <span className={`text-xs font-medium ${topic.length >= 10000 ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
+                    {topic.length}/10000
                 </span>
                 <textarea
                   disabled={isProcessing}
@@ -548,7 +548,7 @@ export default function FlashcardGenerationModal({
                     if (e.target.value.trim()) setFormErrors(prev => ({...prev, topic: undefined}));
                   }}
                   rows={6}
-                  maxLength={1000}
+                  maxLength={10000}
                   className={`${inputBaseClasses} outline-none ${getBorderClasses(!!formErrors.topic)}`}
                 />
                 {formErrors.topic && (
