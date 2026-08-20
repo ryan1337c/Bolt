@@ -1,11 +1,13 @@
 'use client'
 import { useContext, createContext, useEffect, useState, ReactNode} from "react";
 import { AuthServices } from "@/lib/authServices";
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import type { AuthChangeEvent, RealtimeChannel, Session } from "@supabase/supabase-js";
+import { PublicServices } from "@/lib/publicServices";
 
 // Shape of context
 interface AuthContextType {
     isLoggedIn: boolean;
+    tier: string | null;
     chatMode: string;
     setChatMode: (mode: string) => void;
 }
@@ -13,6 +15,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const auth = new AuthServices();
+const publicServices = new PublicServices();
 
 // Provider node
 interface AuthProviderProps {
@@ -22,6 +25,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [chatMode, setChatModeState] = useState("new chat"); // new chat, recents, chat, quiz, flashcards, resume
+    const [tier, setTier] = useState<string | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Recover mode on mount
@@ -46,16 +50,91 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         // listen to login/logout
         const supabase = auth.client;
+        let requestVersion = 0;
+        let entitlementChannel: RealtimeChannel | null = null;
+        let subscribedUserId: string | null = null;
+
+        const loadTier = async (userId: string) => {
+            const currentVersion = ++requestVersion;
+            setTier(null);
+            setTimeout(() => {
+                publicServices.getSubscription(userId)
+                    .then((result) => {
+                        // Ignore results from an outdated request
+                        if (currentVersion === requestVersion) {
+                            setTier(result);
+                        }
+                    })
+                    .catch(console.error);
+            }, 0);
+        }
+
+        const stopEntitlementUpdates = () => {
+            if (entitlementChannel) {
+                supabase.removeChannel(entitlementChannel);
+                entitlementChannel = null;
+                subscribedUserId = null;
+            }
+        };
+
+        const listenForEntitlementUpdates = (userId: string) => {
+            if (subscribedUserId === userId) return;
+
+            stopEntitlementUpdates();
+            subscribedUserId = userId;
+            entitlementChannel = supabase
+                .channel(`user-entitlement:${userId}`)
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "*",
+                        schema: "public",
+                        table: "user_entitlements",
+                        filter: `user_id=eq.${userId}`,
+                    },
+                    (payload) => {
+                        const updatedEntitlement = payload.new as { tier?: string };
+
+                        if (updatedEntitlement.tier) {
+                            requestVersion++;
+                            setTier(updatedEntitlement.tier);
+                        }
+                    },
+                )
+                .subscribe((status) => {
+                    if (status === "CHANNEL_ERROR") {
+                        console.error("Failed to subscribe to entitlement updates");
+                    }
+                });
+        };
+
+        const clearAuth = () => {
+            requestVersion++; // Invalidates any pending tier request
+            stopEntitlementUpdates();
+            setIsLoggedIn(false);
+            setTier(null);
+        };
 
         const { data } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
             console.log(event, session)
 
             if (event === 'INITIAL_SESSION') {
-                setIsLoggedIn(session ? true: false);
+                if (session?.user) {
+                    setIsLoggedIn(true);
+                    listenForEntitlementUpdates(session.user.id);
+                    loadTier(session.user.id);
+                }
+                else {
+                    clearAuth();
+                }
             } else if (event === 'SIGNED_IN') {
-                setIsLoggedIn(true);
+                if (session?.user) {
+                    setIsLoggedIn(true);
+                    listenForEntitlementUpdates(session.user.id);
+                    loadTier(session.user.id);
+                }
             } else if (event === 'SIGNED_OUT') {
-                setIsLoggedIn(false);
+                clearAuth();
             } else if (event === 'PASSWORD_RECOVERY') {
                 // handle password recovery event
             } else if (event === 'TOKEN_REFRESHED') {
@@ -67,6 +146,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             // call unsubscribe to remove the callback
             return () => {
+                requestVersion++; // Invalidate any pending tier request
+                stopEntitlementUpdates();
                 data.subscription.unsubscribe()
             };
 
@@ -77,7 +158,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             return null;
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, chatMode, setChatMode }}>
+        <AuthContext.Provider value={{ isLoggedIn, tier, chatMode, setChatMode }}>
             {children}
         </AuthContext.Provider>
     );

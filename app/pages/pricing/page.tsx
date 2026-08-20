@@ -3,14 +3,24 @@ import React, { useEffect, useState } from 'react';
 import { FaCheckCircle } from 'react-icons/fa';
 import Header from '@/app/components/Header';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/context/AuthContext';
 
 export default function PricingPage() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { isLoggedIn, tier } = useAuth();
 
-  const handleGetStarted = () => {
-    router.push('./login');
+  const handlePlanAction = () => {
+    if (!isLoggedIn) {
+      router.push('/pages/login');
+      return;
+    }
+
+    router.push('/pages/home?settings=billing');
   };
+
+  const isFreePlan = isLoggedIn && tier === "free";
+  const isProPlan = isLoggedIn && tier === "pro";
 
   useEffect(() => {
     setMounted(true);
@@ -61,8 +71,17 @@ export default function PricingPage() {
                       </li>
                     </ul>
                   </div>
-                  <button onClick={handleGetStarted} className="mt-8 w-full py-3 px-6 text-white font-semibold rounded-lg transition-colors duration-300 bg-violet-600 hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700">
-                    Get Started for Free
+                  <button
+                    type="button"
+                    onClick={handlePlanAction}
+                    disabled={isFreePlan}
+                    className={`mt-8 w-full rounded-lg px-6 py-3 font-semibold transition-colors duration-300 ${
+                      isFreePlan
+                        ? "cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+                        : "bg-violet-600 text-white hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700"
+                    }`}
+                  >
+                    {isFreePlan ? "Current plan" : "Get Started for Free"}
                   </button>
                 </div>
 
@@ -100,8 +119,17 @@ export default function PricingPage() {
                       </li>
                     </ul>
                   </div>
-                  <button className="mt-8 w-full py-3 px-6 font-semibold rounded-lg transition-colors duration-300 bg-slate-900 hover:bg-slate-700 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black">
-                    Coming Soon
+                  <button
+                    type="button"
+                    onClick={handlePlanAction}
+                    disabled={isProPlan}
+                    className={`mt-8 w-full rounded-lg px-6 py-3 font-semibold transition-colors duration-300 ${
+                      isProPlan
+                        ? "cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+                        : "bg-violet-600 text-white hover:bg-violet-700 dark:bg-purple-600 dark:hover:bg-purple-700"
+                    }`}
+                  >
+                    {isProPlan ? "Current plan" : "Continue"}
                   </button>
                 </div>
 
@@ -134,7 +162,11 @@ export default function PricingPage() {
                       </li>
                     </ul>
                   </div>
-                  <button className="mt-8 w-full py-3 px-6 font-semibold rounded-lg transition-colors duration-300 bg-slate-900 hover:bg-slate-700 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black">
+                  <button
+                    type="button"
+                    disabled
+                    className="mt-8 w-full cursor-not-allowed rounded-lg bg-slate-200 px-6 py-3 font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+                  >
                     Coming Soon
                   </button>
                 </div>

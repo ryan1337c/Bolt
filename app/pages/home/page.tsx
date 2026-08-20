@@ -3,27 +3,27 @@ import { FaCircle, FaUserCircle} from "react-icons/fa";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { FiPlus } from 'react-icons/fi';
 import { HiOutlineChatBubbleOvalLeft } from "react-icons/hi2"; 
-import { useState, useEffect, useRef} from "react";
+import { useState, useEffect } from "react";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
 import { 
   PanelLeftClose, PanelRightOpen, Menu,
-  MoreHorizontal, Star, Pencil, Trash2 
+  MoreHorizontal, Star, Pencil, Trash2,
+  ArrowRight, Check, LockKeyhole, Sparkles, X
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import Chat from "@/app/components/chat"
 import RenameModal from "@/app/components/RenameModal";
 import ChatsView from "@/app/components/ChatsView";
 import SidebarTooltip from "@/app/components/SidebarTooltip";
 import ResumeBuild from "@/app/components/ResumeBuild";
-import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { MdOutlineQuiz } from "react-icons/md";
 import { TbCards } from "react-icons/tb";
 import QuizView from "@/app/components/QuizView";
 import FlashcardsView from "@/app/components/FlashcardsView";
+import SettingsModal, { SettingsSection } from "@/app/components/SettingsModal";
+import ProfileMenu from "@/app/components/ProfileMenu";
 
 export interface RecentChat {
   chat_id: string;
@@ -31,17 +31,27 @@ export interface RecentChat {
   chat_title: string;
 }
 
+type PremiumFeature = "resume" | "quiz" | "flashcards";
+
+const premiumFeatureLabels: Record<PremiumFeature, string> = {
+  resume: "Resume Tailor",
+  quiz: "Quizzes",
+  flashcards: "Flashcards",
+};
+
 export default function Home() {
-  const { chatMode, setChatMode } = useAuth();
+  const { chatMode, setChatMode, tier } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const authServices = new AuthServices();
   const publicServices = new PublicServices();
 
   // Sidebar state
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isSidebarProfileOpen, setIsSidebarProfileOpen] = useState(false);
-  const sidebarProfileMenuRef = useRef<HTMLDivElement>(null); // Ref for the menu
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsSection, setSettingsSection] =
+    useState<SettingsSection>("general");
 
   // chat state
   const [currChatId, setCurrChatId] = useState<string | null>(null);
@@ -53,6 +63,25 @@ export default function Home() {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputValue, setRenameInputValue] = useState('');
   const [chatToRename, setChatToRename] = useState<RecentChat | null>(null);
+  const [paywalledFeature, setPaywalledFeature] = useState<PremiumFeature | null>(null);
+
+  const isFreeTier = tier === "free";
+
+  useEffect(() => {
+    if (searchParams?.get("settings") !== "billing") return;
+
+    setSettingsSection("billing");
+    setIsSettingsOpen(true);
+    router.replace("/pages/home");
+  }, [router, searchParams]);
+
+  const closeSettings = () => {
+    setIsSettingsOpen(false);
+
+    if (searchParams?.has("settings")) {
+      router.replace("/pages/home");
+    }
+  };
 
   // Find the active chat object from the list
   const activeChat = recents.find(r => r.chat_id === currChatId);
@@ -83,6 +112,52 @@ export default function Home() {
   const handleSelectChat = (id: string) => {
     setCurrChatId(id);
     setChatMode('recents'); 
+  };
+
+  const handlePremiumFeatureClick = (feature: PremiumFeature) => {
+    if (isFreeTier) {
+      setIsMobileSidebarOpen(false);
+      setPaywalledFeature(feature);
+      return;
+    }
+
+    setChatMode(feature);
+  };
+
+  const closePaywall = () => setPaywalledFeature(null);
+
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+
+  const handlePlanSelection = async (plan: "pro_monthly" | "pro_yearly") => {
+    setIsCheckoutLoading(true);
+    setCheckoutError("");
+
+    try {
+      const session = await authServices.getSession();
+      const response = await fetch("/api/stripe/checkout_sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ plan }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to start checkout");
+      }
+
+      window.location.assign(data.url);
+    }
+    catch (error: any) {
+      setCheckoutError(
+        error instanceof Error ? error.message : "Unable to start checkout",
+      );
+      setIsCheckoutLoading(false);
+    }
   };
 
   const handleRenameSubmit = async (newTitle: string) => {
@@ -125,18 +200,16 @@ export default function Home() {
     }
   };
 
-  // UseEffect to close the sidebar profile menu when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (sidebarProfileMenuRef.current && !sidebarProfileMenuRef.current.contains(event.target as Node)) {
-        setIsSidebarProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    if (!paywalledFeature) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closePaywall();
     };
-  }, [sidebarProfileMenuRef]);
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [paywalledFeature]);
 
   // Fetch initial history
   useEffect(() => {
@@ -227,12 +300,19 @@ export default function Home() {
               <button 
                 disabled={isProcessing}
                 className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "resume" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
-                onClick={() => setChatMode("resume")}>
-                <div className="flex items-center gap-3">
+                onClick={() => handlePremiumFeatureClick("resume")}>
+                <div className="flex items-center gap-3 w-full">
                   <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
                     <IoDocumentTextOutline size={22} className="transition-transform duration-300 ease-in-out group-hover:scale-110" />
                   </div>
                   <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>Resume</span>
+                  {isFreeTier && (
+                    <LockKeyhole
+                      size={14}
+                      aria-label="Pro feature"
+                      className={`ml-auto flex-shrink-0 text-violet-600 dark:text-purple-300 transition-opacity duration-300 ${isSidebarExpanded ? "opacity-100" : "opacity-0"}`}
+                    />
+                  )}
                 </div>
               </button>
             </SidebarTooltip>
@@ -242,8 +322,8 @@ export default function Home() {
               <button
                 disabled={isProcessing}
                 className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "quiz" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
-                onClick={() => setChatMode("quiz")}>
-                  <div className="flex items-center gap-3">
+                onClick={() => handlePremiumFeatureClick("quiz")}>
+                  <div className="flex items-center gap-3 w-full">
                     <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
                       <MdOutlineQuiz 
                         size={22} 
@@ -253,6 +333,13 @@ export default function Home() {
                     <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
                       Quiz
                     </span>
+                    {isFreeTier && (
+                      <LockKeyhole
+                        size={14}
+                        aria-label="Pro feature"
+                        className={`ml-auto flex-shrink-0 text-violet-600 dark:text-purple-300 transition-opacity duration-300 ${isSidebarExpanded ? "opacity-100" : "opacity-0"}`}
+                      />
+                    )}
                   </div>
               </button>
             </SidebarTooltip>
@@ -262,8 +349,8 @@ export default function Home() {
               <button 
                 disabled={isProcessing}
                 className={`w-full group flex p-3 rounded-lg text-sm font-medium text-slate-700 dark:text-textDark ${chatMode === "flashcards" && 'bg-black/10 dark:bg-white/10'} hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300 justify-start`}
-                onClick={() => setChatMode("flashcards")}>
-                <div className="flex items-center gap-3">
+                onClick={() => handlePremiumFeatureClick("flashcards")}>
+                <div className="flex items-center gap-3 w-full">
                   <div className="relative flex items-center justify-center" style={{ width: 24, height: 24 }}>
                     <TbCards 
                       size={24} 
@@ -273,6 +360,13 @@ export default function Home() {
                   <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
                     Flashcards
                   </span>
+                  {isFreeTier && (
+                    <LockKeyhole
+                      size={14}
+                      aria-label="Pro feature"
+                      className={`ml-auto flex-shrink-0 text-violet-600 dark:text-purple-300 transition-opacity duration-300 ${isSidebarExpanded ? "opacity-100" : "opacity-0"}`}
+                    />
+                  )}
                 </div>
               </button>
             </SidebarTooltip>
@@ -308,24 +402,29 @@ export default function Home() {
 
             {/* Section 7: Profile Menu */}
             <div className='mt-auto flex-shrink-0 pt-4 border-t border-black/10 dark:border-white/10'>
-              <div ref={sidebarProfileMenuRef} className="relative">
-                <button onClick={() => setIsSidebarProfileOpen(!isSidebarProfileOpen)} className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10 ${isSidebarProfileOpen && 'bg-black/10 dark:bg-white/10'}`}>
-                  <FaUserCircle size={30} className="flex-shrink-0 text-slate-600 dark:text-gray-300" />
-                  <span className={`whitespace-nowrap font-semibold text-sm overflow-hidden transition-all duration-300 ${isSidebarExpanded ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>Profile</span>
-                </button>
-                <div className={`absolute bottom-full left-0 z-50 mb-2 w-60 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-3 flex flex-col gap-1 transition-all duration-300 ease-out origin-bottom ${isSidebarProfileOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-                  <div className=""><ThemeToggle /></div>
-                  <hr className="border-slate-200 dark:border-slate-700 my-1" />
-                  <button onClick={async () => { 
-                    const auth = new AuthServices();
-                    await auth.logout();
-                    router.push('/');}} 
-                    className="w-full flex items-center gap-3 text-left px-4 py-2 text-sm text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
-                    disabled={isProcessing}>
-                    <FontAwesomeIcon icon={faArrowRightFromBracket} /><span>Sign Out</span>
-                  </button>
+              <ProfileMenu
+                placement="top-left"
+                disabled={isProcessing}
+                onSettingsClick={() => {
+                  setSettingsSection("general");
+                  setIsSettingsOpen(true);
+                }}
+                triggerClassName="w-full flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                <FaUserCircle size={30} className="flex-shrink-0 text-slate-600 dark:text-gray-300" />
+                <div
+                  className={`min-w-0 overflow-hidden text-left transition-all duration-300 ${
+                    isSidebarExpanded ? "w-auto opacity-100" : "w-0 opacity-0"
+                  }`}
+                >
+                  <span className="block truncate whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-gray-200">
+                    Profile
+                  </span>
+                  <span className="block truncate whitespace-nowrap text-xs capitalize text-slate-500 dark:text-slate-400">
+                    {tier ?? "Loading..."}
+                  </span>
                 </div>
-              </div>
+              </ProfileMenu>
             </div>
           </div>
         </div>
@@ -409,6 +508,108 @@ export default function Home() {
     currentTitle={renameInputValue}
     setInputValue={setRenameInputValue}
   />
+  <SettingsModal
+    isOpen={isSettingsOpen}
+    initialSection={settingsSection}
+    onClose={closeSettings}
+  />
+  {paywalledFeature && (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-md animate-fade-in"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) closePaywall();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upgrade-title"
+        className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-violet-200/80 bg-white shadow-2xl shadow-violet-950/20 dark:border-purple-400/20 dark:bg-slate-900 dark:shadow-black/50"
+      >
+        <button
+          type="button"
+          onClick={closePaywall}
+          aria-label="Close upgrade dialog"
+          className="absolute right-4 top-4 z-10 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="h-1.5 w-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500" />
+
+        <div className="px-7 pb-7 pt-8 text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-lg shadow-violet-500/25">
+            <LockKeyhole size={29} strokeWidth={2.2} />
+          </div>
+
+          <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-700 dark:bg-purple-400/10 dark:text-purple-300">
+            <Sparkles size={13} />
+            Pro feature
+          </p>
+          <h2 id="upgrade-title" className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">
+            Unlock {premiumFeatureLabels[paywalledFeature]}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+            Upgrade to Pro and get the complete Omni toolkit for work, study, and everything in between.
+          </p>
+
+          <div className="mt-6 rounded-xl border border-violet-200 bg-violet-50/70 p-4 text-left dark:border-purple-400/20 dark:bg-purple-400/[0.06]">
+            <p className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Everything in Pro</p>
+            <ul className="space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
+              {[
+                "Resume tailoring",
+                "Quiz generation",
+                "Flashcard generation",
+                "4× higher usage limit than Free",
+              ].map((benefit) => (
+                <li key={benefit} className="flex items-center gap-2.5">
+                  <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-600 text-white dark:bg-purple-500">
+                    <Check size={12} strokeWidth={3} />
+                  </span>
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => handlePlanSelection("pro_monthly")}
+              disabled={isCheckoutLoading}
+              className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-3 font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-500/25 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-900"
+            >
+              {isCheckoutLoading ? "Redirecting..." : "Subscribe monthly"}
+              {!isCheckoutLoading && <ArrowRight size={17} />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handlePlanSelection("pro_yearly")}
+              disabled={isCheckoutLoading}
+              className="flex items-center justify-center gap-2 rounded-xl border border-violet-300 bg-white px-4 py-3 font-semibold text-violet-700 transition hover:-translate-y-0.5 hover:border-violet-500 hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-purple-400/40 dark:bg-slate-900 dark:text-purple-300 dark:hover:bg-purple-400/10 dark:focus:ring-offset-slate-900"
+            >
+              {isCheckoutLoading ? "Redirecting..." : "Subscribe yearly"}
+              {!isCheckoutLoading && <ArrowRight size={17} />}
+            </button>
+          </div>
+
+          {checkoutError && (
+            <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">
+              {checkoutError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            disabled
+            aria-label="Enterprise subscriptions unavailable"
+            className="mt-4"
+          />
+        </div>
+      </section>
+    </div>
+  )}
 </main>
   </>
   );

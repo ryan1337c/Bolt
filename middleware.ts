@@ -13,5 +13,7 @@ export const config = {
      * Feel free to modify this pattern to include more paths.
      */
     '/pages/home',
+    '/pages/login',
+    '/pages/register',
   ],
 };
