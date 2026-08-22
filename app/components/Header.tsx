@@ -43,11 +43,11 @@ const Header = () => {
         <div className="flex-1 flex justify-start">
           <Link href="/" onClick={closeMenu}>
             <div className="flex items-center gap-3 cursor-pointer">
-              <img 
-                src={icon.src}
-                alt="Custome Icon"
-                className="text-white w-16 h-16 object-contain"
-              />
+                <img 
+                  src={icon.src}
+                  alt="Custome Icon"
+                  className="text-white w-16 h-16 object-contain"
+                />
               <span className="text-2xl font-bold ">Omni</span>
             </div>
           </Link>
