@@ -46,7 +46,7 @@ const Header = () => {
                 <img 
                   src={icon.src}
                   alt="Custome Icon"
-                  className="text-white w-16 h-16 object-contain"
+                  className="text-white w-14 h-14 object-contain"
                 />
               <span className="text-2xl font-bold ">Omni</span>
             </div>
