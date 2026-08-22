@@ -1,5 +1,6 @@
 "use client"
 import { FaRobot, FaBolt} from "react-icons/fa";
+import icon from "@/public/omni-logo.png";
 
 import { useState, useEffect, useRef, useCallback} from "react";
 import Messages from "../../util/assistantMessages";
@@ -551,8 +552,12 @@ const downloadImage = async (imageUrl : string) => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && userInput.trim()) {
-        sendMessage();
+      // Only process if user hit Enter without shift key (preventing new lines)
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+
+        if (userInput.trim())
+          sendMessage();
       }
   }
 
@@ -1016,8 +1021,13 @@ const downloadImage = async (imageUrl : string) => {
         // Empty chat state 
         <div className="flex-1 flex flex-col items-center justify-center p-4 -mt-16 animate-fade-in-up">
           <div className="text-center">
-            <div className="inline-block p-4 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mb-6 shadow-lg">
-              <FaBolt className="text-white" size={48} />
+            <div className="inline-block">
+            <img 
+              src={icon.src} 
+              alt="Custom Icon"
+              className="text-white" 
+              style={{ width: '150px', height: '150px' }} 
+            />
             </div>
             <h1 className="text-3xl font-bold text-gray-700 dark:text-textDark">
               What can I help you with today?

@@ -9,6 +9,7 @@ import { Menu, X } from 'lucide-react';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import ProfileMenu, { ProfileMenuItems } from './ProfileMenu';
 import SettingsModal from './SettingsModal';
+import icon from "@/public/omni-logo.png";
 
 const Header = () => {
   const { isLoggedIn, tier } = useAuth();
@@ -42,9 +43,11 @@ const Header = () => {
         <div className="flex-1 flex justify-start">
           <Link href="/" onClick={closeMenu}>
             <div className="flex items-center gap-3 cursor-pointer">
-              <div className='bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full shadow-lg p-2'>
-                <FaBolt color='white'/>
-              </div>
+              <img 
+                src={icon.src}
+                alt="Custome Icon"
+                className="text-white w-16 h-16 object-contain"
+              />
               <span className="text-2xl font-bold ">Omni</span>
             </div>
           </Link>
