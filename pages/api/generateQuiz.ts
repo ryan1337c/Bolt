@@ -22,7 +22,7 @@ interface GenerateRequest extends NextApiRequest {
 }
 
 const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
     // Note: baseURL is usually not needed unless using a proxy, removed for standard OpenAI usage
 });
 

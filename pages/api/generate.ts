@@ -16,12 +16,12 @@ export const config = {
 };
 
 const openaiClient = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
     baseURL: "https://api.openai.com/v1"
 });
 
 const deepseekClient = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY,
+    apiKey: process.env.DEEPSEEK_API_KEY,
     baseURL: "https://api.deepseek.com/v1",
 });
 
@@ -73,13 +73,13 @@ export default async function handler(
         let modelToUse: string;
 
         if (modelId.includes('deep-seek')) {
-            if (!process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY) {
+            if (!process.env.DEEPSEEK_API_KEY) {
                 throw new Error("DeepSeek API key not configured.");
             }
             activeClient = deepseekClient;
             modelToUse = "deepseek-chat";
         } else {
-            if (!process.env.NEXT_PUBLIC_OPENAI_API_KEY) {
+            if (!process.env.OPENAI_API_KEY) {
                 throw new Error("OpenAI API key not configured.");
             }
             activeClient = openaiClient;

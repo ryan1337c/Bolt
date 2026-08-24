@@ -60,7 +60,7 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: formidable.Fields; fi
 };
 
 const openaiClient = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, 
+    apiKey: process.env.OPENAI_API_KEY, 
     baseURL: "https://api.openai.com/v1"
 });
 
