@@ -544,7 +544,7 @@ export default function FlashcardsView({ isProcessing, setIsProcessing }: Flashc
             {/* Render processed items instead of raw filtered items */}
             {processedItems.map((item) => {
                 const isMenuOpen = activeMenuId === item.id;
-                const hoverClass = isMenuOpen || isNewMenuOpen ? '' : 'hover:-translate-y-1 hover:shadow-lg';
+                const hoverClass = isMenuOpen || isNewMenuOpen ? '' : 'hover:-translate-y-1 hover:drop-shadow-lg';
                 const zIndexClass = isMenuOpen ? 'z-40' : 'z-0';
 
                 const StarButton = () => (
@@ -615,7 +615,7 @@ export default function FlashcardsView({ isProcessing, setIsProcessing }: Flashc
                     onClick={() => handleFolderClick(item)}
                     className={`group relative h-52 cursor-pointer transition-transform duration-300 ${hoverClass} ${zIndexClass}`}>
                          <div className="absolute top-0 left-0 w-28 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-t-xl border-t border-l border-r border-blue-200 dark:border-blue-700/50"></div>
-                         <div className="absolute top-4 inset-x-0 bottom-0 bg-blue-50 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-700/50 rounded-b-xl rounded-tr-xl p-5 flex flex-col justify-between shadow-sm z-10">
+                         <div className="absolute top-4 inset-x-0 bottom-0 bg-blue-50 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-700/50 rounded-b-xl rounded-tr-xl p-5 flex flex-col justify-between z-10">
                             <div className="flex justify-between items-start">
                                 <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg"><Folder size={20} /></div>
                                 <MoreMenu />
