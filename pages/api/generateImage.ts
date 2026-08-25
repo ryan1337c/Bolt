@@ -32,28 +32,34 @@ export default async function handler(
     }
 
     try{
-    const aiResponse = await openai.images.generate({
-        prompt: promptString,
-        n:1,
-        size:"1024x1024",
-        model: "dall-e-3"
-    });
 
-    if (!aiResponse.data || aiResponse.data.length === 0) {
-      return res.status(500).json({ error: "No images generated" });
+        // Casting response as 'any' to pass the exact payload without SDK auto-format injections
+        const aiResponse = await openai.images.generate({
+            prompt: promptString,
+            n:1,
+            size:"1024x1024",
+            model: "gpt-image-2",
+        } as any);
+
+        if (!aiResponse.data || aiResponse.data.length === 0) {
+        return res.status(500).json({ error: "No images generated" });
+        }
+
+        let base64Image = aiResponse.data[0].b64_json;
+
+        if (!base64Image) {
+            return res.status(500).json({ error: "Invalid or missing image data from OpenAI" });
+        }
+
+        // Return the base64 image as a data URL
+        return res.status(200).json({ url: `data:image/png;base64,${base64Image}` });
     }
-    let imageUrl = aiResponse.data[0].url;
-
-    if (!imageUrl || typeof imageUrl !== "string") {
-        return res.status(500).json({ error: "Invalid or missing image URL from OpenAI" });
+    catch (error: any) {        
+        console.error("OpenAI API Error:", error);
+        
+        const statusCode = error.status || 500;
+        const message = error.error?.message || error.message || "An unexpected error occurred";
+        
+        return res.status(statusCode).json({ error: message });
     }
-    return res.status(200).json({ url:  imageUrl})
-}
-catch (error: any) {
-
-    if (error.status === 400)
-        return res.status(400).json({error: "Bad Request"})
-    else 
-        return res.status(error.status).json({error: "OpenAI server issue"})
-}
 }

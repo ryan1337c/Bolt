@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+// Proxy image from external URLs, this is used to avoid CORS issues when fetching images from external sources
+// Returns the image as a buffer (raw bytes) so we can upload it to supabase storage
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { url } = req.query;
 

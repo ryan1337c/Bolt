@@ -248,7 +248,7 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
     return history.map(({ role, content }) => ({ role, content}));
   }
 
-  const generateImage = async(filesToUpload: (File & { preview: string })[]) => {
+  const generateImage = async(filesToUpload: (File & { preview: string })[], chatId: string | null) => {
     setIsProcessing(true);
 
     // Guards for image generation using file uploads as it is not supported yet 
@@ -300,14 +300,40 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
       }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
         setIsValid(false)
-        throw new Error("Something went wrong when generating image on server side");
+        throw new Error(data.error || "Something went wrong when generating image on server side");
       }
-      const data = await response.json();
+
       const imageUrls = await publicServices.uploadImages([data.url]);
       setImage(imageUrls[0]);
       setIsValid(true)
+
+      const generatedImages = {
+        id: '',
+        url: data.url,
+        order_index: 0
+      }
+
+      // Add messages to database of user and ai
+      await publicServices.addMessages(chatId, [
+        {
+          role: "user",
+          content: userInput,
+          imageUrls: [],
+          loading: false,
+          isNew: true
+        },
+        {
+          role: "assistant",
+          content: "Here is the generated image:",
+          imageUrls: [generatedImages],
+          loading: false,
+          isNew: true
+        }
+      ]);     
     }
     catch (error: any) {
       // Network issue
@@ -316,7 +342,6 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
     }
 
     setImageTrigger(prev => !prev);
-    // setIsProcessing(false);
     
   }
 
@@ -501,7 +526,7 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
 
         // Generate reponse based on selected tool
         if (selectedTool === 'image')
-          await generateImage(filesToProcess);
+          await generateImage(filesToProcess, activeChatId);
         else 
           await generateResponse(filesToProcess, newMessages, activeChatId)
         
@@ -525,17 +550,34 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
   }
 
 const downloadImage = async (imageUrl : string) => {
-    const response = await fetch(`/api/proxy-image?url=${encodeURIComponent(imageUrl)}`)
-    const blob = await response.blob()
-    const url = URL.createObjectURL(blob)
 
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'generated-image.png'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    try {
+      let downloadUrl = imageUrl;
+
+      // If it's a standard HTTP URL, we proxy it to avoid CORS and get a local Blob URI.
+      // If it's already a local data: or blob: URI, we skip the fetch entirely.
+      if (!imageUrl.startsWith('data:') && !imageUrl.startsWith('blob:')) {
+          const response = await fetch(`/api/proxy-image?url=${encodeURIComponent(imageUrl)}`);
+          if (!response.ok) throw new Error("Failed to fetch image proxy");
+          
+          const blob = await response.blob();
+          downloadUrl = URL.createObjectURL(blob);
+      }
+
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = 'generated-image.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up memory only if we generated a temporary Blob URL
+      if (downloadUrl !== imageUrl) {
+          URL.revokeObjectURL(downloadUrl);
+      }
+  } catch (error) {
+      console.error("Download failed:", error);
+  }
 };
 
   const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
@@ -695,7 +737,7 @@ const downloadImage = async (imageUrl : string) => {
             }, 800);
     }
 
-  },[imageTrigger]);
+  },[imageTrigger, image, isValid]);
 
   // Handles initial scroll to bottom of chat on load
   useEffect(() => {
@@ -955,7 +997,7 @@ const downloadImage = async (imageUrl : string) => {
                   {selectedModelData?.name}
                   </span>
                 </div>
-                {selectedTool === "image" && selectedModelData?.name === "DeepSeek" ? (
+                {selectedTool === "image" && (selectedModelData?.id === "deep-seek" || selectedModelData?.id === "claude-sonnet-4") ? (
                 <div
                     className="relative group"
                     onMouseEnter={() => setShowTooltip(true)}
