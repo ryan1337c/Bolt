@@ -103,6 +103,11 @@ async function syncSubscription(subscription) {
   }
 
   const period = getSubscriptionPeriod(subscription);
+
+  const isScheduledToCancel =
+    subscription.cancel_at_period_end ||
+    (subscription.cancel_at !== null && subscription.cancel_at !== undefined);
+
   const { error: subscriptionError } = await supabaseServerClient
     .from("subscriptions")
     .upsert(
@@ -115,7 +120,7 @@ async function syncSubscription(subscription) {
         status: subscription.status,
         current_period_start: toIsoDate(period.start),
         current_period_end: toIsoDate(period.end),
-        cancel_at_period_end: subscription.cancel_at_period_end,
+        cancel_at_period_end: isScheduledToCancel,
         canceled_at: toIsoDate(subscription.canceled_at),
         updated_at: new Date().toISOString(),
       },
@@ -182,10 +187,10 @@ export default async function handler(req, res) {
 
       case "customer.subscription.created":
       case "customer.subscription.updated": {
-        const currentSubscription = await stripe.subscriptions.retrieve(
-          event.data.object.id,
-        );
-        await syncSubscription(currentSubscription);
+        // const currentSubscription = await stripe.subscriptions.retrieve(
+        //   event.data.object.id,
+        // );
+        await syncSubscription(event.data.object);
         break;
       }
 
