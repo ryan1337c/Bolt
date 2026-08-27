@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, ChangeEvent, DragEvent, useEffect } from 'react';
-import { FiUploadCloud, FiFileText, FiX, FiDownload, FiLoader} from 'react-icons/fi';
+import { FiUploadCloud, FiFileText, FiX, FiDownload, FiLoader, FiAlertCircle} from 'react-icons/fi';
 
 type ResumeBuildProps = {
   isProcessing: boolean;
@@ -13,9 +13,12 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isTailoring, setIsTailoring] = useState(false);
   
   // New state to hold the URL of the generated PDF for previewing
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -23,7 +26,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
       if (file.type === "application/pdf") {
         setUploadedFile(file);
       } else {
-        alert("Please upload a valid PDF file.");
+        setErrorMessage("Please upload a valid PDF file.");
       }
     }
   };
@@ -46,7 +49,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
       if (file.type === "application/pdf") {
         setUploadedFile(file);
       } else {
-        alert("Please upload a valid PDF file.");
+        setErrorMessage("Please upload a valid PDF file.");
       }
     }
   };
@@ -58,10 +61,12 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
   const handleProceed = async (event: React.FormEvent) => {
       event.preventDefault();
       if (!uploadedFile) {
-        alert("Please upload a resume file first.");
+        setErrorMessage("Please upload a resume file first.");
         return;
       }
 
+      setErrorMessage(null);
+      setIsTailoring(true);
       setIsProcessing(true);
 
       const formData = new FormData();
@@ -88,8 +93,9 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
 
       } catch (error: any) {
         console.error('Fetch failed: ', error.message || error);
-        alert(`An error occurred: ${error.message}`); 
+        setErrorMessage(`An error occurred: ${error.message}`); 
       } finally {
+        setIsTailoring(false);
         setIsProcessing(false);
 
         // Before updating the state and swapping the UI.
@@ -110,6 +116,13 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
     };
   }, [pdfUrl]);
 
+  // Auto-dismiss the error popup after a few seconds
+  useEffect(() => {
+    if (!errorMessage) return;
+    const timer = setTimeout(() => setErrorMessage(null), 5000);
+    return () => clearTimeout(timer);
+  }, [errorMessage]);
+
   // A function to reset everything and start over
   const handleStartOver = () => {
     setPdfUrl(null);
@@ -123,24 +136,51 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
 
   return (
     // Main container now sets the base text colors for each theme.
-    <div className="flex-1 flex flex-col items-center justify-center py-4 px-6 sm:p-8 text-slate-800 dark:text-gray-200 animate-fade-in-sm">
+    <div className="relative flex-1 flex flex-col items-center justify-center py-4 px-6 sm:p-8 text-slate-800 dark:text-gray-200 animate-fade-in-sm">
       {/* Processing Prompt */}
-        <div
-          className={`
-            absolute top-0 left-1/2 -translate-x-1/2 z-50
-            flex items-center gap-3 px-6 py-3 
-            rounded-b-xl
-            bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
-            border-b border-slate-200 dark:border-slate-700
-            transition-transform-shadow duration-300 ease-in-out
-            ${isProcessing ? 'translate-y-0 shadow-xl' : '-translate-y-full shadow-none'}
-          `}
-        >
-          <FiLoader className="w-5 h-5 animate-spin text-violet-600 dark:text-violet-400" />
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Tailoring your resume, please wait...
-          </p>
-        </div>
+        {isTailoring && !errorMessage && (
+          <div
+            className="
+              absolute top-[-72px] md:top-0 left-1/2 z-50
+              flex items-center gap-3 px-6 py-3
+              rounded-b-xl
+              bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
+              border-b border-slate-200 dark:border-slate-700
+              animate-slide-down
+            "
+          >
+            <FiLoader className="w-5 h-5 animate-spin text-violet-600 dark:text-violet-400" />
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              Tailoring your resume, please wait...
+            </p>
+          </div>
+        )}
+
+        {/* Error Popup — unmounts instantly on dismiss; slide-down plays on mount */}
+        {errorMessage && (
+          <div
+            className="
+              absolute top-[-72px] md:top-0 left-1/2 z-50
+              flex items-center gap-3 px-6 py-3 
+              rounded-b-xl max-w-md
+              bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
+              border-b border-red-200 dark:border-red-500/30
+              animate-slide-down
+            "
+          >
+            <FiAlertCircle className="w-5 h-5 flex-shrink-0 text-red-500 dark:text-red-400" />
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              {errorMessage}
+            </p>
+            <button
+              onClick={() => setErrorMessage(null)}
+              className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              aria-label="Dismiss error"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
 
       <div className="w-full max-w-2xl mx-auto">

@@ -144,10 +144,14 @@ const config: Config = {
 					transform: "translateZ(0) rotate(360deg)",
 				},
 			},
-			"shine": {
-				"0%": { left: "-100%" },
-				"100%": { left: "100%" },
-			},
+		"shine": {
+			"0%": { left: "-100%" },
+			"100%": { left: "100%" },
+		},
+		'slide-down': {
+			'0%': { transform: 'translate(-50%, -100%)', boxShadow: 'none' },
+			'100%': { transform: 'translate(-50%, 0)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
+		},
 
   		},
   		animation: {
@@ -161,6 +165,7 @@ const config: Config = {
 			'shimmer-slide': 'shimmer-slide var(--speed, 3s) ease-in-out infinite alternate',
         	'spin-around': 'spin-around calc(var(--speed, 3s) * 2) infinite linear',
 			 "shine": "shine 3s infinite",
+		 	'slide-down': 'slide-down 0.3s ease-in-out forwards',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
