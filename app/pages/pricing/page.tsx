@@ -111,7 +111,7 @@ export default function PricingPage() {
                       </li>
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />
-                        <span>Unlimited Generations</span>
+                        <span>4× higher usage than Free</span>
                       </li>
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />

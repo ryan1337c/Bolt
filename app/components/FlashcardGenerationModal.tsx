@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PublicServices } from "@/lib/publicServices";
+import { AuthServices } from "@/lib/authServices";
 import { 
   X, 
   Sparkles, 
@@ -59,6 +60,7 @@ export default function FlashcardGenerationModal({
   const [mode, setMode] = useState<'manual' | 'ai'>('ai'); 
 
   const publicServices = new PublicServices();
+  const authServices = new AuthServices();
   const cardLimit = 50;
 
   // Edit 
@@ -188,9 +190,13 @@ export default function FlashcardGenerationModal({
     try {
       let cardsToCreate;
       if (mode === 'ai') {
+        const session = await authServices.getSession();
         const result = await fetch(`/api/generateDeck`, {
             method: "POST",
-            headers: { 'Content-type' : 'application/json' },
+            headers: {
+              'Content-type' : 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
             body: JSON.stringify({
               title,
               description,

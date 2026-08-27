@@ -4,6 +4,7 @@ import formidable from "formidable";
 import fs from 'fs/promises';
 import pdf from "pdf-parse"; 
 import  { createPdfFromData } from '@/lib/generatePdf';
+import { requireEntitlement, requireUser } from "@/lib/requireUser";
 
 // Define a type for the structured resume data
 type ResumeData = {
@@ -69,6 +70,20 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<ResponseData | Buffer> 
 ) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    const auth = await requireUser(req);
+    if (!auth.ok) {
+        return res.status(auth.status).json({ error: auth.error });
+    }
+
+    const entitlement = await requireEntitlement(auth.user.id);
+    if (!entitlement.ok) {
+        return res.status(entitlement.status).json({ error: entitlement.error });
+    }
+
     try{
         const { fields, files } = await parseForm(req);
 

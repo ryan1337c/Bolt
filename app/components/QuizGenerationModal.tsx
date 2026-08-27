@@ -231,10 +231,12 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
       if (mode === 'ai') {
           setIsProcessing(true);
           try {
+            const session = await authServices.getSession();
             const result = await fetch(`/api/generateQuiz`, {
               method: "POST",
               headers: {
-                'Content-type' : 'application/json'
+                'Content-type' : 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
               },
               body: JSON.stringify({
                 title: title,

@@ -2,6 +2,7 @@
 
 import { useState, ChangeEvent, DragEvent, useEffect } from 'react';
 import { FiUploadCloud, FiFileText, FiX, FiDownload, FiLoader, FiAlertCircle} from 'react-icons/fi';
+import { AuthServices } from '@/lib/authServices';
 
 type ResumeBuildProps = {
   isProcessing: boolean;
@@ -9,6 +10,7 @@ type ResumeBuildProps = {
 }
 
 const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
+  const authServices = new AuthServices();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -77,8 +79,12 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
       let generatedUrl: string | null = null;
 
       try {
+        const session = await authServices.getSession();
         const response = await fetch("/api/generateResume", { 
           method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
           body: formData,
         });
 

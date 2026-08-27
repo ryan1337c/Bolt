@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import formidable from "formidable";
 import fs from "fs";
 import pdf from "pdf-parse";
+import { requireUser } from "@/lib/requireUser";
 
 type ResponseData = {
     response?: string;
@@ -45,6 +46,11 @@ export default async function handler(
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    const auth = await requireUser(req);
+    if (!auth.ok) {
+        return res.status(auth.status).json({ error: auth.error });
     }
 
     try {

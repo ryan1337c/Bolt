@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
+import { requireEntitlement, requireUser } from "@/lib/requireUser";
 
 // Define the shape of the data we want back from the AI
 type QuizQuestion = {
@@ -32,6 +33,16 @@ export default async function handler(
 ) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const auth = await requireUser(req);
+    if (!auth.ok) {
+        return res.status(auth.status).json({ error: auth.error });
+    }
+
+    const entitlement = await requireEntitlement(auth.user.id);
+    if (!entitlement.ok) {
+        return res.status(entitlement.status).json({ error: entitlement.error });
     }
     
     let { title, topic, questionCount } = req.body;

@@ -290,10 +290,12 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
     }
     
     try {
+      const session = await authServices.getSession();
       const response = await fetch('../api/generateImage', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         prompt: `${userInput}`
@@ -383,8 +385,12 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
         formData.append("userInput", userMessage.content);
      }
 
+      const session = await authServices.getSession();
       const response = await fetch('../api/generate', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: formData
       });
 
@@ -557,7 +563,12 @@ const downloadImage = async (imageUrl : string) => {
       // If it's a standard HTTP URL, we proxy it to avoid CORS and get a local Blob URI.
       // If it's already a local data: or blob: URI, we skip the fetch entirely.
       if (!imageUrl.startsWith('data:') && !imageUrl.startsWith('blob:')) {
-          const response = await fetch(`/api/proxy-image?url=${encodeURIComponent(imageUrl)}`);
+          const session = await authServices.getSession();
+          const response = await fetch(`/api/proxy-image?url=${encodeURIComponent(imageUrl)}`, {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
           if (!response.ok) throw new Error("Failed to fetch image proxy");
           
           const blob = await response.blob();
