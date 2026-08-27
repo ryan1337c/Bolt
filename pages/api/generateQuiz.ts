@@ -48,7 +48,7 @@ export default async function handler(
     let { title, topic, questionCount } = req.body;
 
     // 1. Sanitize & Limit Input (Prevent huge token costs)
-    topic = topic ? topic.trim().slice(0, 2000) : "";
+    topic = topic ? topic.trim().slice(0, 40000) : "";
     
     if (!topic) {
         return res.status(400).json({ error: "Topic is required" });

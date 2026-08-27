@@ -75,6 +75,7 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
   const authServices = new AuthServices();
   const publicServices = new PublicServices();
   const questionLimit = 50;
+  const topicLimit = 40000;
   
   const [topic, setTopic] = useState('');
   const [questions, setQuestions] = useState<ManualQuestion[]>([
@@ -664,6 +665,9 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
                   <AlignLeft size={16} />
                   Topic & Style <span className="text-red-500">*</span>
                 </label>
+                <span className={`text-xs font-medium ${topic.length >= topicLimit ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
+                    {topic.length}/{topicLimit}
+                </span>
                 <textarea
                   disabled={isProcessing}
                   placeholder="Enter topic, difficulty, or style here (e.g., 'Calculus integrals, hard difficulty, focus on real-world applications')"
@@ -673,6 +677,7 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
                     if (e.target.value.trim()) setFormErrors(prev => ({...prev, topic: undefined}));
                   }}
                   rows={3}
+                  maxLength={topicLimit}
                   className={`${inputBaseClasses} outline-none ${getBorderClasses(!!formErrors.topic)}`}
                 />
                 {formErrors.topic && (

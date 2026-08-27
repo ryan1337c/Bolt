@@ -83,7 +83,7 @@ export default async function handler(
                 throw new Error("DeepSeek API key not configured.");
             }
             activeClient = deepseekClient;
-            modelToUse = "deepseek-chat";
+            modelToUse = "deepseek-v4-flash";
         } else {
             if (!process.env.OPENAI_API_KEY) {
                 throw new Error("OpenAI API key not configured.");
