@@ -8,7 +8,35 @@ const TIER_RANK = {
   enterprise: 2,
 } as const;
 
-type Tier = keyof typeof TIER_RANK;
+export type Tier = keyof typeof TIER_RANK;
+
+function normalizeTier(tier: string): Tier {
+  if (tier === "pro" || tier === "enterprise" || tier === "free") {
+    return tier;
+  }
+  return "free";
+}
+
+export async function getEffectiveTier(userId: string, now = Date.now()): Promise<Tier> {
+  const { data, error } = await supabaseServerClient
+    .from("user_entitlements")
+    .select("tier, tier_expires_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (
+    data?.tier_expires_at &&
+    Date.parse(data.tier_expires_at) < now
+  ) {
+    return "free";
+  }
+
+  return normalizeTier(data?.tier ?? "free");
+}
 
 export type AuthResult =
   | { ok: true; user: User }
@@ -47,26 +75,9 @@ export async function requireEntitlement(
   userId: string,
   minTier: Exclude<Tier, "free"> = "pro",
 ): Promise<EntitlementResult> {
-  const { data, error } = await supabaseServerClient
-    .from("user_entitlements")
-    .select("tier, tier_expires_at")
-    .eq("user_id", userId)
-    .maybeSingle();
+  const tier = await getEffectiveTier(userId);
 
-  if (error) {
-    throw error;
-  }
-
-  let tier = data?.tier ?? "free";
-  if (
-    data?.tier_expires_at &&
-    Date.parse(data.tier_expires_at) < Date.now()
-  ) {
-    tier = "free";
-  }
-
-  const userRank = TIER_RANK[tier as Tier] ?? TIER_RANK.free;
-  if (userRank < TIER_RANK[minTier]) {
+  if (TIER_RANK[tier] < TIER_RANK[minTier]) {
     return {
       ok: false,
       status: 403,

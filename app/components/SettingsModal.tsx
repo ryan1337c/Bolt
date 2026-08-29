@@ -19,6 +19,11 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/app/context/AuthContext";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
+import type { UsageSnapshot } from "@/lib/credits/types";
+import {
+  fetchUsageSnapshot,
+  formatCreditReset,
+} from "@/lib/credits/usageClient";
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -72,6 +77,9 @@ export default function SettingsModal({
   const [billingSummary, setBillingSummary] =
     useState<BillingSummary | null>(null);
   const [isBillingLoading, setIsBillingLoading] = useState(false);
+  const [usage, setUsage] = useState<UsageSnapshot | null>(null);
+  const [isUsageLoading, setIsUsageLoading] = useState(false);
+  const [usageError, setUsageError] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancellationError, setCancellationError] = useState("");
   const [accountName, setAccountName] = useState("");
@@ -176,6 +184,37 @@ export default function SettingsModal({
       isCurrent = false;
     };
   }, [activeSection, isOpen, tier]);
+
+  useEffect(() => {
+    if (!isOpen || activeSection !== "billing") {
+      return;
+    }
+
+    let isCurrent = true;
+    setIsUsageLoading(true);
+    setUsageError("");
+
+    authServices
+      .getSession()
+      .then((session) => fetchUsageSnapshot(session.access_token))
+      .then((snapshot) => {
+        if (isCurrent) setUsage(snapshot);
+      })
+      .catch((error) => {
+        console.error("Unable to load usage:", error);
+        if (isCurrent) {
+          setUsage(null);
+          setUsageError("Unable to load usage");
+        }
+      })
+      .finally(() => {
+        if (isCurrent) setIsUsageLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [activeSection, isOpen]);
 
   useEffect(() => {
     if (!isOpen || activeSection !== "account") return;
@@ -553,170 +592,213 @@ export default function SettingsModal({
 
               {!tier ? (
                 <div className="mt-5 h-20 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
-              ) : tier === "free" ? (
-                <div className="flex items-center justify-between gap-4 border-b border-slate-200 py-5 dark:border-slate-700">
-                  <div className="min-w-0 pr-6">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      Omni Free
-                    </p>
-                    <p className="mt-1 pr-4 text-xs text-slate-500 dark:text-slate-400">
-                      Essential tools for everyday tasks
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCheckoutError("");
-                      setIsUpgradeOpen(true);
-                    }}
-                    className="flex-shrink-0 rounded-full border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-700 transition-colors hover:border-violet-500 hover:bg-violet-50 dark:border-purple-400/40 dark:text-purple-300 dark:hover:bg-purple-400/10"
-                  >
-                    Upgrade
-                  </button>
-                </div>
               ) : (
                 <div className="space-y-6 pt-5">
-                  <section>
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      Current Plan
-                    </h4>
-                    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
-                      {isBillingLoading ? (
-                        <div className="h-10 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
-                      ) : (
-                        <div>
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0 pr-6">
-                              <p className="font-semibold capitalize text-slate-900 dark:text-white">
-                                Omni {billingSummary?.tier ?? tier}
-                              </p>
-                              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                {billingSummary?.cancel_at_period_end
-                                  ? billingSummary.tier_expires_at
-                                    ? `Access continues until ${new Date(
-                                        billingSummary.tier_expires_at,
-                                      ).toLocaleDateString(undefined, {
-                                        month: "long",
-                                        day: "numeric",
-                                        year: "numeric",
-                                      })}`
-                                    : "Your subscription will cancel at the end of the current period"
-                                  : billingSummary?.tier_expires_at
-                                    ? `Current period ends ${new Date(
-                                        billingSummary.tier_expires_at,
-                                      ).toLocaleDateString(undefined, {
-                                        month: "long",
-                                        day: "numeric",
-                                        year: "numeric",
-                                      })}`
-                                    : "Your subscription is active"}
-                              </p>
-                            </div>
-                            <span
-                              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                                billingSummary?.cancel_at_period_end
-                                  ? "bg-amber-100 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300"
-                                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300"
-                              }`}
-                            >
-                              {billingSummary?.cancel_at_period_end
-                                ? billingSummary.tier_expires_at
-                                  ? `Cancels ${new Date(
-                                      billingSummary.tier_expires_at,
-                                    ).toLocaleDateString(undefined, {
-                                      month: "short",
-                                      day: "numeric",
-                                    })}`
-                                  : "Cancelling"
-                                : "Active"}
-                            </span>
-                          </div>
-
-                          <div className="mt-5 flex justify-end border-t border-slate-200 pt-4 dark:border-slate-700">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setCancellationError("");
-                                setIsCancelConfirmOpen(true);
-                              }}
-                              disabled={
-                                isCancelling ||
-                                billingSummary?.cancel_at_period_end
-                              }
-                              className="rounded-lg border border-red-300 px-3.5 py-2 text-sm font-semibold text-red-600 transition-colors hover:border-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-transparent dark:border-red-400/40 dark:text-red-300 dark:hover:bg-red-400/10 dark:disabled:border-slate-600 dark:disabled:text-slate-500"
-                            >
-                              {billingSummary?.cancel_at_period_end
-                                ? "Cancellation scheduled"
-                                : isCancelling
-                                  ? "Cancelling..."
-                                  : "Cancel subscription"}
-                            </button>
-                          </div>
-
-                          {cancellationError && (
-                            <p
-                              role="alert"
-                              className="mt-2 text-right text-xs text-red-600 dark:text-red-400"
-                            >
-                              {cancellationError}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      Usage this month
-                    </h4>
-                    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {billingSummary?.tier_expires_at
-                          ? `Usage resets on ${new Date(
-                              billingSummary.tier_expires_at,
-                            ).toLocaleDateString(undefined, {
-                              month: "long",
-                              day: "numeric",
-                              year: "numeric",
-                            })}.`
-                          : "Usage resets on your next billing date."}
-                      </p>
-                    </div>
-                  </section>
-
-                  <section>
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      Billing details
-                    </h4>
-                    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
-                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                        Payment methods and invoices
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Manage your subscription, update your card, or view receipts securely through
-                        Stripe.
-                      </p>
-
+                  {tier === "free" ? (
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0 pr-6">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          Omni Free
+                        </p>
+                        <p className="mt-1 pr-4 text-xs text-slate-500 dark:text-slate-400">
+                          Essential tools for everyday tasks
+                        </p>
+                      </div>
                       <button
                         type="button"
-                        onClick={openBillingPortal}
-                        disabled={isPortalLoading}
-                        className="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-white/10"
+                        onClick={() => {
+                          setCheckoutError("");
+                          setIsUpgradeOpen(true);
+                        }}
+                        className="flex-shrink-0 rounded-full border border-violet-300 px-4 py-2 text-sm font-semibold text-violet-700 transition-colors hover:border-violet-500 hover:bg-violet-50 dark:border-purple-400/40 dark:text-purple-300 dark:hover:bg-purple-400/10"
                       >
-                        {isPortalLoading ? "Opening..." : "Manage billing"}
+                        Upgrade
                       </button>
+                    </div>
+                  ) : (
+                    <section>
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Current Plan
+                      </h4>
+                      <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                        {isBillingLoading ? (
+                          <div className="h-10 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+                        ) : (
+                          <div>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0 pr-6">
+                                <p className="font-semibold capitalize text-slate-900 dark:text-white">
+                                  Omni {billingSummary?.tier ?? tier}
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                  {billingSummary?.cancel_at_period_end
+                                    ? billingSummary.tier_expires_at
+                                      ? `Access continues until ${new Date(
+                                          billingSummary.tier_expires_at,
+                                        ).toLocaleDateString(undefined, {
+                                          month: "long",
+                                          day: "numeric",
+                                          year: "numeric",
+                                        })}`
+                                      : "Your subscription will cancel at the end of the current period"
+                                    : billingSummary?.tier_expires_at
+                                      ? `Current period ends ${new Date(
+                                          billingSummary.tier_expires_at,
+                                        ).toLocaleDateString(undefined, {
+                                          month: "long",
+                                          day: "numeric",
+                                          year: "numeric",
+                                        })}`
+                                      : "Your subscription is active"}
+                                </p>
+                              </div>
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                  billingSummary?.cancel_at_period_end
+                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300"
+                                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300"
+                                }`}
+                              >
+                                {billingSummary?.cancel_at_period_end
+                                  ? billingSummary.tier_expires_at
+                                    ? `Cancels ${new Date(
+                                        billingSummary.tier_expires_at,
+                                      ).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}`
+                                    : "Cancelling"
+                                  : "Active"}
+                              </span>
+                            </div>
 
-                      {portalError && (
-                        <p
-                          role="alert"
-                          className="mt-3 text-xs text-red-600 dark:text-red-400"
-                        >
-                          {portalError}
+                            <div className="mt-5 flex justify-end border-t border-slate-200 pt-4 dark:border-slate-700">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCancellationError("");
+                                  setIsCancelConfirmOpen(true);
+                                }}
+                                disabled={
+                                  isCancelling ||
+                                  billingSummary?.cancel_at_period_end
+                                }
+                                className="rounded-lg border border-red-300 px-3.5 py-2 text-sm font-semibold text-red-600 transition-colors hover:border-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 disabled:hover:bg-transparent dark:border-red-400/40 dark:text-red-300 dark:hover:bg-red-400/10 dark:disabled:border-slate-600 dark:disabled:text-slate-500"
+                              >
+                                {billingSummary?.cancel_at_period_end
+                                  ? "Cancellation scheduled"
+                                  : isCancelling
+                                    ? "Cancelling..."
+                                    : "Cancel subscription"}
+                              </button>
+                            </div>
+
+                            {cancellationError && (
+                              <p
+                                role="alert"
+                                className="mt-2 text-right text-xs text-red-600 dark:text-red-400"
+                              >
+                                {cancellationError}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  )}
+
+                  <section>
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      {usage?.period === "day" ||
+                      (!usage && tier === "free")
+                        ? "Usage today"
+                        : "Usage this month"}
+                    </h4>
+                    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                      {isUsageLoading ? (
+                        <div className="h-16 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+                      ) : usageError ? (
+                        <p className="text-sm text-red-600 dark:text-red-400">
+                          {usageError}
+                        </p>
+                      ) : usage ? (
+                        <div>
+                          <div className="flex items-baseline justify-between gap-4">
+                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                              {usage.used} / {usage.limit} credits
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {usage.remaining} remaining
+                            </p>
+                          </div>
+                          <div
+                            className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
+                            role="progressbar"
+                            aria-valuemin={0}
+                            aria-valuemax={usage.limit}
+                            aria-valuenow={Math.min(usage.used, usage.limit)}
+                            aria-label="Credit usage"
+                          >
+                            <div
+                              className="h-full rounded-full bg-violet-600 dark:bg-purple-500"
+                              style={{
+                                width: `${
+                                  usage.limit === 0
+                                    ? 0
+                                    : Math.min(
+                                        100,
+                                        (usage.used / usage.limit) * 100,
+                                      )
+                                }%`,
+                              }}
+                            />
+                          </div>
+                          <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                            Resets {formatCreditReset(usage.resetsAt, usage.period)}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          Usage is unavailable.
                         </p>
                       )}
                     </div>
                   </section>
+
+                  {tier !== "free" && (
+                    <section>
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Billing details
+                      </h4>
+                      <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                          Payment methods and invoices
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          Manage your subscription, update your card, or view receipts securely through
+                          Stripe.
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={openBillingPortal}
+                          disabled={isPortalLoading}
+                          className="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-white/10"
+                        >
+                          {isPortalLoading ? "Opening..." : "Manage billing"}
+                        </button>
+
+                        {portalError && (
+                          <p
+                            role="alert"
+                            className="mt-3 text-xs text-red-600 dark:text-red-400"
+                          >
+                            {portalError}
+                          </p>
+                        )}
+                      </div>
+                    </section>
+                  )}
                 </div>
               )}
             </div>

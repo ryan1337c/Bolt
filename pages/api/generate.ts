@@ -3,12 +3,29 @@ import OpenAI from "openai";
 import formidable from "formidable";
 import fs from "fs";
 import pdf from "pdf-parse";
-import { requireUser } from "@/lib/requireUser";
+import { getEffectiveTier, requireUser } from "@/lib/requireUser";
+import {
+    consumeCredits,
+    extractChatTextParts,
+    getContextWindow,
+    refundCreditsQuietly,
+    slideToWindow,
+    splitCurrentTurn,
+    ContextTooLongError,
+    InsufficientCreditsError,
+    type CreditReservation,
+} from "@/lib/credits";
 
 type ResponseData = {
     response?: string;
     error?: string;
-}
+    code?: string;
+    remaining?: number;
+    limit?: number;
+    resetsAt?: string;
+    characters?: number;
+    max?: number;
+};
 
 export const config = {
     api: {
@@ -52,6 +69,8 @@ export default async function handler(
     if (!auth.ok) {
         return res.status(auth.status).json({ error: auth.error });
     }
+
+    let reservation: CreditReservation | undefined;
 
     try {
         // Parse form data (works for both with/without files)
@@ -129,7 +148,9 @@ export default async function handler(
                 }
             }
 
-            // Combine history with the new user message containing files
+            // Combine history with the new user message containing files.
+            // History already includes the typed user turn; splitCurrentTurn
+            // drops that duplicate so file text is priced once with this turn.
             messages = [
                 ...history,
                 {
@@ -144,11 +165,21 @@ export default async function handler(
                 }
                 messages = history;
             }
+
+        const tier = await getEffectiveTier(auth.user.id);
+        const windowChars = getContextWindow(tier);
+        const { prior, current } = splitCurrentTurn(messages);
+        const windowed = slideToWindow(prior, current, windowChars);
+
+        reservation = await consumeCredits(auth.user.id, {
+            kind: "chat",
+            textParts: extractChatTextParts([current]),
+        });
         
         // Make API call
         const chatCompletion = await activeClient.chat.completions.create({
             model: modelToUse,
-            messages: messages,
+            messages: windowed,
         });
 
         const response = chatCompletion.choices[0].message.content;
@@ -158,6 +189,12 @@ export default async function handler(
 
     }
     catch (error: any) {
+        if (error instanceof InsufficientCreditsError || error instanceof ContextTooLongError) {
+            return res.status(error.status).json(error.toResponseBody());
+        }
+
+        await refundCreditsQuietly(reservation);
+
         console.error("API Error:", error);
         
         if (error.status === 400) {

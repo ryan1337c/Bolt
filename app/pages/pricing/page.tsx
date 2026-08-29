@@ -63,7 +63,7 @@ export default function PricingPage() {
                       </li>
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />
-                        <span>10 AI Generations per Day</span>
+                        <span>20 Credits per day</span>
                       </li>
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />
@@ -111,7 +111,7 @@ export default function PricingPage() {
                       </li>
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />
-                        <span>4× higher usage than Free</span>
+                        <span>125x higher usage than Free</span>
                       </li>
                       <li className="flex items-center gap-3">
                         <FaCheckCircle className="text-green-500" />

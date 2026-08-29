@@ -3,6 +3,7 @@ import { FaRobot, FaBolt} from "react-icons/fa";
 import icon from "@/public/omni-logo.png";
 
 import { useState, useEffect, useRef, useCallback} from "react";
+import { useRouter } from "next/navigation";
 import Messages from "../../util/assistantMessages";
 import TypeWriter, { parseContentSegments, renderContentSegments } from './TypeWriter';
 import chatStyles from './chatBubble.module.css'
@@ -12,12 +13,24 @@ import { VscMic } from "react-icons/vsc";
 import Image from "next/image";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
-import { ChevronDown, Check, Ban, FileText, X} from 'lucide-react';
+import { ChevronDown, Check, Ban, FileText, Gauge, X, Plus} from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { GoPaperclip } from "react-icons/go";
 import SpeechRecognitionModal from "./SpeechRecognitionModal";
 import { useAuth } from '@/app/context/AuthContext';
 import { RecentChat } from "../pages/home/page";
+import type { UsageSnapshot } from "@/lib/credits/types";
+import {
+  BILLING_SETTINGS_HREF,
+  fetchUsageSnapshot,
+  formatContextTooLongMessage,
+  formatInsufficientCreditsMessage,
+  getContextTooLongInfo,
+  getInsufficientCreditsInfo,
+  shouldOfferCreditUpgrade,
+  type ContextTooLongBody,
+  type InsufficientCreditsBody,
+} from "@/lib/credits/usageClient";
 type MessageImage = {
   id: string;
   url: string;
@@ -42,6 +55,7 @@ type ChatProps = {
 
 
 export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessing, setIsProcessing}: ChatProps) {
+  const router = useRouter();
   const [userInput, setUserInput] = useState('');
   const [image, setImage] = useState('');
   const [imageTrigger, setImageTrigger] = useState(false);
@@ -49,7 +63,7 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
   const messageRefs = useRef<HTMLDivElement[]>([]); 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
-  const { chatMode, setChatMode } = useAuth();
+  const { chatMode, setChatMode, tier } = useAuth();
 
   // chat history stuff
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -60,10 +74,61 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isValid, setIsValid] = useState(true);
   const isAutoScroll = useRef(true);
+  const [usage, setUsage] = useState<UsageSnapshot | null>(null);
+  const [creditNotice, setCreditNotice] = useState<{
+    message: string;
+    showUpgrade: boolean;
+  } | null>(null);
   
   // auth
   const authServices = new AuthServices();
   const publicServices = new PublicServices();
+
+  const refreshUsage = async () => {
+    try {
+      const session = await authServices.getSession();
+      const snapshot = await fetchUsageSnapshot(session.access_token);
+      setUsage(snapshot);
+    } catch (error) {
+      console.error("Unable to load usage:", error);
+    }
+  };
+
+  const applyLimitNotice = (
+    message: string,
+    options?: { refreshUsage?: boolean },
+  ) => {
+    setCreditNotice({
+      message,
+      showUpgrade: shouldOfferCreditUpgrade(tier),
+    });
+    setChatHistory((prevHistory) => {
+      const updatedHistory = [...prevHistory];
+      const lastMessageIndex = updatedHistory.length - 1;
+      if (lastMessageIndex < 0) {
+        return updatedHistory;
+      }
+      updatedHistory[lastMessageIndex] = {
+        ...updatedHistory[lastMessageIndex],
+        content: message,
+        loading: false,
+      };
+      return updatedHistory;
+    });
+    if (options?.refreshUsage && tier === "free") {
+      void refreshUsage();
+    }
+  };
+
+  const applyCreditError = (info: InsufficientCreditsBody) => {
+    applyLimitNotice(formatInsufficientCreditsMessage(info, tier), {
+      refreshUsage: true,
+    });
+  };
+
+  const applyContextTooLongError = (info: ContextTooLongBody) => {
+    applyLimitNotice(formatContextTooLongMessage(info, tier));
+  };
 
   // Model dropdown
   const [isOpenModel, setIsOpenModel] = useState(false);
@@ -83,11 +148,27 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
     },
     {
       id: 'deep-seek',
-      name: 'DeepSeek',
+      name: 'DeepSeek v4 Flash',
       description: 'Most capable model for complex tasks',
       tier: 'deepseek'
     },
+    {
+      id: 'kimi-k2-6',
+      name: 'Kimi K2.6',
+      description: 'Moonshot AI\'s long-context reasoning model',
+      tier: 'kimi'
+    },
+    {
+      id: 'gemini-3-1-pro',
+      name: 'Gemini 3.1 Pro',
+      description: 'Google\'s advanced multimodal model',
+      tier: 'gemini'
+    },
   ];
+
+  const primaryModels = models.slice(0, 3);
+  const moreModels = models.slice(3);
+  const [isMoreModelsOpen, setIsMoreModelsOpen] = useState(false);
 
   const handleModelSelect = (modelId: string) => {
     setSelectedModel(modelId);
@@ -95,6 +176,14 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
   }
 
   const selectedModelData = models.find(model => model.id === selectedModel);
+
+  const tierDotColor = (tier: string) =>
+    tier === 'sonnet' ? 'bg-orange-500' :
+    tier === 'gpt4' ? 'bg-green-500' :
+    tier === 'deepseek' ? 'bg-blue-500' :
+    tier === 'kimi' ? 'bg-purple-500' :
+    tier === 'gemini' ? 'bg-teal-500' :
+    'bg-gray-500';
 
   // Uploading 
   const [isOpenUpload, setIsOpenUpload] = useState(false);
@@ -229,6 +318,28 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
       );
   }, []);
 
+  useEffect(() => {
+    if (tier !== "free") {
+      setUsage(null);
+      return;
+    }
+
+    let cancelled = false;
+    authServices
+      .getSession()
+      .then((session) => fetchUsageSnapshot(session.access_token))
+      .then((snapshot) => {
+        if (!cancelled) setUsage(snapshot);
+      })
+      .catch((error) => {
+        console.error("Unable to load usage:", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tier]);
+
   // Handler for speech to text
   const handleDictateTranscript = (text: string) => {
     // Appends the dictated text to any existing text in the textarea
@@ -280,7 +391,7 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
         const lastMessageIndex = updatedHistory.length - 1;
         updatedHistory[lastMessageIndex] = {
           ...updatedHistory[lastMessageIndex],
-          content: `As of now, ${selectedModel} does not suppor image generation`,
+          content: `As of now, we do not support image generation with ${selectedModel}`,
           loading: false,
         }
         return updatedHistory;
@@ -305,6 +416,18 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
       const data = await response.json();
 
       if (!response.ok) {
+        const creditInfo = getInsufficientCreditsInfo(response.status, data);
+        if (creditInfo) {
+          applyCreditError(creditInfo);
+          setIsProcessing(false);
+          return;
+        }
+        const contextInfo = getContextTooLongInfo(response.status, data);
+        if (contextInfo) {
+          applyContextTooLongError(contextInfo);
+          setIsProcessing(false);
+          return;
+        }
         setIsValid(false)
         throw new Error(data.error || "Something went wrong when generating image on server side");
       }
@@ -335,7 +458,10 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
           loading: false,
           isNew: true
         }
-      ]);     
+      ]);
+      if (tier === "free") {
+        void refreshUsage();
+      }     
     }
     catch (error: any) {
       // Network issue
@@ -397,6 +523,16 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
       const data = await response.json();
 
       if (!response.ok) {
+        const creditInfo = getInsufficientCreditsInfo(response.status, data);
+        if (creditInfo) {
+          applyCreditError(creditInfo);
+          return;
+        }
+        const contextInfo = getContextTooLongInfo(response.status, data);
+        if (contextInfo) {
+          applyContextTooLongError(contextInfo);
+          return;
+        }
         throw new Error(data.error || 'Something went wrong');
       }
 
@@ -444,6 +580,9 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
         };
         return updated;
       });
+      if (tier === "free") {
+        void refreshUsage();
+      }
     
     }
     catch(error: any) {
@@ -468,6 +607,7 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
   const sendMessage = async () => {
     if (userInput || files.length > 0) {
       try {
+        setCreditNotice(null);
         let activeChatId = currChatId;
 
         const filesToProcess = [...files]; // Capture current files
@@ -863,6 +1003,28 @@ const downloadImage = async (imageUrl : string) => {
 
   const renderInputArea = () => (
     <div className="bg-white dark:bg-chatDark w-full max-w-4xl mx-auto px-2">
+      {creditNotice && (
+        <div className="mb-2 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+          <p className="min-w-0 flex-1">{creditNotice.message}</p>
+          {creditNotice.showUpgrade && (
+            <button
+              type="button"
+              onClick={() => router.push(BILLING_SETTINGS_HREF)}
+              className="flex-shrink-0 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-violet-700 dark:bg-purple-500 dark:hover:bg-purple-600"
+            >
+              Upgrade
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setCreditNotice(null)}
+            aria-label="Dismiss credit notice"
+            className="flex-shrink-0 rounded-full p-1 text-amber-700 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-400/20"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
       <div className={`
         flex flex-col border p-2 bg-white dark:bg-slate-800 w-full mb-2 rounded-xl shadow-sm
         transition-all duration-300 ease-in-out 
@@ -992,18 +1154,29 @@ const downloadImage = async (imageUrl : string) => {
               </div>
             </div>
 
-            <div className="relative inline-block text-left ml-auto">
+            <div className="flex items-center gap-2 ml-auto">
+              {tier === "free" && usage && (
+                <span
+                  title="Free credits reset daily at 00:00 UTC"
+                  className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium ${
+                    usage.remaining === 0
+                      ? "text-red-500 dark:text-red-400"
+                      : usage.remaining <= 5
+                        ? "text-amber-500 dark:text-amber-400"
+                        : "text-slate-400 dark:text-slate-500"
+                  }`}
+                >
+                  <Gauge className="h-3.5 w-3.5" strokeWidth={2} />
+                  {usage.remaining}/{usage.limit} today
+                </span>
+              )}
+              <div className="relative inline-block text-left">
               <button
                 onClick={() => {setIsOpenModel(!isOpenModel) }}
                 className="inline-flex items-center justify-between w-40 md:w-64 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-gray-500 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200"
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${
-                  selectedModelData?.tier === 'sonnet' ? 'bg-orange-500' :
-                  selectedModelData?.tier === 'gpt4' ? 'bg-green-500' :
-                  selectedModelData?.tier === 'deepseek' ? 'bg-blue-500' :
-                  'bg-gray-500'
-                  }`} />
+                  <div className={`w-2 h-2 rounded-full ${tierDotColor(selectedModelData?.tier ?? '')}`} />
                   <span className="text-left">
                   {selectedModelData?.name}
                   </span>
@@ -1030,19 +1203,14 @@ const downloadImage = async (imageUrl : string) => {
               {isOpenModel && (
                 <div className="absolute right-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col max-h-[60vh]">
                     <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                    {models.map((model) => (
+                    {primaryModels.map((model) => (
                         <button
                         key={model.id}
                         onClick={() => handleModelSelect(model.id)}
                         className="group flex items-center w-full px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
                         >
                         <div className="flex items-center flex-1">
-                            <div className={`w-2 h-2 rounded-full mr-3 ${
-                            model.tier === 'sonnet' ? 'bg-orange-500' :
-                            model.tier === 'gpt4' ? 'bg-green-500' :
-                            model.tier === 'deepseek' ? 'bg-blue-500' :
-                            'bg-gray-500'
-                            }`} />
+                            <div className={`w-2 h-2 rounded-full mr-3 ${tierDotColor(model.tier)}`} />
                             <div className="flex-1 text-left">
                                 <div className="font-medium text-gray-900 dark:text-gray-100">{model.name}</div>
                                 <div className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{model.description}</div>
@@ -1053,6 +1221,35 @@ const downloadImage = async (imageUrl : string) => {
                         )}
                         </button>
                     ))}
+                    {moreModels.length > 0 && (
+                        <>
+                        <button
+                            onClick={() => setIsMoreModelsOpen(!isMoreModelsOpen)}
+                            className="flex items-center w-full px-4 py-2.5 text-sm border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
+                        >
+                            <span className="flex-1 text-left font-medium text-gray-500 dark:text-gray-400">More models</span>
+                            <Plus className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isMoreModelsOpen ? 'rotate-45' : ''}`} />
+                        </button>
+                        {isMoreModelsOpen && moreModels.map((model) => (
+                            <button
+                            key={model.id}
+                            onClick={() => handleModelSelect(model.id)}
+                            className="group flex items-center w-full px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
+                            >
+                            <div className="flex items-center flex-1">
+                                <div className={`w-2 h-2 rounded-full mr-3 ${tierDotColor(model.tier)}`} />
+                                <div className="flex-1 text-left">
+                                    <div className="font-medium text-gray-900 dark:text-gray-100">{model.name}</div>
+                                    <div className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{model.description}</div>
+                                </div>
+                            </div>
+                            {selectedModel === model.id && (
+                                <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            )}
+                            </button>
+                        ))}
+                        </>
+                    )}
                     </div>
                     <div className="border-t border-slate-100 dark:border-slate-700 px-4 py-3 flex-shrink-0">
                         <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -1061,6 +1258,7 @@ const downloadImage = async (imageUrl : string) => {
                     </div>
                 </div>
               )}
+              </div>
             </div>
             {(isOpenModel || isOpenTools || isOpenUpload) && (<div className="fixed inset-0 z-0" onClick={() => { const clickType = isOpenModel ? "model": isOpenTools ? "tools": "upload"; handleOverlayClick(clickType) }} /> )}
           </div>

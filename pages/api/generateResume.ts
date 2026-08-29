@@ -5,6 +5,13 @@ import fs from 'fs/promises';
 import pdf from "pdf-parse"; 
 import  { createPdfFromData } from '@/lib/generatePdf';
 import { requireEntitlement, requireUser } from "@/lib/requireUser";
+import {
+    consumeCredits,
+    refundCreditsQuietly,
+    ContextTooLongError,
+    InsufficientCreditsError,
+    type CreditReservation,
+} from "@/lib/credits";
 
 // Define a type for the structured resume data
 type ResumeData = {
@@ -38,7 +45,13 @@ type ResumeData = {
 };
 
 type ResponseData = {
-    error?: string
+    error?: string;
+    code?: string;
+    remaining?: number;
+    limit?: number;
+    resetsAt?: string;
+    characters?: number;
+    max?: number;
 }
 
 export const config = {
@@ -84,6 +97,8 @@ export default async function handler(
         return res.status(entitlement.status).json({ error: entitlement.error });
     }
 
+    let reservation: CreditReservation | undefined;
+
     try{
         const { fields, files } = await parseForm(req);
 
@@ -99,6 +114,11 @@ export default async function handler(
         const fileBuffer = await fs.readFile(resumeFile.filepath);
         const pdfData = await pdf(fileBuffer);
         const resumeText = pdfData.text;
+
+        reservation = await consumeCredits(auth.user.id, {
+            kind: "resume",
+            textParts: [resumeText, jobDescription, jobTitle ?? ""],
+        });
 
         // Structure the resume text
         const structurePrompt = `
@@ -186,6 +206,12 @@ export default async function handler(
 
     }
     catch (error: any) {
+        if (error instanceof InsufficientCreditsError || error instanceof ContextTooLongError) {
+            return res.status(error.status).json(error.toResponseBody());
+        }
+
+        await refundCreditsQuietly(reservation);
+
         console.error("API Error:", error);
         res.status(500).json({ error: error.message || "An internal server error occurred." });
     }

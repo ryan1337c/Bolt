@@ -1,10 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
 import { requireUser } from "@/lib/requireUser";
+import {
+    consumeCredits,
+    refundCreditsQuietly,
+    ContextTooLongError,
+    InsufficientCreditsError,
+    type CreditReservation,
+} from "@/lib/credits";
 
 type ResponseData = {
     url?: string;
     error?: string;
+    code?: string;
+    remaining?: number;
+    limit?: number;
+    resetsAt?: string;
+    characters?: number;
+    max?: number;
 }
 
 interface GenerateRequest extends NextApiRequest {
@@ -37,7 +50,10 @@ export default async function handler(
       return res.status(400).json({ error: "You need a prompt" });
     }
 
+    let reservation: CreditReservation | undefined;
+
     try{
+        reservation = await consumeCredits(auth.user.id, { kind: "image" });
 
         // Casting response as 'any' to pass the exact payload without SDK auto-format injections
         const aiResponse = await openai.images.generate({
@@ -48,19 +64,27 @@ export default async function handler(
         } as any);
 
         if (!aiResponse.data || aiResponse.data.length === 0) {
-        return res.status(500).json({ error: "No images generated" });
+            await refundCreditsQuietly(reservation);
+            return res.status(500).json({ error: "No images generated" });
         }
 
         let base64Image = aiResponse.data[0].b64_json;
 
         if (!base64Image) {
+            await refundCreditsQuietly(reservation);
             return res.status(500).json({ error: "Invalid or missing image data from OpenAI" });
         }
 
         // Return the base64 image as a data URL
         return res.status(200).json({ url: `data:image/png;base64,${base64Image}` });
     }
-    catch (error: any) {        
+    catch (error: any) {
+        if (error instanceof InsufficientCreditsError || error instanceof ContextTooLongError) {
+            return res.status(error.status).json(error.toResponseBody());
+        }
+
+        await refundCreditsQuietly(reservation);
+
         console.error("OpenAI API Error:", error);
         
         const statusCode = error.status || 500;

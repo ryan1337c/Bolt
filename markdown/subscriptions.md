@@ -10,6 +10,7 @@ Stripe is the billing source of truth. Supabase stores synchronized entitlement 
 | `user_entitlements` | Current effective tier per user (one row per user) |
 | `features` | Catalog of app features |
 | `plan_features` | Which features each tier includes |
+| `credit_usage` | Credits consumed per user per UTC period (day or month) |
 
 Optional later: `entitlement_grants` for trials, gifts, and add-ons.
 
@@ -161,6 +162,151 @@ INSERT INTO public.plan_features (tier, feature_key, boolean_value, integer_valu
 
 ---
 
+### 5. `credit_usage`
+
+One row per user per UTC period. Free users use a daily key (`YYYY-MM-DD`, limit 20). Pro and Enterprise use a monthly key (`YYYY-MM`, limit 2500). Periods are calendar UTC, not Stripe billing dates.
+
+The **limit is not stored on the row**. Pass the current tier’s limit at consume time so a Free→Pro upgrade starts a new monthly key with 2500 (daily Free usage is not carried over). A Pro→Free downgrade starts a new daily key; leftover Pro monthly credits do not apply.
+
+```sql
+CREATE TABLE public.credit_usage (
+  user_id uuid NOT NULL
+    REFERENCES auth.users(id) ON DELETE CASCADE,
+  period_key text NOT NULL,          -- 'YYYY-MM-DD' (free) or 'YYYY-MM' (pro/enterprise)
+  credits_used int NOT NULL DEFAULT 0 CHECK (credits_used >= 0),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, period_key)
+);
+```
+
+**Written by:** service-role RPCs `consume_credits` and `refund_credits` only.  
+**Read by:** authenticated users (own rows) and the server usage API (service-role).
+
+**RLS:** Users can `SELECT` their own rows only. No client `INSERT`/`UPDATE`/`DELETE`.
+
+Runnable script (table + RPCs + grants + RLS): [`sql/credit_usage.sql`](../sql/credit_usage.sql). Paste it into the Supabase SQL editor.
+
+---
+
+## Credit usage RPCs
+
+Run the table (above), RPCs, grants, and RLS in the Supabase SQL editor — or apply [`sql/credit_usage.sql`](../sql/credit_usage.sql) as a single script. Writes go through these functions so concurrent generate requests cannot double-spend.
+
+`consume_credits` atomically increments usage **only if** `credits_used + amount <= limit`. If that would exceed the cap, no row is updated and the function returns `NULL` (treat as insufficient credits). The first insert on a period also rejects `amount > limit`.
+
+`refund_credits` subtracts, floored at 0. Used when OpenAI/DeepSeek fails after a reservation. Missing rows return `0` (nothing to refund).
+
+Both functions are `SECURITY DEFINER` with an empty `search_path`. Execute is revoked from `anon` / `authenticated` and granted only to `service_role` (same pattern as Stripe webhook writes).
+
+```sql
+CREATE OR REPLACE FUNCTION public.consume_credits(
+  p_user_id uuid,
+  p_period_key text,
+  p_amount integer,
+  p_limit integer
+)
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_credits_used integer;
+BEGIN
+  IF p_user_id IS NULL THEN
+    RAISE EXCEPTION 'p_user_id is required';
+  END IF;
+  IF p_period_key IS NULL OR length(trim(p_period_key)) = 0 THEN
+    RAISE EXCEPTION 'p_period_key is required';
+  END IF;
+  IF p_amount IS NULL OR p_amount <= 0 THEN
+    RAISE EXCEPTION 'p_amount must be positive';
+  END IF;
+  IF p_limit IS NULL OR p_limit < 0 THEN
+    RAISE EXCEPTION 'p_limit must be non-negative';
+  END IF;
+
+  -- New period row: INSERT is not gated by the ON CONFLICT WHERE clause.
+  IF p_amount > p_limit THEN
+    RETURN NULL;
+  END IF;
+
+  INSERT INTO public.credit_usage AS cu (user_id, period_key, credits_used, updated_at)
+  VALUES (p_user_id, p_period_key, p_amount, now())
+  ON CONFLICT (user_id, period_key) DO UPDATE
+    SET
+      credits_used = cu.credits_used + EXCLUDED.credits_used,
+      updated_at = now()
+    WHERE cu.credits_used + EXCLUDED.credits_used <= p_limit
+  RETURNING cu.credits_used INTO v_credits_used;
+
+  -- NULL when the WHERE clause skipped the update (over cap).
+  RETURN v_credits_used;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.refund_credits(
+  p_user_id uuid,
+  p_period_key text,
+  p_amount integer
+)
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_credits_used integer;
+BEGIN
+  IF p_user_id IS NULL THEN
+    RAISE EXCEPTION 'p_user_id is required';
+  END IF;
+  IF p_period_key IS NULL OR length(trim(p_period_key)) = 0 THEN
+    RAISE EXCEPTION 'p_period_key is required';
+  END IF;
+  IF p_amount IS NULL OR p_amount <= 0 THEN
+    RAISE EXCEPTION 'p_amount must be positive';
+  END IF;
+
+  UPDATE public.credit_usage
+  SET
+    credits_used = GREATEST(public.credit_usage.credits_used - p_amount, 0),
+    updated_at = now()
+  WHERE user_id = p_user_id
+    AND period_key = p_period_key
+  RETURNING public.credit_usage.credits_used INTO v_credits_used;
+
+  RETURN COALESCE(v_credits_used, 0);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.consume_credits(uuid, text, integer, integer) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.consume_credits(uuid, text, integer, integer) FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.consume_credits(uuid, text, integer, integer) TO service_role;
+
+REVOKE ALL ON FUNCTION public.refund_credits(uuid, text, integer) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.refund_credits(uuid, text, integer) FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.refund_credits(uuid, text, integer) TO service_role;
+```
+
+**Call from the server** (service-role client in `pages/api/supaBaseServer.ts`):
+
+```ts
+const { data: creditsUsed, error } = await supabaseServerClient.rpc(
+  "consume_credits",
+  { p_user_id, p_period_key, p_amount, p_limit }
+);
+// creditsUsed === null → insufficient credits (HTTP 402)
+
+await supabaseServerClient.rpc("refund_credits", {
+  p_user_id,
+  p_period_key,
+  p_amount,
+});
+```
+
+---
+
 ## Signup Trigger
 
 When a user is created in `auth.users`, insert a free entitlement row:
@@ -198,6 +344,7 @@ ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_entitlements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.features ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.plan_features ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.credit_usage ENABLE ROW LEVEL SECURITY;
 ```
 
 **User-specific tables (read own data only):**
@@ -211,6 +358,16 @@ USING ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Users can view own subscriptions"
 ON public.subscriptions
+FOR SELECT
+TO authenticated
+USING ((SELECT auth.uid()) = user_id);
+
+REVOKE ALL ON TABLE public.credit_usage FROM PUBLIC, anon;
+GRANT SELECT ON TABLE public.credit_usage TO authenticated;
+GRANT ALL ON TABLE public.credit_usage TO postgres, service_role;
+
+CREATE POLICY "Users can view own credit usage"
+ON public.credit_usage
 FOR SELECT
 TO authenticated
 USING ((SELECT auth.uid()) = user_id);
@@ -232,7 +389,7 @@ TO anon, authenticated
 USING (true);
 ```
 
-No client `INSERT`/`UPDATE`/`DELETE` policies on user-specific tables. Stripe webhooks write using the service-role key (bypasses RLS).
+No client `INSERT`/`UPDATE`/`DELETE` policies on user-specific tables. Stripe webhooks and credit RPCs write using the service-role key (bypasses RLS).
 
 ---
 
@@ -372,8 +529,9 @@ Effective access = `user_entitlements.tier` → lookup in `plan_features`.
 1. **Never** trust client-side `tier` for API authorization — verify server-side.
 2. **Never** expose `SUPABASE_SERVICE_ROLE_KEY` or `STRIPE_SECRET_KEY` to the browser.
 3. Webhook handler must verify `STRIPE_WEBHOOK_SECRET` on every event.
-4. RLS on `user_entitlements`: users read own row only; writes via service role.
+4. RLS on `user_entitlements` and `credit_usage`: users read own rows only; writes via service role.
 5. Block `/api/generateResume`, `/api/generateQuiz`, `/api/generateDeck` for free users.
+6. Credit consume/refund only through `consume_credits` / `refund_credits` (service-role). Never increment `credit_usage` from the client.
 
 ---
 

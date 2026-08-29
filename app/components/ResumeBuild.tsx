@@ -1,8 +1,16 @@
 "use client";
 
 import { useState, ChangeEvent, DragEvent, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { FiUploadCloud, FiFileText, FiX, FiDownload, FiLoader, FiAlertCircle} from 'react-icons/fi';
 import { AuthServices } from '@/lib/authServices';
+import { useAuth } from '@/app/context/AuthContext';
+import {
+  BILLING_SETTINGS_HREF,
+  formatInsufficientCreditsMessage,
+  getInsufficientCreditsInfo,
+  shouldOfferCreditUpgrade,
+} from '@/lib/credits/usageClient';
 
 type ResumeBuildProps = {
   isProcessing: boolean;
@@ -11,6 +19,8 @@ type ResumeBuildProps = {
 
 const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
   const authServices = new AuthServices();
+  const router = useRouter();
+  const { tier } = useAuth();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -21,6 +31,8 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showUpgradeCta, setShowUpgradeCta] = useState(false);
+  const [isCreditError, setIsCreditError] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -68,6 +80,8 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
       }
 
       setErrorMessage(null);
+      setShowUpgradeCta(false);
+      setIsCreditError(false);
       setIsTailoring(true);
       setIsProcessing(true);
 
@@ -90,6 +104,13 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
 
         if (!response.ok) {
           const errData = await response.json();
+          const creditInfo = getInsufficientCreditsInfo(response.status, errData);
+          if (creditInfo) {
+            setErrorMessage(formatInsufficientCreditsMessage(creditInfo, tier));
+            setShowUpgradeCta(shouldOfferCreditUpgrade(tier));
+            setIsCreditError(true);
+            return;
+          }
           throw new Error(errData.error || 'Something went wrong');
         }
 
@@ -124,10 +145,10 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
 
   // Auto-dismiss the error popup after a few seconds
   useEffect(() => {
-    if (!errorMessage) return;
+    if (!errorMessage || isCreditError) return;
     const timer = setTimeout(() => setErrorMessage(null), 5000);
     return () => clearTimeout(timer);
-  }, [errorMessage]);
+  }, [errorMessage, isCreditError]);
 
   // A function to reset everything and start over
   const handleStartOver = () => {
@@ -168,7 +189,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
             className="
               absolute top-[-72px] md:top-0 left-1/2 z-50
               flex items-center gap-3 px-6 py-3 
-              rounded-b-xl max-w-md
+              rounded-b-xl max-w-lg
               bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
               border-b border-red-200 dark:border-red-500/30
               animate-slide-down
@@ -178,8 +199,21 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
             <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
               {errorMessage}
             </p>
+            {showUpgradeCta && (
+              <button
+                type="button"
+                onClick={() => router.push(BILLING_SETTINGS_HREF)}
+                className="flex-shrink-0 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-violet-700 dark:bg-purple-500 dark:hover:bg-purple-600"
+              >
+                Upgrade
+              </button>
+            )}
             <button
-              onClick={() => setErrorMessage(null)}
+              onClick={() => {
+                setErrorMessage(null);
+                setShowUpgradeCta(false);
+                setIsCreditError(false);
+              }}
               className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               aria-label="Dismiss error"
             >

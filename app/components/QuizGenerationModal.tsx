@@ -1,8 +1,16 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
+import { useAuth } from "@/app/context/AuthContext";
+import {
+  BILLING_SETTINGS_HREF,
+  formatInsufficientCreditsMessage,
+  getInsufficientCreditsInfo,
+  shouldOfferCreditUpgrade,
+} from "@/lib/credits/usageClient";
 import { 
   X, 
   Sparkles, 
@@ -67,6 +75,8 @@ type FormErrors = {
 };
 
 export default function QuizGenerationModal({ isOpen, onClose, isProcessing, setIsProcessing, onQuizCreated, editMode = false, initialData, onQuizUpdated}: QuizGenerationModalProps) {
+  const router = useRouter();
+  const { tier } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [mode, setMode] = useState<'manual' | 'ai'>('ai'); 
@@ -88,6 +98,8 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
   
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showUpgradeCta, setShowUpgradeCta] = useState(false);
+  const [isCreditError, setIsCreditError] = useState(false);
 
   useEffect(() => {
     const fetchSession = async() => {
@@ -106,11 +118,11 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
 
   // Auto-dismiss server error after 4 seconds
   useEffect(() => {
-    if (serverError) {
+    if (serverError && !isCreditError) {
         const timer = setTimeout(() => setServerError(null), 4000);
         return () => clearTimeout(timer);
     }
-  }, [serverError]);
+  }, [serverError, isCreditError]);
 
   const handleClose = () => {
     setTitle('');
@@ -174,6 +186,8 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
   const handleGenerate = async () => {
     setFormErrors({});
     setServerError(null);
+    setShowUpgradeCta(false);
+    setIsCreditError(false);
 
     // Validation
     const newErrors: FormErrors = {};
@@ -249,6 +263,13 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
             const data = await result.json();
 
             if (!result.ok) {
+              const creditInfo = getInsufficientCreditsInfo(result.status, data);
+              if (creditInfo) {
+                setServerError(formatInsufficientCreditsMessage(creditInfo, tier));
+                setShowUpgradeCta(shouldOfferCreditUpgrade(tier));
+                setIsCreditError(true);
+                return;
+              }
               throw new Error(data.error || "Something went wrong!")
             }
 
@@ -376,11 +397,26 @@ export default function QuizGenerationModal({ isOpen, onClose, isProcessing, set
       {/* SLIDE-DOWN ERROR TOAST */}
       {serverError && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[70] w-full max-w-md px-4 animate-in slide-in-from-top-4 duration-300 fade-in">
-            <div className="bg-red-50 dark:bg-red-900/90 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-100 px-4 py-3 rounded-xl shadow-lg flex items-center gap-3">
-                <AlertTriangle size={20} className="shrink-0 text-red-600 dark:text-red-400" />
-                <p className="text-sm font-medium">{serverError}</p>
+            <div className="bg-red-50 dark:bg-red-900/90 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-100 px-4 py-3 rounded-xl shadow-lg flex items-start gap-3">
+                <AlertTriangle size={20} className="shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{serverError}</p>
+                    {showUpgradeCta && (
+                        <button
+                            type="button"
+                            onClick={() => router.push(BILLING_SETTINGS_HREF)}
+                            className="mt-2 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-violet-700 dark:bg-purple-500 dark:hover:bg-purple-600"
+                        >
+                            Upgrade
+                        </button>
+                    )}
+                </div>
                 <button 
-                    onClick={() => setServerError(null)}
+                    onClick={() => {
+                        setServerError(null);
+                        setShowUpgradeCta(false);
+                        setIsCreditError(false);
+                    }}
                     className="ml-auto p-1 hover:bg-red-100 dark:hover:bg-red-800 rounded-full transition-colors"
                 >
                     <X size={16} />
