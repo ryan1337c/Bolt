@@ -94,8 +94,8 @@ const SpeechRecognitionModal = ({ isOpen, onClose, onTranscript }: SpeechRecogni
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-y-auto p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[calc(100dvh-2rem)] my-auto p-6 flex flex-col overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Dictate your message</h2>
           <button onClick={handleClose} className="p-1 rounded-full hover:bg-gray-200">
@@ -107,7 +107,7 @@ const SpeechRecognitionModal = ({ isOpen, onClose, onTranscript }: SpeechRecogni
                 {isListening && <div className="absolute inset-0 bg-red-500 rounded-full animate-pulse"></div>}
                 <VscMic size="40px" className={`z-10 ${isListening ? 'text-red-600' : 'text-gray-500'}`} />
             </div>
-            <p className="min-h-[50px] text-gray-700 w-full p-2 border-none rounded-md">
+            <p className="min-h-[50px] max-h-[30vh] overflow-y-auto text-gray-700 w-full p-2 border-none rounded-md">
                 {transcript || (isListening ? 'Listening...' : 'Click "Start" to begin dictation.')}
             </p>
         </div>

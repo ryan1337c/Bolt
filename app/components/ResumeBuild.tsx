@@ -163,14 +163,14 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
 
   return (
     // Main container now sets the base text colors for each theme.
-    <div className="relative flex-1 flex flex-col items-center justify-center py-4 px-6 sm:p-8 text-slate-800 dark:text-gray-200 animate-fade-in-sm">
+    <div className="relative flex-1 flex flex-col min-h-0 text-slate-800 dark:text-gray-200 animate-fade-in-sm">
       {/* Processing Prompt */}
         {isTailoring && !errorMessage && (
           <div
             className="
               absolute top-[-72px] md:top-0 left-1/2 z-50
               flex items-center gap-3 px-6 py-3
-              rounded-b-xl
+              rounded-b-xl max-w-[calc(100%-2rem)]
               bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
               border-b border-slate-200 dark:border-slate-700
               animate-slide-down
@@ -188,9 +188,9 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
           <div
             className="
               absolute top-[-72px] md:top-0 left-1/2 z-50
-              flex items-center gap-3 px-6 py-3 
-              rounded-b-xl max-w-lg
-              bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm 
+              flex items-center gap-3 px-6 py-3
+              rounded-b-xl w-[calc(100%-2rem)] max-w-lg
+              bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm
               border-b border-red-200 dark:border-red-500/30
               animate-slide-down
             "
@@ -223,6 +223,9 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
         )}
 
 
+      {/* Scrollable content region (scrolls when viewport height is small) */}
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+        <div className="min-h-full flex flex-col items-center justify-center py-4 px-6 sm:p-8">
       <div className="w-full max-w-2xl mx-auto">
         {/* --- Header Text (Theme-Aware) --- */}
         <h1 className="text-3xl font-bold text-center mb-2 text-slate-900 dark:text-white">Resume Optimizer</h1>
@@ -233,7 +236,7 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
         {pdfUrl ? (
           // --- RESULT PREVIEW BOX (Theme-Aware) ---
           <div className="animate-fade-in-up-sm">
-            <div className="relative group w-full h-[550px] bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="relative group w-full h-[min(550px,60dvh)] bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
               <iframe
                 src={previewUrl}
                 className="w-full h-full border-none"
@@ -292,6 +295,8 @@ const ResumeBuild = ({ isProcessing, setIsProcessing }: ResumeBuildProps) => {
             </form>
           </div>
         )}
+      </div>
+        </div>
       </div>
     </div>
   );

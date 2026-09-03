@@ -42,13 +42,13 @@ export default function RenameModal({
 
   return (
     // Main overlay
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 backdrop-blur-sm animate-fade-in"
       onClick={onClose} // Close modal if user clicks outside the content
     >
       {/* Modal content */}
-      <div 
-        className="relative bg-white w-full max-w-md rounded-xl shadow-2xl p-6 m-4 animate-fade-in-up-sm"
+      <div
+        className="relative bg-white w-full max-w-md rounded-xl shadow-2xl p-6 mx-4 my-auto animate-fade-in-up-sm"
         onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
       >
         {/* Header */}

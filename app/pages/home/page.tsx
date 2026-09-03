@@ -245,7 +245,9 @@ export default function Home() {
           ${isSidebarExpanded ? 'w-64' : 'w-20'}
           ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}>
-          <div className="flex flex-col h-full p-4 text-slate-800 dark:text-textDark">
+          <div className="flex flex-col h-full min-h-0 p-4 text-slate-800 dark:text-textDark">
+           {/* Scrollable nav region (scrolls when viewport height is small) */}
+           <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar">
             {/* Section 1: Header */}
             <div className={`flex-shrink-0 flex items-center mb-6 justify-between`}>
               <div className="flex items-center overflow-hidden">
@@ -372,7 +374,7 @@ export default function Home() {
             </SidebarTooltip>
             
             {/* Section 6: Recents */}
-            <div className={`pt-6 flex flex-col flex-grow min-h-0`}>
+            <div className={`pt-6 flex flex-col flex-grow min-h-[8rem]`}>
               <h3 className={`flex-shrink-0 px-3 text-sm font-medium text-slate-500 dark:text-gray-400 transition-opacity duration-300 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0'}`}>Recents</h3>
               <div className={`mt-2 flex-grow space-y-2 overflow-y-auto scrollbar-custom transition-opacity duration-300 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0'}`}>
                 {recents.map((chat, index) => {
@@ -399,9 +401,10 @@ export default function Home() {
               </div>
               {openMenuId && (<div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)}></div>)}
             </div>
+           </div>
 
-            {/* Section 7: Profile Menu */}
-            <div className='mt-auto flex-shrink-0 pt-4 border-t border-black/10 dark:border-white/10'>
+            {/* Section 7: Profile Menu (pinned to bottom, outside scroll region) */}
+            <div className='flex-shrink-0 pt-4 border-t border-black/10 dark:border-white/10'>
               <ProfileMenu
                 placement="top-left"
                 disabled={isProcessing}
@@ -515,7 +518,10 @@ export default function Home() {
   />
   {paywalledFeature && (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/45 backdrop-blur-md animate-fade-in"
+    >
+    <div
+      className="flex min-h-full items-center justify-center px-4 py-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) closePaywall();
       }}
@@ -608,6 +614,7 @@ export default function Home() {
           />
         </div>
       </section>
+    </div>
     </div>
   )}
 </main>

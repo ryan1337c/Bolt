@@ -1090,7 +1090,7 @@ const downloadImage = async (imageUrl : string) => {
             </button>
           </div>
           
-          <div className="flex items-center justify-between -ml-1">
+          <div className="flex flex-wrap items-center justify-between gap-y-1 -ml-1">
               <div className="flex items-center gap-1">
               <div className="relative group">
                 <button
@@ -1167,17 +1167,18 @@ const downloadImage = async (imageUrl : string) => {
                   }`}
                 >
                   <Gauge className="h-3.5 w-3.5" strokeWidth={2} />
-                  {usage.remaining}/{usage.limit} today
+                  {usage.remaining}/{usage.limit}
+                  <span className="hidden sm:inline">&nbsp;today</span>
                 </span>
               )}
               <div className="relative inline-block text-left">
               <button
                 onClick={() => {setIsOpenModel(!isOpenModel) }}
-                className="inline-flex items-center justify-between w-40 md:w-64 px-4 py-2 text-sm font-medium bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-gray-500 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200"
+                className="inline-flex items-center justify-between w-36 sm:w-40 md:w-64 px-3 sm:px-4 py-2 text-sm font-medium bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-gray-500 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200"
               >
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${tierDotColor(selectedModelData?.tier ?? '')}`} />
-                  <span className="text-left">
+                <div className="flex items-center space-x-3 min-w-0">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${tierDotColor(selectedModelData?.tier ?? '')}`} />
+                  <span className="text-left truncate">
                   {selectedModelData?.name}
                   </span>
                 </div>
@@ -1201,7 +1202,7 @@ const downloadImage = async (imageUrl : string) => {
                 }
               </button>
               {isOpenModel && (
-                <div className="absolute right-0 z-10 bottom-full mb-2 w-40 md:w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col max-h-[60vh]">
+                <div className="absolute right-0 z-10 bottom-full mb-2 w-56 sm:w-64 md:w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none flex flex-col max-h-[60vh]">
                     <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                     {primaryModels.map((model) => (
                         <button
@@ -1269,23 +1270,24 @@ const downloadImage = async (imageUrl : string) => {
   return (
     <div className="flex-1 flex flex-col min-h-0 dark:text-white dark:bg-chatDark">
       {chatHistory.length === 0 && chatMode === "new chat" ? (
-        // Empty chat state 
-        <div className="flex-1 flex flex-col items-center justify-center p-4 -mt-16 animate-fade-in-up">
+        // Empty chat state
+        <div className="flex-1 overflow-y-auto p-4 -mt-16 animate-fade-in-up">
+          <div className="min-h-full flex flex-col items-center justify-center">
           <div className="text-center">
             <div className="inline-block">
-            <img 
-              src={icon.src} 
+            <img
+              src={icon.src}
               alt="Custom Icon"
-              className="text-white" 
-              style={{ width: '150px', height: '150px' }} 
+              className="text-white w-24 h-24 sm:w-[150px] sm:h-[150px]"
             />
             </div>
-            <h1 className="text-3xl font-bold text-gray-700 dark:text-textDark">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-textDark">
               What can I help you with today?
             </h1>
           </div>
           <div className="w-full mt-8">
             {renderInputArea()}
+          </div>
           </div>
         </div>
       ) : (

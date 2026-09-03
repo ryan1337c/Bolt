@@ -89,6 +89,8 @@ export default function SettingsModal({
   const [isAccountLoading, setIsAccountLoading] = useState(false);
   const [isSavingName, setIsSavingName] = useState(false);
   const [nameError, setNameError] = useState("");
+  const [hasConfirmedSubscriptionCancellation, setHasConfirmedSubscriptionCancellation] =
+    useState(false);
   const [hasConfirmedDataDeletion, setHasConfirmedDataDeletion] =
     useState(false);
   const [hasConfirmedIrreversible, setHasConfirmedIrreversible] =
@@ -407,22 +409,16 @@ export default function SettingsModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className="relative flex h-[min(38rem,85vh)] w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="relative flex h-[min(38rem,85vh)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:flex-row"
       >
-        <aside className="w-52 flex-shrink-0 border-r border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/40 sm:w-60">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Settings2
-                size={19}
-                className="text-violet-600 dark:text-purple-400"
-              />
-              <h2
-                id="settings-title"
-                className="font-semibold text-slate-900 dark:text-white"
-              >
-                Settings
-              </h2>
-            </div>
+        <aside className="w-full flex-shrink-0 border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/40 sm:w-60 sm:border-b-0 sm:border-r">
+          <div className="mb-4 flex items-center justify-between sm:mb-6">
+            <h2
+              id="settings-title"
+              className="font-semibold text-slate-900 dark:text-white"
+            >
+              Settings
+            </h2>
 
             <button
               type="button"
@@ -434,7 +430,10 @@ export default function SettingsModal({
             </button>
           </div>
 
-          <nav aria-label="Settings sections" className="space-y-1">
+          <nav
+            aria-label="Settings sections"
+            className="flex gap-1 overflow-x-auto sm:flex-col sm:gap-0 sm:space-y-1"
+          >
             {sections.map(({ id, label, icon: Icon }) => {
               const isActive = activeSection === id;
 
@@ -443,7 +442,7 @@ export default function SettingsModal({
                   key={id}
                   type="button"
                   onClick={() => setActiveSection(id)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                  className={`flex flex-shrink-0 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors sm:w-full ${
                     isActive
                       ? "bg-violet-100 text-violet-800 dark:bg-purple-400/15 dark:text-purple-200"
                       : "text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
@@ -864,6 +863,7 @@ export default function SettingsModal({
                     <button
                       type="button"
                       onClick={() => {
+                        setHasConfirmedSubscriptionCancellation(false);
                         setHasConfirmedDataDeletion(false);
                         setHasConfirmedIrreversible(false);
                         setDeleteAccountError("");
@@ -958,7 +958,7 @@ export default function SettingsModal({
               }
             }}
           >
-            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div className="relative flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
               <button
                 type="button"
                 onClick={() => setIsCancelConfirmOpen(false)}
@@ -969,7 +969,7 @@ export default function SettingsModal({
                 <X size={18} />
               </button>
 
-              <div className="p-6 pt-8">
+              <div className="overflow-y-auto p-6 pt-8">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-700 ring-8 ring-amber-50 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/5">
                   <AlertTriangle size={28} strokeWidth={2} />
                 </div>
@@ -1103,8 +1103,8 @@ export default function SettingsModal({
 
         {accountDialog === "delete" && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/50 p-5 backdrop-blur-sm">
-            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-red-200 bg-white shadow-2xl dark:border-red-400/20 dark:bg-slate-900">
-              <div className="h-1.5 bg-gradient-to-r from-red-500 via-rose-500 to-orange-400" />
+            <div className="relative flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-2xl border border-red-200 bg-white shadow-2xl dark:border-red-400/20 dark:bg-slate-900">
+              <div className="h-1.5 flex-shrink-0 bg-gradient-to-r from-red-500 via-rose-500 to-orange-400" />
               <button
                 type="button"
                 onClick={() => setAccountDialog(null)}
@@ -1114,7 +1114,7 @@ export default function SettingsModal({
                 <X size={18} />
               </button>
 
-              <div className="p-6 pt-8">
+              <div className="overflow-y-auto p-6 pt-8">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600 ring-8 ring-red-50 dark:bg-red-400/10 dark:text-red-300 dark:ring-red-400/5">
                   <AlertTriangle size={28} strokeWidth={2} />
                 </div>
@@ -1130,6 +1130,22 @@ export default function SettingsModal({
                   <p className="text-xs font-bold uppercase tracking-wide text-red-700 dark:text-red-300">
                     Before you continue
                   </p>
+                  <label className="mt-3 flex cursor-pointer items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={hasConfirmedSubscriptionCancellation}
+                      onChange={(event) =>
+                        setHasConfirmedSubscriptionCancellation(
+                          event.target.checked,
+                        )
+                      }
+                      className="mt-0.5 h-4 w-4 flex-shrink-0 accent-red-600"
+                    />
+                    <span>
+                      Any active subscriptions will be canceled immediately
+                      with no refunds.
+                    </span>
+                  </label>
                   <label className="mt-3 flex cursor-pointer items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
                     <input
                       type="checkbox"
@@ -1181,6 +1197,7 @@ export default function SettingsModal({
                   <button
                     type="button"
                     disabled={
+                      !hasConfirmedSubscriptionCancellation ||
                       !hasConfirmedDataDeletion ||
                       !hasConfirmedIrreversible ||
                       isDeletingAccount
