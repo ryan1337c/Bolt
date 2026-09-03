@@ -53,6 +53,8 @@ Before getting started, ensure you have:
 - npm
 - A [Supabase](https://supabase.com/) project
 - OpenAI and/or DeepSeek API keys
+- An [Anthropic](https://console.anthropic.com/) API key (resume tailoring)
+- A pdflatex compile host, or a local TeX Live / MiKTeX install (see below)
 
 ### Setup
 
@@ -76,8 +78,13 @@ Before getting started, ensure you have:
    NEXT_PUBLIC_ANON_KEY=your_supabase_anon_key
    SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-   NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key
-   NEXT_PUBLIC_DEEPSEEK_API_KEY=your_deepseek_api_key
+   OPENAI_API_KEY=your_openai_api_key
+   DEEPSEEK_API_KEY=your_deepseek_api_key
+   ANTHROPIC_API_KEY=your_anthropic_api_key
+
+   LATEX_COMPILE_URL=http://localhost:8080
+   # Optional: skip the HTTP compile service and spawn local pdflatex instead
+   # LATEX_BIN=pdflatex
 
    CLIENT_ID=your_google_oauth_client_id
    CLIENT_SECRET=your_google_oauth_client_secret
@@ -87,6 +94,10 @@ Before getting started, ensure you have:
    ```
 
    Google OAuth and email credentials are only required for their corresponding features.
+
+   Resume tailoring calls Claude Sonnet 5, then compiles Jake’s Resume LaTeX with pdflatex. Vercel serverless cannot ship TeX Live, so production must set `LATEX_COMPILE_URL` to a [latex-on-http](https://github.com/YtoTech/latex-on-http) compatible host (origin is enough; the app appends `/builds/sync`). Locally you can run that container and point `LATEX_COMPILE_URL` at `http://localhost:8080`, or set `LATEX_BIN` to a `pdflatex` binary instead.
+
+   Resume content is PII. A public compile host sees the full document, so do not use a shared/public latex-on-http instance in production. Run a small TeX Live container you control and set `LATEX_COMPILE_URL` to that host.
 
    > **Important:** Never commit your `.env.local` file or expose secret API keys publicly.
 
@@ -121,12 +132,11 @@ Developed by [Ryan Chen](https://github.com/ryan1337c).
 - [OpenAI](https://openai.com/)
   - GPT-4o Mini — general chat and file analysis
   - GPT-5.1 — quiz and flashcard generation
-  - GPT-4 Turbo — resume tailoring
   - DALL·E 3 — image generation
 - [DeepSeek](https://www.deepseek.com/)
   - DeepSeek Chat — general chat and reasoning
 - [Anthropic](https://www.anthropic.com/claude/sonnet)
-  - Claude Sonnet — planned integration
+  - Claude Sonnet 5 — resume tailoring (Jake’s Resume LaTeX)
 ### Technologies
 Built with Next.js, React, Tailwind CSS, and Supabase.
 

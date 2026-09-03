@@ -10,6 +10,7 @@
     "copy-hero-video": "node scripts/copy-hero-video.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.122.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",

@@ -1,9 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import OpenAI from "openai";
 import formidable from "formidable";
-import fs from 'fs/promises';
-import pdf from "pdf-parse"; 
-import  { createPdfFromData } from '@/lib/generatePdf';
+import fs from "fs/promises";
+import pdf from "pdf-parse";
 import { requireEntitlement, requireUser } from "@/lib/requireUser";
 import {
     consumeCredits,
@@ -12,37 +10,14 @@ import {
     InsufficientCreditsError,
     type CreditReservation,
 } from "@/lib/credits";
-
-// Define a type for the structured resume data
-type ResumeData = {
-    name: string;
-    email: string;
-    phone: string;
-    linkedIn?: string;
-    github?: string;
-    education?: Array<{
-        degree: string; 
-        institution: string;
-        date: string; 
-        bulletPoints?: string[]; 
-    }>;
-    projects?: Array<{
-        name: string;
-        date: string;
-        technologies: string;
-        bulletPoints: string[];
-    }>;
-    experiences: Array<{
-        title: string;
-        company: string;
-        date: string;
-        bulletPoints: string[];
-    }>;
-    skills?: Array<{
-        category: string; 
-        skills: string[]; 
-    }>;
-};
+import {
+    assembleResumeTex,
+    compileLatex,
+    generateJakeResumeBody,
+    InvalidResumeLatexError,
+    LatexCompileError,
+    loadResumeTemplates,
+} from "@/lib/resume";
 
 type ResponseData = {
     error?: string;
@@ -58,6 +33,8 @@ export const config = {
     api: {
         bodyParser: false,
     },
+    // Sonnet + pdflatex need more than the default Vercel Hobby timeout.
+    maxDuration: 60,
 };
 
 const parseForm = (req: NextApiRequest): Promise<{ fields: formidable.Fields; files: formidable.Files }> => {
@@ -73,15 +50,9 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: formidable.Fields; fi
     });
 };
 
-const openaiClient = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY, 
-    baseURL: "https://api.openai.com/v1"
-});
-
-
 export default async function handler(
     req: NextApiRequest,
-    res: NextApiResponse<ResponseData | Buffer> 
+    res: NextApiResponse<ResponseData | Buffer>
 ) {
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Method not allowed" });
@@ -99,7 +70,7 @@ export default async function handler(
 
     let reservation: CreditReservation | undefined;
 
-    try{
+    try {
         const { fields, files } = await parseForm(req);
 
         const resumeFile = (files.resumeFile as formidable.File[])?.[0];
@@ -110,7 +81,6 @@ export default async function handler(
             return res.status(400).json({ error: "Missing required fields: resume file, job description, or job title." });
         }
 
-        // Extract text from uploaded PDF
         const fileBuffer = await fs.readFile(resumeFile.filepath);
         const pdfData = await pdf(fileBuffer);
         const resumeText = pdfData.text;
@@ -120,92 +90,20 @@ export default async function handler(
             textParts: [resumeText, jobDescription, jobTitle ?? ""],
         });
 
-        // Structure the resume text
-        const structurePrompt = `
-            Extract the content from the following resume text into a structured JSON object. 
-            If linkedIn, github, summary, or projects is not provided skip, otherwise make sure 
-            the JSON object has the rest.
-            type ResumeData = {
-                name: string; // The full name of the person
-                email: string;
-                phone: string;
-                linkedIn: string; // e.g. linkedin.com/in/ryan-chen-296094239
-                github: string // e.g. github.com/ryan1337c
-                education?: Array<{
-                    degree: string; // The full degree name, e.g., "Bachelor of Science in Computer Science, Honours"
-                    institution: string; // The university and school, e.g., "Lassonde School of Engineering York University, Toronto"
-                    date: string; // The graduation date, e.g., "Expected May 2026"
-                    bulletPoints?: string[]; // Optional details like GPA or coursework, e.g., ["GPA: 3.5", "Relevant Coursework: ..."]
-                }>;
-                projects: Array<{
-                    name: string;
-                    date: string;
-                    technologies: string;
-                    bulletPoints: string[];
-                }>;
-                experiences: Array<{
-                    title: string;
-                    company: string;
-                    date: string; // e.g., "Jan 2020 - Present"
-                    bulletPoints: string[];
-                }>;
-                skills?: Array<{
-                    category: string; // The sub-header, e.g., "Languages & Frameworks"
-                    skills: string[]; // The list of skills for that category
-                }>;
-            };
-            For the 'skills' section, group related skills under appropriate categories like "Languages & Frameworks", "Libraries", "Databases", "Tools", etc., based on the content of the resume.
-            RESUME TEXT: """${resumeText}"""
-            Provide only the JSON object as your response.`;
+        const templates = await loadResumeTemplates();
+        const modelOutput = await generateJakeResumeBody(templates, {
+            resumeText,
+            jobDescription,
+            jobTitle,
+        });
+        const texSource = assembleResumeTex(templates, modelOutput);
+        const pdfBytes = await compileLatex(texSource);
 
-            // 1. API call to generate json
-            const structureResponse = await openaiClient.chat.completions.create({
-                model: "gpt-4-1106-preview",
-                messages: [{ role: "user", content: structurePrompt}],
-                response_format: { type: "json_object"},
-                temperature: 0.2,
-            });
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", 'attachment; filename="Tailored_Resume.pdf"');
 
-            const structuredResume: ResumeData = JSON.parse(structureResponse.choices[0].message.content || '{}');
-
-            const tailorPrompt = `
-            You are an expert resume writer. Your task is to tailor the provided resume (in JSON format) to better match the given job description.
-            Tailor the "bulletPoints" for each experience to highlight the skills and achievements most relevant to the job description.
-            Also, if user provides "projects", tailor "bulletPoints" for each project without deleteing or adding new points. For the "skills" section, 
-            do not add new points. 
-            Do not change the structure of the JSON. Only modify the content of the specified fields.
-            
-            JOB TITLE: """${jobTitle}"""
-
-            JOB DESCRIPTION: """${jobDescription}"""
-
-            ORIGINAL RESUME JSON: """${JSON.stringify(structuredResume, null, 2)}"""
-            
-            Return the new, tailored resume as a single, valid JSON object.`;
-            
-            // 2. API call to tailor structured resume
-            const tailorResponse = await openaiClient.chat.completions.create({
-                model: "gpt-4-1106-preview",
-                messages: [{ role: "user", content: tailorPrompt }],
-                response_format: { type: "json_object" },
-                temperature: 0.2,
-            })
-
-            const tailoredResumeData: ResumeData = JSON.parse(tailorResponse.choices[0].message.content || '{}');
-
-            // Generate a new pdf from the tailored data
-            const pdfBytes = await createPdfFromData(tailoredResumeData);
-
-            // Set appropriate headers for a PDF file download
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename="Tailored_Resume.pdf');
-
-            // Return the generated pdf back to client
-            return res.status(200).send(Buffer.from(pdfBytes));
-
-
-    }
-    catch (error: any) {
+        return res.status(200).send(Buffer.from(pdfBytes));
+    } catch (error: any) {
         if (error instanceof InsufficientCreditsError || error instanceof ContextTooLongError) {
             return res.status(error.status).json(error.toResponseBody());
         }
@@ -213,6 +111,14 @@ export default async function handler(
         await refundCreditsQuietly(reservation);
 
         console.error("API Error:", error);
-        res.status(500).json({ error: error.message || "An internal server error occurred." });
+
+        const message =
+            error instanceof InvalidResumeLatexError
+                ? "Failed to generate a valid resume. Please try again."
+                : error instanceof LatexCompileError
+                    ? error.message
+                    : error.message || "An internal server error occurred.";
+
+        res.status(500).json({ error: message });
     }
 }
