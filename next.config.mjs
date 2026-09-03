@@ -15,6 +15,14 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
+  experimental: {
+    outputFileTracingIncludes: {
+      "/pages/api/generateResume": [
+        "./markdown/preamble.md",
+        "./markdown/resumeStruct.md",
+      ],
+    },
+  },
 };
 
 export default nextConfig;
