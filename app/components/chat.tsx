@@ -13,7 +13,7 @@ import { VscMic } from "react-icons/vsc";
 import Image from "next/image";
 import { AuthServices } from "@/lib/authServices";
 import { PublicServices } from "@/lib/publicServices";
-import { ChevronDown, Check, Ban, FileText, Gauge, X, Plus} from 'lucide-react';
+import { ChevronDown, Check, Ban, FileText, Gauge, X} from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { GoPaperclip } from "react-icons/go";
 import SpeechRecognitionModal from "./SpeechRecognitionModal";
@@ -152,23 +152,9 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
       description: 'Most capable model for complex tasks',
       tier: 'deepseek'
     },
-    {
-      id: 'kimi-k2-6',
-      name: 'Kimi K2.6',
-      description: 'Moonshot AI\'s long-context reasoning model',
-      tier: 'kimi'
-    },
-    {
-      id: 'gemini-3-1-pro',
-      name: 'Gemini 3.1 Pro',
-      description: 'Google\'s advanced multimodal model',
-      tier: 'gemini'
-    },
   ];
 
-  const primaryModels = models.slice(0, 3);
-  const moreModels = models.slice(3);
-  const [isMoreModelsOpen, setIsMoreModelsOpen] = useState(false);
+  const primaryModels = models;
 
   const handleModelSelect = (modelId: string) => {
     setSelectedModel(modelId);
@@ -181,8 +167,6 @@ export default function Chat({ setRecents, currChatId, setCurrChatId, isProcessi
     tier === 'sonnet' ? 'bg-orange-500' :
     tier === 'gpt4' ? 'bg-green-500' :
     tier === 'deepseek' ? 'bg-blue-500' :
-    tier === 'kimi' ? 'bg-purple-500' :
-    tier === 'gemini' ? 'bg-teal-500' :
     'bg-gray-500';
 
   // Uploading 
@@ -1101,7 +1085,7 @@ const downloadImage = async (imageUrl : string) => {
                   <CiSquarePlus size="2em" className="text-gray-500 dark:text-gray-400" />
                 </button>
                 {/* Tooltip */}
-                {!isOpenUpload && ( <div className="absolute bottom-full left-0 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg transition-opacity duration-200 ease-out opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 group-hover:delay-200">Add files and more<div className="absolute top-full left-6 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
+                {!isOpenUpload && ( <div className="absolute bottom-full left-0 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">Add files and more<div className="absolute top-full left-6 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                 {/* Dropdown */}
                 {isOpenUpload && ( <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1"><button onClick={handleUploadSelect} className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><GoPaperclip size={"25px"} className="flex-shrink-0 text-gray-600 dark:text-gray-300" /><div className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">{upload.name}</div><Check className="w-4 h-4 text-blue-600 dark:text-blue-400" /></button></div> )}
@@ -1116,7 +1100,7 @@ const downloadImage = async (imageUrl : string) => {
                     <svg className=" w-5 h-5" viewBox="0 0 256 256" fill="currentColor"><path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z" /></svg>
                 </button>
                 {/* Tooltip */}
-                {!isOpenTools && ( <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity duration-200 ease-out group-hover:delay-200">Search and Tools<div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
+                {!isOpenTools && ( <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-0 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">Search and Tools<div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div></div> )}
                 {/* Dropdown */}
                 {isOpenTools && ( <div className="absolute bottom-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 py-1">{tools.map((tool, index) => ( <button key={index} onClick={() => handleToolSelect(tool.id)} className="w-full flex items-start space-x-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 text-left"><div className="flex-1 min-w-0"><div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">{tool.name}</div></div>{selectedTool === tool.id && (<Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />)}</button>))}</div> )}
               </div>
@@ -1222,35 +1206,6 @@ const downloadImage = async (imageUrl : string) => {
                         )}
                         </button>
                     ))}
-                    {moreModels.length > 0 && (
-                        <>
-                        <button
-                            onClick={() => setIsMoreModelsOpen(!isMoreModelsOpen)}
-                            className="flex items-center w-full px-4 py-2.5 text-sm border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
-                        >
-                            <span className="flex-1 text-left font-medium text-gray-500 dark:text-gray-400">More models</span>
-                            <Plus className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isMoreModelsOpen ? 'rotate-45' : ''}`} />
-                        </button>
-                        {isMoreModelsOpen && moreModels.map((model) => (
-                            <button
-                            key={model.id}
-                            onClick={() => handleModelSelect(model.id)}
-                            className="group flex items-center w-full px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
-                            >
-                            <div className="flex items-center flex-1">
-                                <div className={`w-2 h-2 rounded-full mr-3 ${tierDotColor(model.tier)}`} />
-                                <div className="flex-1 text-left">
-                                    <div className="font-medium text-gray-900 dark:text-gray-100">{model.name}</div>
-                                    <div className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{model.description}</div>
-                                </div>
-                            </div>
-                            {selectedModel === model.id && (
-                                <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            )}
-                            </button>
-                        ))}
-                        </>
-                    )}
                     </div>
                     <div className="border-t border-slate-100 dark:border-slate-700 px-4 py-3 flex-shrink-0">
                         <div className="text-xs text-gray-500 dark:text-gray-400">

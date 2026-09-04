@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { VscMic } from "react-icons/vsc"; 
+import { createPortal } from 'react-dom';
+import { VscMic } from "react-icons/vsc";
 import { X } from 'lucide-react';
 
 // Props the component will accept
@@ -93,8 +94,8 @@ const SpeechRecognitionModal = ({ isOpen, onClose, onTranscript }: SpeechRecogni
   
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-y-auto p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 flex justify-center items-center overflow-y-auto p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[calc(100dvh-2rem)] my-auto p-6 flex flex-col overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Dictate your message</h2>
@@ -131,7 +132,8 @@ const SpeechRecognitionModal = ({ isOpen, onClose, onTranscript }: SpeechRecogni
             </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
